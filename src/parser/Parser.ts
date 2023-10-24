@@ -1418,7 +1418,6 @@ export class Parser {
                     expr = finishCall(expr);
                 } else if (match(Lexeme.Print)) {
                     // doing nothing as invalid check was before
-                    console.log("print mark");
                 } else if (match(Lexeme.LeftSquare)) {
                     indexedGet();
                 } else if (match(Lexeme.Dot)) {
