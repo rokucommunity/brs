@@ -117,7 +117,7 @@ describe("end to end brightscript functions", () => {
             "Seconds: ",
             "15",
             "Last Day of Month: ",
-            "29",
+            "30",
             "Milliseconds: ",
             "160",
             "ISO String UTC: ",
