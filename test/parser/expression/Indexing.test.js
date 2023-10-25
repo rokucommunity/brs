@@ -1,6 +1,6 @@
 const brs = require("../../../lib");
 const { Lexeme } = brs.lexer;
-const { Int32, BrsInvalid} = brs.types;
+const { Int32, BrsInvalid } = brs.types;
 
 const { token, identifier, EOF } = require("../ParserTests");
 
