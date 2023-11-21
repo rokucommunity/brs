@@ -151,4 +151,4 @@ export const ValidDateFormats = [
     "YYYY-MM",
     "YYYY[Z]",
     "YYYY",
-]
+];
