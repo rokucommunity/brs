@@ -90,6 +90,57 @@ describe("end to end brightscript functions", () => {
         ]);
     });
 
+    test("components/ifEnum.brs", async () => {
+        await execute([resourceFile("components", "ifEnum.brs")], outputStreams);
+
+        expect(allArgs(outputStreams.stdout.write).filter((arg) => arg !== "\n")).toEqual([
+            "testing roArray ifEnum",
+            "isNext Not Empty:",
+            "true",
+            "isEmpty:",
+            "true",
+            "isNext Empty:",
+            "false",
+            "isNext before Reset:",
+            "true",
+            "isNext after Reset:",
+            "true",
+            "a",
+            "b",
+            "c",
+            "c",
+            "testing AA ifEnum",
+            "isNext before Reset:",
+            "true",
+            "isNext after Reset:",
+            "true",
+            "a",
+            "b",
+            "c",
+            "d",
+            "9",
+            "x",
+            "isEmpty:",
+            "false",
+            "isNext Empty:",
+            "false",
+            "isNext before Reset:",
+            "true",
+            "isNext after Reset:",
+            "true",
+            "a",
+            "b",
+            "c",
+            "Reset()",
+            "a",
+            "b",
+            "c",
+            "d",
+            "9",
+            "x",
+        ]);
+    });
+
     test("components/roDateTime.brs", async () => {
         await execute([resourceFile("components", "roDateTime.brs")], outputStreams);
 
