@@ -167,7 +167,7 @@ export class RoArray extends BrsComponent implements BrsValue, BrsIterable {
         }
         return this.elements[index];
     }
-        
+
     updateNext() {
         const hasItems = this.elements.length > 0;
         if (this.enumIndex === -1 && hasItems) {
