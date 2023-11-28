@@ -96,14 +96,19 @@ describe("end to end brightscript functions", () => {
         expect(allArgs(outputStreams.stdout.write).filter((arg) => arg !== "\n")).toEqual([
             "testing roArray ifEnum",
             "isNext Not Empty:",
+            " ",
             "true",
             "isEmpty:",
+            " ",
             "true",
             "isNext Empty:",
+            " ",
             "false",
             "isNext before Reset:",
+            " ",
             "true",
             "isNext after Reset:",
+            " ",
             "true",
             "a",
             "b",
@@ -111,8 +116,10 @@ describe("end to end brightscript functions", () => {
             "c",
             "testing AA ifEnum",
             "isNext before Reset:",
+            " ",
             "true",
             "isNext after Reset:",
+            " ",
             "true",
             "a",
             "b",
@@ -121,12 +128,16 @@ describe("end to end brightscript functions", () => {
             "9",
             "x",
             "isEmpty:",
+            " ",
             "false",
             "isNext Empty:",
+            " ",
             "false",
             "isNext before Reset:",
+            " ",
             "true",
             "isNext after Reset:",
+            " ",
             "true",
             "a",
             "b",
@@ -136,8 +147,8 @@ describe("end to end brightscript functions", () => {
             "b",
             "c",
             "d",
-            "9",
             "x",
+            "9",
         ]);
     });
 
@@ -284,8 +295,8 @@ describe("end to end brightscript functions", () => {
                 "getAttributes() = ",
                 `<Component: roAssociativeArray> =\n` +
                     `{\n` +
-                    `    id: "someId"\n` +
                     `    attr1: "0"\n` +
+                    `    id: "someId"\n` +
                     `}`,
                 'getNamedElementsCi("child1") count = ',
                 "2",
