@@ -87,9 +87,9 @@ export async function getComponentDefinitionMap(
     additionalDirs: string[] = [],
     libraryName: string | undefined
 ) {
-    let searchString = "{components}";
+    let searchString = "{components, }";
     if (additionalDirs.length) {
-        searchString = `{components, ${additionalDirs.join(",")}}`;
+        searchString = `{components,${additionalDirs.join(",")}}`;
     }
     const componentsPattern = path.join(rootDir, searchString, "**", "*.xml");
     const xmlFiles: string[] = fg.sync(componentsPattern, {});
