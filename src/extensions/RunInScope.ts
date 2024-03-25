@@ -32,9 +32,7 @@ function runFilesInScope(interpreter: Interpreter, filenames: BrsString[], args:
     if (process.platform === "win32") {
         posixRoot = posixRoot.split(path.sep).join(path.posix.sep);
     }
-    let pathsToFiles = filenames.map((filename) =>
-        path.join(posixRoot, getPath(filename.value))
-    );
+    let pathsToFiles = filenames.map((filename) => path.join(posixRoot, getPath(filename.value)));
 
     // if the file-to-run doesn't exist, RBI returns invalid
     if (!volumes.every((volume) => volume != null)) {

@@ -268,8 +268,14 @@ async function getScripts(
         let absoluteUri: URL;
         try {
             if (process.platform === "win32") {
-                rootDir = rootDir.split(path.sep).join(path.posix.sep).replace(/^[a-zA-Z]:/, "");
-                xmlPath = xmlPath.split(path.sep).join(path.posix.sep).replace(/^[a-zA-Z]:/, "");
+                rootDir = rootDir
+                    .split(path.sep)
+                    .join(path.posix.sep)
+                    .replace(/^[a-zA-Z]:/, "");
+                xmlPath = xmlPath
+                    .split(path.sep)
+                    .join(path.posix.sep)
+                    .replace(/^[a-zA-Z]:/, "");
             }
             absoluteUri = new URL(script.attr.uri, `pkg:/${path.posix.relative(rootDir, xmlPath)}`);
         } catch (err) {
