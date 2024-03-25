@@ -53,10 +53,7 @@ export function getScopedPath(interpreter: Interpreter, fileUri: string) {
     if (url.protocol === "pkg:") {
         scopedPath = path.join(interpreter.options.root, filePath);
     }
-    if (process.platform === "win32") {
-        scopedPath = scopedPath.split(path.sep).join(path.posix.sep);
-    }
-    return scopedPath;
+    return scopedPath.replace(/[\/\\]+/g, path.posix.sep);
 }
 
 /** Copies a file from src to dst, return true if successful */

@@ -28,10 +28,7 @@ import { Scope } from "../interpreter/Environment";
  */
 function runFilesInScope(interpreter: Interpreter, filenames: BrsString[], args: BrsType[]) {
     let volumes = filenames.map((filename) => getVolumeByPath(interpreter, filename.value));
-    let posixRoot = interpreter.options.root;
-    if (process.platform === "win32") {
-        posixRoot = posixRoot.split(path.sep).join(path.posix.sep);
-    }
+    let posixRoot = interpreter.options.root.replace(/[\/\\]+/g, path.posix.sep);
     let pathsToFiles = filenames.map((filename) => path.join(posixRoot, getPath(filename.value)));
 
     // if the file-to-run doesn't exist, RBI returns invalid
