@@ -339,30 +339,36 @@ describe("RoList", () => {
                 expect(getIndex).toBeTruthy();
                 expect(getIndex.call(interpreter)).toBe(BrsInvalid.Instance);
             });
-            if("resetIndex() - resets the current index of the linked list and get first item", () => {
-                let a = new BrsString("a");
-                let b = new BrsString("b");
-                let c = new BrsString("c");
-                let list = new RoList([a, b, c]);
-                let resetIndex = list.getMethod("resetIndex");
-                expect(resetIndex).toBeTruthy();
-                expect(resetIndex.call(interpreter)).toEqual(BrsBoolean.True);
-                let getIndex = list.getMethod("getIndex");
-                expect(getIndex).toBeTruthy();
-                expect(getIndex.call(interpreter)).toEqual(a);
-            });
-            if("removeIndex() - removes the current index of the linked list", () => {
-                let a = new BrsString("a");
-                let b = new BrsString("b");
-                let c = new BrsString("c");
-                let list = new RoList([a, b, c]);
-                let resetIndex = list.getMethod("resetIndex");
-                expect(resetIndex).toBeTruthy();
-                expect(resetIndex.call(interpreter)).toEqual(BrsBoolean.True);
-                let removeIndex = list.getMethod("removeIndex");
-                expect(removeIndex).toBeTruthy();
-                expect(removeIndex.call(interpreter)).toEqual(a);
-            });
+            if (
+                ("resetIndex() - resets the current index of the linked list and get first item",
+                () => {
+                    let a = new BrsString("a");
+                    let b = new BrsString("b");
+                    let c = new BrsString("c");
+                    let list = new RoList([a, b, c]);
+                    let resetIndex = list.getMethod("resetIndex");
+                    expect(resetIndex).toBeTruthy();
+                    expect(resetIndex.call(interpreter)).toEqual(BrsBoolean.True);
+                    let getIndex = list.getMethod("getIndex");
+                    expect(getIndex).toBeTruthy();
+                    expect(getIndex.call(interpreter)).toEqual(a);
+                })
+            );
+            if (
+                ("removeIndex() - removes the current index of the linked list",
+                () => {
+                    let a = new BrsString("a");
+                    let b = new BrsString("b");
+                    let c = new BrsString("c");
+                    let list = new RoList([a, b, c]);
+                    let resetIndex = list.getMethod("resetIndex");
+                    expect(resetIndex).toBeTruthy();
+                    expect(resetIndex.call(interpreter)).toEqual(BrsBoolean.True);
+                    let removeIndex = list.getMethod("removeIndex");
+                    expect(removeIndex).toBeTruthy();
+                    expect(removeIndex.call(interpreter)).toEqual(a);
+                })
+            );
         });
     });
 });
