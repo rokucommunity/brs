@@ -431,13 +431,22 @@ describe("RoString", () => {
             it("splits on multi-character sequences", () => {
                 let result = tokenize.call(interpreter, new BrsString("oo"));
                 expect(result).toBeInstanceOf(RoList);
-                expect(result.elements).toEqual([new BrsString("🐶g"), new BrsString("d d"), new BrsString("g🐶")]);
+                expect(result.elements).toEqual([
+                    new BrsString("🐶g"),
+                    new BrsString("d d"),
+                    new BrsString("g🐶"),
+                ]);
             });
 
             it("splits on different character delimiters", () => {
                 let result = tokenize.call(interpreter, new BrsString("o "));
                 expect(result).toBeInstanceOf(RoList);
-                expect(result.elements).toEqual([new BrsString("🐶g"), new BrsString("d"), new BrsString("d"), new BrsString("g🐶")]);
+                expect(result.elements).toEqual([
+                    new BrsString("🐶g"),
+                    new BrsString("d"),
+                    new BrsString("d"),
+                    new BrsString("g🐶"),
+                ]);
             });
         });
 

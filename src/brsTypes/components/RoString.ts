@@ -350,7 +350,7 @@ export class RoString extends BrsComponent implements BrsValue, Comparable, Unbo
             for (let i = 0; i < str.length; i++) {
                 if (delim.value.includes(str[i])) {
                     if (token.length > 0) {
-                        tokens.push(new BrsString(token.join('')));
+                        tokens.push(new BrsString(token.join("")));
                         token = [];
                     }
                 } else {
@@ -358,7 +358,7 @@ export class RoString extends BrsComponent implements BrsValue, Comparable, Unbo
                 }
             }
             if (token.length > 0) {
-                tokens.push(new BrsString(token.join('')));
+                tokens.push(new BrsString(token.join("")));
             }
             return new RoList(tokens);
         },
@@ -539,4 +539,3 @@ export class RoString extends BrsComponent implements BrsValue, Comparable, Unbo
         impl: (_interpreter) => this.intrinsic,
     });
 }
-
