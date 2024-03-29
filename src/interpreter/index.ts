@@ -46,6 +46,9 @@ import { ManifestValue } from "../preprocessor/Manifest";
 import { generateArgumentMismatchError } from "./ArgumentMismatch";
 import Long from "long";
 
+import chalk from "chalk";
+import stripAnsi from "strip-ansi";
+
 /** The set of options used to configure an interpreter's execution. */
 export interface ExecutionOptions {
     /** The base path for the project. Default: process.cwd() */
@@ -424,7 +427,7 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
             } else {
                 const toPrint = this.evaluate(printable);
                 const str = isBrsNumber(toPrint) && this.isPositive(toPrint.getValue()) ? " " : "";
-                this.stdout.write(str + toPrint.toString());
+                this.stdout.write(colorize(str + toPrint.toString()));
             }
         });
 
@@ -1664,4 +1667,30 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
         }
         return value < compare;
     }
+}
+
+/**
+ * Colorizes the console messages.
+ *
+ */
+export function colorize(log: string) {
+    return log
+        .replace(/\b(down|error|errors|failure|fail|fatal|false)(:|\b)/gi, chalk.red("$1$2"))
+        .replace(/\b(warning|warn|test|null|undefined|invalid)(:|\b)/gi, chalk.yellow("$1$2"))
+        .replace(/\b(help|hint|info|information|true|log)(:|\b)/gi, chalk.cyan("$1$2"))
+        .replace(/\b(running|success|successfully|valid)(:|\b)/gi, chalk.green("$1$2"))
+        .replace(/\b(debug|roku|brs|brightscript)(:|\b)/gi, chalk.magenta("$1$2"))
+        .replace(/(\b\d+\.?\d*?\b)/g, chalk.ansi256(122)(`$1`)) // Numeric
+        .replace(/\S+@\S+\.\S+/g, (match: string) => {
+            return chalk.blueBright(stripAnsi(match)); // E-Mail
+        })
+        .replace(/\b([a-z])+:((\/\/)|((\/\/)?(\S)))+/gi, (match: string) => {
+            return chalk.blue.underline(stripAnsi(match)); // URL
+        })
+        .replace(/<(.*?)>/g, (match: string) => {
+            return chalk.greenBright(stripAnsi(match)); // Delimiters < >
+        })
+        .replace(/"(.*?)"/g, (match: string) => {
+            return chalk.ansi256(222)(stripAnsi(match)); // Quotes
+        });
 }
