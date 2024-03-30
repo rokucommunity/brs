@@ -588,7 +588,7 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
                     return this.addError(
                         new TypeMismatch({
                             message:
-                                "In a bitshift expression the right value must be >= 0 and < 32.",
+                                "In a bit shift expression the right value must be >= 0 and < 32.",
                             left: {
                                 type: left,
                                 location: expression.left.location,
@@ -602,7 +602,7 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
                 } else {
                     return this.addError(
                         new TypeMismatch({
-                            message: "Attempting to bitshift non-numeric values.",
+                            message: "Attempting to bit shift non-numeric values.",
                             left: {
                                 type: left,
                                 location: expression.left.location,
@@ -627,7 +627,7 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
                     return this.addError(
                         new TypeMismatch({
                             message:
-                                "In a bitshift expression the right value must be >= 0 and < 32.",
+                                "In a bit shift expression the right value must be >= 0 and < 32.",
                             left: {
                                 type: left,
                                 location: expression.left.location,
@@ -641,7 +641,7 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
                 } else {
                     return this.addError(
                         new TypeMismatch({
-                            message: "Attempting to bitshift non-numeric values.",
+                            message: "Attempting to bit shift non-numeric values.",
                             left: {
                                 type: left,
                                 location: expression.left.location,
@@ -1582,13 +1582,12 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
                     );
                 }
             case Lexeme.Not:
-                if (isBrsBoolean(right)) {
+                if (isBrsBoolean(right) || isBrsNumber(right)) {
                     return right.not();
                 } else {
                     return this.addError(
                         new BrsError(
-                            `Attempting to NOT non-boolean value.
-                            value type: ${ValueKind.toString(right.kind)}`,
+                            `Type Mismatch. Operator "not" can't be applied to "${ValueKind.toString(right.kind)}".`,
                             expression.operator.location
                         )
                     );
