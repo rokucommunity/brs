@@ -437,6 +437,5 @@ describe("Int64", () => {
         it("NOT Large", () => {
             expect(large.not()).toEqual(new Int64(-9876543211));
         });
-
     });
 });

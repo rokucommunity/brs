@@ -430,6 +430,5 @@ describe("Double", () => {
         it("NOT 1.99999", () => {
             expect(one.not()).toEqual(new Int32(-2));
         });
-
     });
 });

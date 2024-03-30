@@ -193,10 +193,7 @@ describe("interpreter arithmetic", () => {
 
     it("bitwise NOTs integer", () => {
         let ast = new Stmt.Expression(
-            new Expr.Unary(
-                token(Lexeme.Not),
-                new Expr.Literal(new brs.types.Int32(6))
-            )
+            new Expr.Unary(token(Lexeme.Not), new Expr.Literal(new brs.types.Int32(6)))
         );
 
         let [result] = interpreter.exec([ast]);

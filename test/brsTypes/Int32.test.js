@@ -449,6 +449,5 @@ describe("Int32", () => {
         it("NOT 1", () => {
             expect(one.not()).toEqual(new Int32(-2));
         });
-
     });
 });

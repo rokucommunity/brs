@@ -1587,7 +1587,9 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
                 } else {
                     return this.addError(
                         new BrsError(
-                            `Type Mismatch. Operator "not" can't be applied to "${ValueKind.toString(right.kind)}".`,
+                            `Type Mismatch. Operator "not" can't be applied to "${ValueKind.toString(
+                                right.kind
+                            )}".`,
                             expression.operator.location
                         )
                     );
