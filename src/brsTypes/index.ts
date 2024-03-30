@@ -1,4 +1,12 @@
-import { ValueKind, BrsInvalid, BrsBoolean, BrsString, Uninitialized, BrsValue, Comparable } from "./BrsType";
+import {
+    ValueKind,
+    BrsInvalid,
+    BrsBoolean,
+    BrsString,
+    Uninitialized,
+    BrsValue,
+    Comparable,
+} from "./BrsType";
 import { RoArray } from "./components/RoArray";
 import { RoList } from "./components/RoList";
 import { RoAssociativeArray } from "./components/RoAssociativeArray";

@@ -4,7 +4,7 @@ const fs = require("fs");
 const path = require("path");
 
 const brs = require("../lib/");
-const chalk = require('chalk');
+const chalk = require("chalk");
 
 // read current version from package.json
 // I'll _definitely_ forget to do this one day
@@ -24,11 +24,7 @@ program
         (value) => value.split(","),
         []
     )
-    .option(
-        "-n, --no-color",
-        "Disable colorized output",
-        false
-    )
+    .option("-n, --no-color", "Disable colorized output", false)
     .action(async (brsFiles, program) => {
         chalk.level = program.noColor ? 0 : chalk.level;
         if (brsFiles.length > 0) {

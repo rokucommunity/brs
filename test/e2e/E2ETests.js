@@ -1,6 +1,6 @@
 const path = require("path");
 const stream = require("stream");
-const chalk = require('chalk');
+const chalk = require("chalk");
 
 /** Returns the path to a file in `resources/`. */
 exports.resourceFile = function (...filenameParts) {

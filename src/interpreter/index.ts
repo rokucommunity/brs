@@ -504,10 +504,10 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
             return BrsInvalid.Instance;
         }
 
-        // NOTE: Roku's dim implementation creates a resizeable, empty array for the
-        //   bottom children. Resizeable arrays aren't implemented yet (issue #530),
+        // NOTE: Roku's dim implementation creates a resizable, empty array for the
+        //   bottom children. Resizable arrays aren't implemented yet (issue #530),
         //   so when that's added this code should be updated so the bottom-level arrays
-        //   are resizeable, but empty
+        //   are resizable, but empty
         let dimensionValues: number[] = [];
         statement.dimensions.forEach((expr) => {
             let val = this.evaluate(expr);
@@ -699,7 +699,8 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
                 } else {
                     return this.addError(
                         new TypeMismatch({
-                            message: "Type Mismatch. Attempting to exponentiate non-numeric values.",
+                            message:
+                                "Type Mismatch. Attempting to exponentiate non-numeric values.",
                             left: {
                                 type: left,
                                 location: expression.left.location,
@@ -754,7 +755,8 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
                 } else {
                     return this.addError(
                         new TypeMismatch({
-                            message: "Type Mismatch. Attempting to integer-divide non-numeric values.",
+                            message:
+                                "Type Mismatch. Attempting to integer-divide non-numeric values.",
                             left: {
                                 type: left,
                                 location: expression.left.location,
@@ -925,7 +927,8 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
 
                     return this.addError(
                         new TypeMismatch({
-                            message: "Type Mismatch. Attempting to 'and' boolean with non-boolean value",
+                            message:
+                                "Type Mismatch. Attempting to 'and' boolean with non-boolean value",
                             left: {
                                 type: left,
                                 location: expression.left.location,
@@ -947,7 +950,8 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
                     // TODO: figure out how to handle 32-bit int AND 64-bit int
                     return this.addError(
                         new TypeMismatch({
-                            message: "Type Mismatch. Attempting to bitwise 'and' number with non-numberic value",
+                            message:
+                                "Type Mismatch. Attempting to bitwise 'and' number with non-numeric value",
                             left: {
                                 type: left,
                                 location: expression.left.location,
@@ -984,7 +988,8 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
                     } else {
                         return this.addError(
                             new TypeMismatch({
-                                message: "Type Mismatch. Attempting to 'or' boolean with non-boolean value",
+                                message:
+                                    "Type Mismatch. Attempting to 'or' boolean with non-boolean value",
                                 left: {
                                     type: left,
                                     location: expression.left.location,
@@ -1062,7 +1067,7 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
 
     visitCall(expression: Expr.Call) {
         let functionName = "[anonymous function]";
-        // TODO: autobox
+        // TODO: auto-box
         if (
             expression.callee instanceof Expr.Variable ||
             expression.callee instanceof Expr.DottedGet

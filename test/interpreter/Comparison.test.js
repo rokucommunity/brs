@@ -177,16 +177,9 @@ describe("interpreter comparisons", () => {
             let greaterEqual = binary(int32, Lexeme.GreaterEqual, str);
             let equal = binary(int32, Lexeme.Equal, str);
             let notEqual = binary(int32, Lexeme.LessGreater, str);
-            expect(() => interpreter.exec([
-                less,
-                lessEqual,
-                greater,
-                greaterEqual,
-                equal,
-                notEqual,
-            ])).toThrow(
-                /Attempting to compare non-homogeneous values/
-            );
+            expect(() =>
+                interpreter.exec([less, lessEqual, greater, greaterEqual, equal, notEqual])
+            ).toThrow(/Attempting to compare non-homogeneous values/);
         });
 
         test("roString and 64-bit int", () => {
@@ -196,16 +189,9 @@ describe("interpreter comparisons", () => {
             let greaterEqual = binary(rostr, Lexeme.GreaterEqual, int64);
             let equal = binary(rostr, Lexeme.Equal, int64);
             let notEqual = binary(rostr, Lexeme.LessGreater, int64);
-            expect(() => interpreter.exec([
-                less,
-                lessEqual,
-                greater,
-                greaterEqual,
-                equal,
-                notEqual,
-            ])).toThrow(
-                /Attempting to compare non-homogeneous values/
-            );
+            expect(() =>
+                interpreter.exec([less, lessEqual, greater, greaterEqual, equal, notEqual])
+            ).toThrow(/Attempting to compare non-homogeneous values/);
         });
     });
 });
