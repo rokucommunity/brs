@@ -1,5 +1,6 @@
 const path = require("path");
 const stream = require("stream");
+const chalk = require('chalk');
 
 /** Returns the path to a file in `resources/`. */
 exports.resourceFile = function (...filenameParts) {
@@ -21,6 +22,7 @@ exports.allArgs = function (jestMock) {
 
 /** Creates a set of mocked streams, suitable for use in place of `process.stdout` and `process.stderr`. */
 exports.createMockStreams = function () {
+    chalk.level = 0;
     const stdout = Object.assign(new stream.PassThrough(), process.stdout);
     const stderr = Object.assign(new stream.PassThrough(), process.stderr);
 
