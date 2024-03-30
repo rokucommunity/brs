@@ -198,6 +198,9 @@ export class Float implements Numeric, Comparable, Boxable {
             return BrsBoolean.from(this.getValue() === other.getValue().toNumber());
         } else if (isBrsNumber(other)) {
             return BrsBoolean.from(this.getValue() === other.getValue());
+        } else if (other.kind === ValueKind.Boolean) {
+            const toBool = Math.trunc(this.getValue()) !== 0 ? BrsBoolean.True : BrsBoolean.False;
+            return toBool.equalTo(other);
         }
         return BrsBoolean.False;
     }

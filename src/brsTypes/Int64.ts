@@ -211,6 +211,9 @@ export class Int64 implements Numeric, Comparable, Boxable {
                 return new Float(this.getValue().toNumber()).equalTo(other);
             case ValueKind.Double:
                 return new Double(this.getValue().toNumber()).equalTo(other);
+            case ValueKind.Boolean:
+                const toBool = this.getValue().toNumber() !== 0 ? BrsBoolean.True : BrsBoolean.False;
+                return toBool.equalTo(other);
             default:
                 return BrsBoolean.False;
         }
