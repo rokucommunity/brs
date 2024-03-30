@@ -28,6 +28,7 @@
     "types/"
   ],
   "dependencies": {
+    "chalk": "^4.1.2",
     "commander": "^2.12.2",
     "dayjs": "^1.11.10",
     "decompress": "^4.2.1",
@@ -37,6 +38,7 @@
     "nanomatch": "^1.2.13",
     "p-settle": "^2.1.0",
     "sanitize-filename": "^1.6.3",
+    "strip-ansi": "^6.0.1",
     "uuid": "^8.3.0",
     "xmldoc": "^1.1.2"
   },

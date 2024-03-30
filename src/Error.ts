@@ -1,4 +1,5 @@
 import type { Location } from "./lexer";
+import chalk from "chalk";
 
 export class BrsError extends Error {
     constructor(message: string, readonly location: Location) {
@@ -38,7 +39,7 @@ export class BrsError extends Error {
             formattedLocation = `${location.file}(${location.start.line},${location.start.column},${location.end.line},${location.end.line})`;
         }
 
-        return `${formattedLocation}: ${message}\n`;
+        return chalk.redBright(`${formattedLocation}: ${message}\n`);
     }
 }
 

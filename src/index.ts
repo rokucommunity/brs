@@ -1,5 +1,6 @@
 import * as fs from "fs";
 import * as readline from "readline";
+import chalk from "chalk";
 
 import { promisify } from "util";
 const mkdtemp = promisify(fs.mkdtemp);
@@ -12,10 +13,10 @@ import {
     getComponentDefinitionMap,
     ComponentDefinition,
     ComponentScript,
-    ComponentNode,
 } from "./componentprocessor";
 import { Parser } from "./parser";
-import { Interpreter, ExecutionOptions, defaultExecutionOptions } from "./interpreter";
+import { Interpreter, ExecutionOptions, defaultExecutionOptions, colorize } from "./interpreter";
+import { Environment, Scope } from "./interpreter/Environment";
 import { resetTestData } from "./extensions";
 import * as BrsError from "./Error";
 import * as LexerParser from "./LexerParser";
@@ -26,12 +27,12 @@ import * as _lexer from "./lexer";
 export { _lexer as lexer };
 import * as BrsTypes from "./brsTypes";
 export { BrsTypes as types };
+import { PrimitiveKinds, ValueKind, isIterable } from "./brsTypes";
 export { PP as preprocessor };
 import * as _parser from "./parser";
 export { _parser as parser };
 import { URL } from "url";
 import * as path from "path";
-import { Return } from "./parser/Statement";
 import pSettle from "p-settle";
 import os from "os";
 
@@ -277,22 +278,36 @@ export function repl() {
         input: process.stdin,
         output: process.stdout,
     });
-    rl.setPrompt("brs> ");
+    rl.setPrompt(`${chalk.magenta("brs")}> `);
     rl.on("line", (line) => {
-        if (line.toLowerCase() === "quit" || line.toLowerCase() === "exit") {
+        const cmd = line.trim().toLowerCase();
+        if (["quit", "exit", "q"].includes(cmd)) {
             process.exit();
+        } else if (["cls", "clear"].includes(cmd)) {
+            process.stdout.write("\x1Bc");
+            rl.prompt();
+            return;
+        } else if (["help", "hint"].includes(cmd)) {
+            printHelp();
+            rl.prompt();
+            return;
+        } else if (["vars", "var"].includes(cmd)) {
+            printLocalVariables(replInterpreter.environment);
+            rl.prompt();
+            return;
         }
         let results = run(line, defaultExecutionOptions, replInterpreter);
         if (results) {
             results.map((result) => {
                 if (result !== BrsTypes.BrsInvalid.Instance) {
-                    console.log(result.toString());
+                    console.log(colorize(result.toString()));
                 }
             });
         }
         rl.prompt();
     });
 
+    console.log(colorize("type `help` to see the list of valid REPL commands.\r\n"));
     rl.prompt();
 }
 
@@ -339,4 +354,47 @@ function run(
         //options.stderr.write(e.message);
         return;
     }
+}
+
+/**
+ * Display the help message on the console.
+ */
+function printHelp() {
+    let helpMsg = "\r\n";
+    helpMsg += "REPL Command List:\r\n";
+    helpMsg += "   print|?         Print variable value or expression\r\n";
+    helpMsg += "   var|vars        Display variables and their types/values\r\n";
+    helpMsg += "   help|hint       Show this REPL command list\r\n";
+    helpMsg += "   clear|cls       Clear terminal screen\r\n";
+    helpMsg += "   exit|quit|q     Terminate REPL session\r\n\r\n";
+    helpMsg += "   Type any valid BrightScript expression for a live compile and run.\r\n";
+    console.log(chalk.cyanBright(helpMsg));
+}
+
+/**
+ * Display the local variables on the console.
+ * @param environment an object with the Interpreter Environment data
+ */
+function printLocalVariables(environment: Environment) {
+    let debugMsg = "\r\nLocal variables:\r\n";
+    debugMsg += `${"m".padEnd(16)} roAssociativeArray count:${
+        environment.getM().getElements().length
+    }\r\n`;
+    let fnc = environment.getList(Scope.Function);
+    fnc.forEach((value, key) => {
+        if (PrimitiveKinds.has(value.kind)) {
+            debugMsg += `${key.padEnd(16)} ${ValueKind.toString(
+                value.kind
+            )} val:${value.toString()}\r\n`;
+        } else if (isIterable(value)) {
+            debugMsg += `${key.padEnd(16)} ${value.getComponentName()} count:${
+                value.getElements().length
+            }\r\n`;
+        } else if (value.kind === ValueKind.Object) {
+            debugMsg += `${key.padEnd(17)}${value.getComponentName()}\r\n`;
+        } else {
+            debugMsg += `${key.padEnd(17)}${value.toString()}\r\n`;
+        }
+    });
+    console.log(chalk.cyanBright(debugMsg));
 }
