@@ -307,6 +307,10 @@ describe("end to end brightscript functions", () => {
             "bar",
             "foo",
             "true", // comparison
+            "false", // comparison
+            "false", // comparison
+            "true", // comparison
+            "true", // comparison
             " 5", // length
             "b", // split("/")[1]
             "%F0%9F%90%B6", // dog emoji, uri-encoded

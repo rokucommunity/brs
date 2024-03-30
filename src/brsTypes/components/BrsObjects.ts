@@ -22,8 +22,9 @@ import { Interpreter } from "../../interpreter";
 import { roInvalid } from "./RoInvalid";
 import { BrsComponent } from "./BrsComponent";
 import { RoAppInfo } from "./RoAppInfo";
+import { RoPath } from "./RoPath";
 
-/** Map containing a list of brightscript components that can be created. */
+/** Map containing a list of BrightScript components that can be created. */
 export const BrsObjects = new Map<string, Function>([
     ["roassociativearray", (_: Interpreter) => new RoAssociativeArray([])],
     ["roarray", (_: Interpreter) => new RoArray([])],
@@ -47,6 +48,7 @@ export const BrsObjects = new Map<string, Function>([
     ["roint", (_: Interpreter, literal: Int32) => new roInt(literal)],
     ["rolonginteger", (_: Interpreter, literal: Int64) => new roLongInteger(literal)],
     ["roappinfo", (_: Interpreter) => new RoAppInfo()],
+    ["ropath", (interpreter: Interpreter, path: BrsString) => new RoPath(path)],
     ["roinvalid", (_: Interpreter) => new roInvalid()],
 ]);
 

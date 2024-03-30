@@ -21,6 +21,10 @@ export class BrsComponent {
         return this.componentName;
     }
 
+    hasInterface(interfaceName: string) {
+        return this.interfaces.has(interfaceName.toLowerCase());
+    }
+
     protected registerMethods(interfaces: Record<string, Callable[]>) {
         Object.entries(interfaces).forEach(([interfaceName, methods]) => {
             let interfaceKey = interfaceName.toLowerCase();

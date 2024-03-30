@@ -17,6 +17,10 @@ sub main()
 
     ' comparisons
     print r = s ' => true
+    print r > s ' => false
+    print r < s ' => false
+    print s <= r ' => true
+    print s >= r ' => true
 
     ' autoboxing
     t = "a/b/c"
