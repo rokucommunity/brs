@@ -167,7 +167,7 @@ export class Int64 implements Numeric, Comparable, Boxable {
 
     or(rhs: BrsNumber | BrsBoolean): BrsNumber | BrsBoolean {
         if (rhs.kind === ValueKind.Boolean) {
-            return BrsBoolean.from(this.toBoolean() && rhs.getValue());
+            return BrsBoolean.from(this.toBoolean() || rhs.getValue());
         }
         return new Int64(this.getValue().or(rhs.getValue()));
     }
