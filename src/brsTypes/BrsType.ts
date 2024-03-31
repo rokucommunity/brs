@@ -1,4 +1,4 @@
-import { BrsType, isStringComp } from ".";
+import { BrsNumber, BrsType, isStringComp } from ".";
 import { Boxable } from "./Boxing";
 import { RoString } from "./components/RoString";
 import { Int32 } from "./Int32";
@@ -333,7 +333,10 @@ export class BrsBoolean implements BrsValue, Comparable, Boxable {
      * @returns `BrsBoolean.True` if both this value and the other are true, otherwise
      *          `BrsBoolean.False`.
      */
-    and(other: BrsBoolean): BrsBoolean {
+    and(other: BrsBoolean | BrsNumber): BrsBoolean {
+        if (other.kind !== ValueKind.Boolean) {
+            return BrsBoolean.from(this.value && other.toBoolean());
+        }
         return BrsBoolean.from(this.value && other.value);
     }
 
@@ -343,7 +346,10 @@ export class BrsBoolean implements BrsValue, Comparable, Boxable {
      * @returns `BrsBoolean.True` if either this value or the other are true, otherwise
      *          `BrsBoolean.False`.
      */
-    or(other: BrsBoolean): BrsBoolean {
+    or(other: BrsBoolean | BrsNumber): BrsBoolean {
+        if (other.kind !== ValueKind.Boolean) {
+            return BrsBoolean.from(this.value || other.toBoolean());
+        }
         return BrsBoolean.from(this.value || other.value);
     }
 

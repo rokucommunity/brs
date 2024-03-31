@@ -921,7 +921,7 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
                     return BrsBoolean.False;
                 } else if (isBrsBoolean(left)) {
                     right = this.evaluate(expression.right);
-                    if (isBrsBoolean(right)) {
+                    if (isBrsBoolean(right) || isBrsNumber(right)) {
                         return (left as BrsBoolean).and(right);
                     }
 
@@ -942,12 +942,10 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
                 } else if (isBrsNumber(left)) {
                     right = this.evaluate(expression.right);
 
-                    if (isBrsNumber(right)) {
-                        // TODO: support boolean AND with numbers
+                    if (isBrsNumber(right) || isBrsBoolean(right)) {
                         return left.and(right);
                     }
 
-                    // TODO: figure out how to handle 32-bit int AND 64-bit int
                     return this.addError(
                         new TypeMismatch({
                             message:
@@ -983,7 +981,7 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
                     return BrsBoolean.True;
                 } else if (isBrsBoolean(left)) {
                     right = this.evaluate(expression.right);
-                    if (isBrsBoolean(right)) {
+                    if (isBrsBoolean(right) || isBrsNumber(right)) {
                         return (left as BrsBoolean).or(right);
                     } else {
                         return this.addError(
@@ -1003,7 +1001,7 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
                     }
                 } else if (isBrsNumber(left)) {
                     right = this.evaluate(expression.right);
-                    if (isBrsNumber(right)) {
+                    if (isBrsNumber(right) || isBrsBoolean(right)) {
                         return left.or(right);
                     }
 

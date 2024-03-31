@@ -16,6 +16,10 @@ export class Int32 implements Numeric, Comparable, Boxable {
         return this.value;
     }
 
+    toBoolean(): boolean {
+        return this.value !== 0;
+    }
+
     /**
      * Creates a new BrightScript 32-bit integer value representing the provided `value`.
      * @param value the value to store in the BrightScript number, truncated to a 32-bit
@@ -158,7 +162,7 @@ export class Int32 implements Numeric, Comparable, Boxable {
         }
     }
 
-    and(rhs: BrsNumber): BrsNumber {
+    and(rhs: BrsNumber | BrsBoolean): BrsNumber | BrsBoolean {
         switch (rhs.kind) {
             case ValueKind.Int32:
                 return new Int32(this.getValue() & rhs.getValue());
@@ -168,10 +172,12 @@ export class Int32 implements Numeric, Comparable, Boxable {
                 return new Int32(this.getValue() & rhs.getValue());
             case ValueKind.Double:
                 return new Int32(this.getValue() & rhs.getValue());
+            case ValueKind.Boolean:
+                return BrsBoolean.from(this.toBoolean() && rhs.getValue());
         }
     }
 
-    or(rhs: BrsNumber): BrsNumber {
+    or(rhs: BrsNumber | BrsBoolean): BrsNumber | BrsBoolean {
         switch (rhs.kind) {
             case ValueKind.Int32:
                 return new Int32(this.getValue() | rhs.getValue());
@@ -181,6 +187,8 @@ export class Int32 implements Numeric, Comparable, Boxable {
                 return new Int32(this.getValue() | rhs.getValue());
             case ValueKind.Double:
                 return new Int32(this.getValue() | rhs.getValue());
+            case ValueKind.Boolean:
+                return BrsBoolean.from(this.toBoolean() || rhs.getValue());
         }
     }
 
@@ -208,8 +216,7 @@ export class Int32 implements Numeric, Comparable, Boxable {
         } else if (isBrsNumber(other)) {
             return BrsBoolean.from(this.getValue() === other.getValue());
         } else if (other.kind === ValueKind.Boolean) {
-            const toBool = this.getValue() !== 0 ? BrsBoolean.True : BrsBoolean.False;
-            return toBool.equalTo(other);
+            return other.equalTo(BrsBoolean.from(this.toBoolean()));
         }
         return BrsBoolean.False;
     }
