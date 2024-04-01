@@ -191,6 +191,15 @@ describe("interpreter arithmetic", () => {
         expect(result.getValue()).toBe(7);
     });
 
+    it("bitwise NOTs integer", () => {
+        let ast = new Stmt.Expression(
+            new Expr.Unary(token(Lexeme.Not), new Expr.Literal(new brs.types.Int32(6)))
+        );
+
+        let [result] = interpreter.exec([ast]);
+        expect(result.getValue()).toBe(-7);
+    });
+
     it("bitwise left shift with integers", () => {
         let ast = new Stmt.Expression(
             new Expr.Binary(
@@ -241,7 +250,7 @@ describe("interpreter arithmetic", () => {
         );
 
         expect(() => interpreter.exec([ast])).toThrow(
-            /In a bitshift expression the right value must be >= 0 and < 32/
+            /In a bit shift expression the right value must be >= 0 and < 32/
         );
     });
 
@@ -255,7 +264,7 @@ describe("interpreter arithmetic", () => {
         );
 
         expect(() => interpreter.exec([ast])).toThrow(
-            /In a bitshift expression the right value must be >= 0 and < 32/
+            /In a bit shift expression the right value must be >= 0 and < 32/
         );
     });
 
@@ -269,7 +278,7 @@ describe("interpreter arithmetic", () => {
         );
 
         expect(() => interpreter.exec([ast])).toThrow(
-            /In a bitshift expression the right value must be >= 0 and < 32/
+            /In a bit shift expression the right value must be >= 0 and < 32/
         );
     });
 
@@ -322,7 +331,7 @@ describe("interpreter arithmetic", () => {
         );
 
         expect(() => interpreter.exec([ast])).toThrow(
-            /In a bitshift expression the right value must be >= 0 and < 32/
+            /In a bit shift expression the right value must be >= 0 and < 32/
         );
     });
 
@@ -336,7 +345,7 @@ describe("interpreter arithmetic", () => {
         );
 
         expect(() => interpreter.exec([ast])).toThrow(
-            /In a bitshift expression the right value must be >= 0 and < 32/
+            /In a bit shift expression the right value must be >= 0 and < 32/
         );
     });
 
@@ -350,7 +359,7 @@ describe("interpreter arithmetic", () => {
         );
 
         expect(() => interpreter.exec([ast])).toThrow(
-            /In a bitshift expression the right value must be >= 0 and < 32/
+            /In a bit shift expression the right value must be >= 0 and < 32/
         );
     });
 });

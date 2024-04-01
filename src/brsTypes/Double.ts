@@ -163,6 +163,10 @@ export class Double implements Numeric, Comparable, Boxable {
         }
     }
 
+    not(): BrsNumber {
+        return new Int32(~this.getValue());
+    }
+
     lessThan(other: BrsType): BrsBoolean {
         switch (other.kind) {
             case ValueKind.Int64:

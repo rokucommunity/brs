@@ -184,6 +184,10 @@ export class Int32 implements Numeric, Comparable, Boxable {
         }
     }
 
+    not(): BrsNumber {
+        return new Int32(~this.getValue());
+    }
+
     lessThan(other: BrsType): BrsBoolean {
         switch (other.kind) {
             case ValueKind.Int32:
