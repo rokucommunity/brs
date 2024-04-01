@@ -3,7 +3,7 @@ import { RoArray } from "./RoArray";
 import { BrsValue, ValueKind, BrsString, BrsBoolean, BrsInvalid, Comparable } from "../BrsType";
 import { Callable, StdlibArgument } from "../Callable";
 import { Interpreter } from "../../interpreter";
-import { BrsType, RoList } from "..";
+import { BrsType, RoList, isStringComp } from "..";
 import { Unboxable } from "../Boxing";
 import { Int32 } from "../Int32";
 import { Float } from "../Float";
@@ -54,40 +54,32 @@ export class RoString extends BrsComponent implements BrsValue, Comparable, Unbo
         });
     }
 
-    equalTo(other: BrsType): BrsBoolean {
-        if (other.kind === ValueKind.String) {
-            return BrsBoolean.from(other.value === this.intrinsic.value);
-        }
-
-        if (other instanceof RoString) {
-            return BrsBoolean.from(other.intrinsic.value === this.intrinsic.value);
-        }
-
-        return BrsBoolean.False;
-    }
-
     lessThan(other: BrsType): BrsBoolean {
-        if (other.kind === ValueKind.String) {
-            return this.unbox().lessThan(other);
+        if (isStringComp(other)) {
+            return BrsBoolean.from(this.getValue() < other.getValue());
         }
-
-        if (other instanceof RoString) {
-            return this.unbox().lessThan(other.unbox());
-        }
-
         return BrsBoolean.False;
     }
 
     greaterThan(other: BrsType): BrsBoolean {
-        if (other.kind === ValueKind.String) {
-            return this.unbox().greaterThan(other);
+        if (isStringComp(other)) {
+            return BrsBoolean.from(this.getValue() > other.getValue());
         }
-
-        if (other instanceof RoString) {
-            return this.unbox().greaterThan(other.unbox());
-        }
-
         return BrsBoolean.False;
+    }
+
+    equalTo(other: BrsType): BrsBoolean {
+        if (isStringComp(other)) {
+            return BrsBoolean.from(this.getValue() === other.getValue());
+        }
+        return BrsBoolean.False;
+    }
+
+    concat(other: BrsType): BrsString {
+        if (isStringComp(other)) {
+            return new BrsString(this.intrinsic.value + other.getValue());
+        }
+        return new BrsString(this.intrinsic.value + other.toString());
     }
 
     unbox() {

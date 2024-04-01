@@ -1,4 +1,12 @@
-import { ValueKind, BrsInvalid, BrsBoolean, BrsString, Uninitialized, BrsValue } from "./BrsType";
+import {
+    ValueKind,
+    BrsInvalid,
+    BrsBoolean,
+    BrsString,
+    Uninitialized,
+    BrsValue,
+    Comparable,
+} from "./BrsType";
 import { RoArray } from "./components/RoArray";
 import { RoList } from "./components/RoList";
 import { RoAssociativeArray } from "./components/RoAssociativeArray";
@@ -10,6 +18,7 @@ import { Callable } from "./Callable";
 import { BrsComponent } from "./components/BrsComponent";
 import { RoString } from "./components/RoString";
 import { BrsInterface } from "./BrsInterface";
+import { RoPath } from "./components/RoPath";
 
 export * from "./BrsType";
 export * from "./Int32";
@@ -52,6 +61,7 @@ export * from "./components/MarkupGrid";
 export * from "./components/ContentNode";
 export * from "./components/Timer";
 export * from "./components/RoAppInfo";
+export * from "./components/RoPath";
 export * from "./coercion";
 
 /**
@@ -116,6 +126,15 @@ export function isBrsCallable(value: BrsType): value is Callable {
  */
 export function isIterable(value: BrsType): value is Iterable {
     return "get" in value && "getElements" in value && "set" in value;
+}
+
+/**
+ * Determines whether or not the given value can be compared as a string.
+ * @param value the BrightScript value in question.
+ * @returns `true` if `value` can be compared as a string, otherwise `false`.
+ */
+export function isStringComp(value: BrsType): value is BrsString & Comparable {
+    return isBrsString(value) || value instanceof RoPath;
 }
 
 /** The set of BrightScript numeric types. */
