@@ -1663,6 +1663,10 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
         return value;
     }
 
+    /**
+     * Method to return the current scope of the interpreter for the REPL and Micro Debugger
+     * @returns a string representation of the local variables in the current scope
+     */
     debugLocalVariables(): string {
         let debugMsg = `${"global".padEnd(16)} Interface:ifGlobal\r\n`;
         debugMsg += `${"m".padEnd(16)} roAssociativeArray count:${
