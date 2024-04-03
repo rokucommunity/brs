@@ -1,5 +1,22 @@
-import { Callable, ValueKind, BrsInvalid, RoAssociativeArray } from "../brsTypes";
+import { Callable, ValueKind, RoAssociativeArray, StdlibArgument, BrsType } from "../brsTypes";
+import { isBoxable } from "../brsTypes/Boxing";
 import { Interpreter } from "../interpreter";
+
+/**
+ * Returns an object version of an intrinsic type, or pass through an object if given one.
+ * */
+export const Box = new Callable("Box", {
+    signature: {
+        args: [new StdlibArgument("value", ValueKind.Dynamic)],
+        returns: ValueKind.Object,
+    },
+    impl: (_: Interpreter, value: BrsType) => {
+        if (isBoxable(value)) {
+            return value.box();
+        }
+        return value;
+    },
+});
 
 /**
  * Returns global M pointer (the m from the root Environment).

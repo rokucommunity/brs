@@ -53,7 +53,7 @@ export class Int32 implements Numeric, Comparable, Boxable {
     add(rhs: BrsNumber): BrsNumber {
         switch (rhs.kind) {
             case ValueKind.Int32:
-                return new Int32(this.getValue() + rhs.getValue());
+                return new Int32((this.getValue() + rhs.getValue()) | 0);
             case ValueKind.Int64:
                 return new Int64(rhs.getValue().add(this.getValue()));
             case ValueKind.Float:
@@ -66,7 +66,7 @@ export class Int32 implements Numeric, Comparable, Boxable {
     subtract(rhs: BrsNumber): BrsNumber {
         switch (rhs.kind) {
             case ValueKind.Int32:
-                return new Int32(this.getValue() - rhs.getValue());
+                return new Int32((this.getValue() - rhs.getValue()) | 0);
             case ValueKind.Int64:
                 return new Int64(this.getValue()).subtract(rhs);
             case ValueKind.Float:
@@ -79,7 +79,7 @@ export class Int32 implements Numeric, Comparable, Boxable {
     multiply(rhs: BrsNumber): BrsNumber {
         switch (rhs.kind) {
             case ValueKind.Int32:
-                return new Int32(this.getValue() * rhs.getValue());
+                return new Int32((this.getValue() * rhs.getValue()) | 0);
             case ValueKind.Int64:
                 return new Int64(rhs.getValue().multiply(this.getValue()));
             case ValueKind.Float:

@@ -21,6 +21,7 @@ import {
     tryCoerce,
     isComparable,
     isStringComp,
+    isBoxedNumber,
 } from "../brsTypes";
 
 import { Lexeme, Location } from "../lexer";
@@ -428,7 +429,8 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
                 }
             } else {
                 const toPrint = this.evaluate(printable);
-                const str = isBrsNumber(toPrint) && this.isPositive(toPrint.getValue()) ? " " : "";
+                const isNumber = isBrsNumber(toPrint) || isBoxedNumber(toPrint);
+                const str = isNumber && this.isPositive(toPrint.getValue()) ? " " : "";
                 this.stdout.write(colorize(str + toPrint.toString()));
             }
         });
@@ -553,6 +555,14 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
             // behavior found in other languages. e.g. `foo() && bar()` won't execute `bar()` if
             // `foo()` returns `false`.
             right = this.evaluate(expression.right);
+        }
+
+        // Unbox Numeric components to intrinsic types
+        if (isBoxedNumber(left)) {
+            left = left.unbox();
+        }
+        if (isBoxedNumber(right)) {
+            right = right.unbox();
         }
 
         /**
@@ -736,7 +746,7 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
                 } else {
                     return this.addError(
                         new TypeMismatch({
-                            message: "Attempting to modulo non-numeric values.",
+                            message: "Type Mismatch. Attempting to modulo non-numeric values.",
                             left: {
                                 type: left,
                                 location: expression.left.location,
@@ -817,8 +827,6 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
                     (isStringComp(left) && isStringComp(right))
                 ) {
                     return left.greaterThan(right).or(left.equalTo(right));
-                } else if (canCheckEquality(left, lexeme, right)) {
-                    return left.equalTo(right);
                 }
 
                 return this.addError(
@@ -862,8 +870,6 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
                     (isStringComp(left) && isStringComp(right))
                 ) {
                     return left.lessThan(right).or(left.equalTo(right));
-                } else if (canCheckEquality(left, lexeme, right)) {
-                    return left.equalTo(right);
                 }
 
                 return this.addError(
@@ -1005,7 +1011,6 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
                         return left.or(right);
                     }
 
-                    // TODO: figure out how to handle 32-bit int OR 64-bit int
                     return this.addError(
                         new TypeMismatch({
                             message:
@@ -1350,13 +1355,13 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
     visitForEach(statement: Stmt.ForEach): BrsType {
         let target = this.evaluate(statement.target);
         if (!isIterable(target)) {
-            return this.addError(
-                new BrsError(
-                    `Attempting to iterate across values of non-iterable type ` +
-                        ValueKind.toString(target.kind),
-                    statement.item.location
-                )
-            );
+            // Roku device does not crash if the value is not iterable, just send a console message
+            const message = `BRIGHTSCRIPT: ERROR: Runtime: FOR EACH value is ${ValueKind.toString(
+                target.kind
+            )}`;
+            const location = `${statement.item.location.file}(${statement.item.location.start.line})`;
+            this.stderr.write(`${message}: ${location}\n`);
+            return BrsInvalid.Instance;
         }
 
         target.getElements().every((element) => {
@@ -1510,6 +1515,9 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
 
     visitIncrement(expression: Stmt.Increment) {
         let target = this.evaluate(expression.value);
+        if (isBoxedNumber(target)) {
+            target = target.unbox();
+        }
 
         if (!isBrsNumber(target)) {
             let operation = expression.token.kind === Lexeme.PlusPlus ? "increment" : "decrement";
@@ -1560,6 +1568,9 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
 
     visitUnary(expression: Expr.Unary) {
         let right = this.evaluate(expression.right);
+        if (isBoxedNumber(right)) {
+            right = right.unbox();
+        }
 
         switch (expression.operator.kind) {
             case Lexeme.Minus:
