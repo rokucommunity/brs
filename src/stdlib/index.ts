@@ -4,7 +4,7 @@ import { Interpreter } from "../interpreter";
 
 /**
  * Returns an object version of an intrinsic type, or pass through an object if given one.
- * */
+ */
 export const Box = new Callable("Box", {
     signature: {
         args: [new StdlibArgument("value", ValueKind.Dynamic)],
