@@ -189,7 +189,6 @@ describe("end to end brightscript functions", () => {
         ]);
     });
 
-
     test("components/roByteArray.brs", async () => {
         await execute([resourceFile("components", "roByteArray.brs")], outputStreams);
 
