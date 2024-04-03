@@ -22,6 +22,7 @@ import {
     isComparable,
     isStringComp,
     isBoxedNumber,
+    roInvalid,
 } from "../brsTypes";
 
 import { Lexeme, Location } from "../lexer";
@@ -557,11 +558,11 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
             right = this.evaluate(expression.right);
         }
 
-        // Unbox Numeric components to intrinsic types
-        if (isBoxedNumber(left)) {
+        // Unbox Numeric or Invalid components to intrinsic types
+        if (isBoxedNumber(left) || left instanceof roInvalid) {
             left = left.unbox();
         }
-        if (isBoxedNumber(right)) {
+        if (isBoxedNumber(right) || right instanceof roInvalid) {
             right = right.unbox();
         }
 
