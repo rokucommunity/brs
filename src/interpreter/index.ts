@@ -21,6 +21,9 @@ import {
     tryCoerce,
     isComparable,
     isStringComp,
+    isBoxedNumber,
+    roInvalid,
+    PrimitiveKinds,
 } from "../brsTypes";
 
 import { Lexeme, Location } from "../lexer";
@@ -428,7 +431,8 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
                 }
             } else {
                 const toPrint = this.evaluate(printable);
-                const str = isBrsNumber(toPrint) && this.isPositive(toPrint.getValue()) ? " " : "";
+                const isNumber = isBrsNumber(toPrint) || isBoxedNumber(toPrint);
+                const str = isNumber && this.isPositive(toPrint.getValue()) ? " " : "";
                 this.stdout.write(colorize(str + toPrint.toString()));
             }
         });
@@ -553,6 +557,14 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
             // behavior found in other languages. e.g. `foo() && bar()` won't execute `bar()` if
             // `foo()` returns `false`.
             right = this.evaluate(expression.right);
+        }
+
+        // Unbox Numeric or Invalid components to intrinsic types
+        if (isBoxedNumber(left) || left instanceof roInvalid) {
+            left = left.unbox();
+        }
+        if (isBoxedNumber(right) || right instanceof roInvalid) {
+            right = right.unbox();
         }
 
         /**
@@ -736,7 +748,7 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
                 } else {
                     return this.addError(
                         new TypeMismatch({
-                            message: "Attempting to modulo non-numeric values.",
+                            message: "Type Mismatch. Attempting to modulo non-numeric values.",
                             left: {
                                 type: left,
                                 location: expression.left.location,
@@ -817,8 +829,6 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
                     (isStringComp(left) && isStringComp(right))
                 ) {
                     return left.greaterThan(right).or(left.equalTo(right));
-                } else if (canCheckEquality(left, lexeme, right)) {
-                    return left.equalTo(right);
                 }
 
                 return this.addError(
@@ -862,8 +872,6 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
                     (isStringComp(left) && isStringComp(right))
                 ) {
                     return left.lessThan(right).or(left.equalTo(right));
-                } else if (canCheckEquality(left, lexeme, right)) {
-                    return left.equalTo(right);
                 }
 
                 return this.addError(
@@ -1005,7 +1013,6 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
                         return left.or(right);
                     }
 
-                    // TODO: figure out how to handle 32-bit int OR 64-bit int
                     return this.addError(
                         new TypeMismatch({
                             message:
@@ -1350,13 +1357,13 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
     visitForEach(statement: Stmt.ForEach): BrsType {
         let target = this.evaluate(statement.target);
         if (!isIterable(target)) {
-            return this.addError(
-                new BrsError(
-                    `Attempting to iterate across values of non-iterable type ` +
-                        ValueKind.toString(target.kind),
-                    statement.item.location
-                )
-            );
+            // Roku device does not crash if the value is not iterable, just send a console message
+            const message = `BRIGHTSCRIPT: ERROR: Runtime: FOR EACH value is ${ValueKind.toString(
+                target.kind
+            )}`;
+            const location = `${statement.item.location.file}(${statement.item.location.start.line})`;
+            this.stderr.write(`${message}: ${location}\n`);
+            return BrsInvalid.Instance;
         }
 
         target.getElements().every((element) => {
@@ -1510,6 +1517,9 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
 
     visitIncrement(expression: Stmt.Increment) {
         let target = this.evaluate(expression.value);
+        if (isBoxedNumber(target)) {
+            target = target.unbox();
+        }
 
         if (!isBrsNumber(target)) {
             let operation = expression.token.kind === Lexeme.PlusPlus ? "increment" : "decrement";
@@ -1560,6 +1570,9 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
 
     visitUnary(expression: Expr.Unary) {
         let right = this.evaluate(expression.right);
+        if (isBoxedNumber(right)) {
+            right = right.unbox();
+        }
 
         switch (expression.operator.kind) {
             case Lexeme.Minus:
@@ -1648,6 +1661,44 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
         }
 
         return value;
+    }
+
+    /**
+     * Method to return the current scope of the interpreter for the REPL and Micro Debugger
+     * @returns a string representation of the local variables in the current scope
+     */
+    debugLocalVariables(): string {
+        let debugMsg = `${"global".padEnd(16)} Interface:ifGlobal\r\n`;
+        debugMsg += `${"m".padEnd(16)} roAssociativeArray count:${
+            this.environment.getM().getElements().length
+        }\r\n`;
+        let fnc = this.environment.getList(Scope.Function);
+        fnc.forEach((value, key) => {
+            const varName = key.padEnd(17);
+            if (PrimitiveKinds.has(value.kind)) {
+                let text = value.toString();
+                let lf = text.length <= 94 ? "\r\n" : "...\r\n";
+                if (value.kind === ValueKind.String) {
+                    text = `"${text.substring(0, 94)}"`;
+                }
+                debugMsg += `${varName}${ValueKind.toString(value.kind)} val:${text}${lf}`;
+            } else if (isIterable(value)) {
+                const count = value.getElements().length;
+                debugMsg += `${varName}${value.getComponentName()} count:${count}\r\n`;
+            } else if (value instanceof BrsComponent && isUnboxable(value)) {
+                const unboxed = value.unbox();
+                debugMsg += `${varName}${value.getComponentName()} val:${unboxed.toString()}\r\n`;
+            } else if (value.kind === ValueKind.Object) {
+                debugMsg += `${varName}${value.getComponentName()}\r\n`;
+            } else if (value.kind === ValueKind.Callable) {
+                debugMsg += `${varName}${ValueKind.toString(
+                    value.kind
+                )} val:${value.getName()}\r\n`;
+            } else {
+                debugMsg += `${varName}${value.toString().substring(0, 94)}\r\n`;
+            }
+        });
+        return debugMsg;
     }
 
     /**

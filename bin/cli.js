@@ -26,7 +26,7 @@ program
     )
     .option("-n, --no-color", "Disable colorized output", false)
     .action(async (brsFiles, program) => {
-        chalk.level = program.noColor ? 0 : chalk.level;
+        chalk.level = program.color ? chalk.level : 0;
         if (brsFiles.length > 0) {
             try {
                 await brs.execute(brsFiles, {

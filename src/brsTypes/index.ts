@@ -20,6 +20,10 @@ import { BrsComponent } from "./components/BrsComponent";
 import { RoString } from "./components/RoString";
 import { BrsInterface } from "./BrsInterface";
 import { RoPath } from "./components/RoPath";
+import { roDouble } from "./components/RoDouble";
+import { roFloat } from "./components/RoFloat";
+import { roInt } from "./components/RoInt";
+import { roLongInteger } from "./components/RoLongInteger";
 
 export * from "./BrsType";
 export * from "./Int32";
@@ -139,8 +143,24 @@ export function isStringComp(value: BrsType): value is BrsString & Comparable {
     return isBrsString(value) || value instanceof RoPath;
 }
 
+/** Determines whether or not the given value is a BrightScript boxed number.
+ * @param value the BrightScript value in question.
+ * @returns `true` if `value` is a boxed number, otherwise `false`.
+ */
+export function isBoxedNumber(value: BrsType): value is BoxedNumber {
+    return (
+        value instanceof roInt ||
+        value instanceof roFloat ||
+        value instanceof roDouble ||
+        value instanceof roLongInteger
+    );
+}
+
 /** The set of BrightScript numeric types. */
 export type BrsNumber = Int32 | Int64 | Float | Double;
+
+/** The set of BrightScript boxed numeric types. */
+export type BoxedNumber = roInt | roFloat | roDouble | roLongInteger;
 
 /**
  * The set of all comparable BrightScript types. Only primitive (i.e. intrinsic * and unboxed)
