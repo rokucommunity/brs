@@ -9,6 +9,7 @@ import {
 } from "./BrsType";
 import { RoArray } from "./components/RoArray";
 import { RoList } from "./components/RoList";
+import { RoByteArray } from "./components/RoByteArray";
 import { RoAssociativeArray } from "./components/RoAssociativeArray";
 import { Int32 } from "./Int32";
 import { Int64 } from "./Int64";
@@ -36,6 +37,7 @@ export * from "./components/RoDeviceInfo";
 export * from "./components/ComponentFactory";
 export * from "./components/RoArray";
 export * from "./components/RoList";
+export * from "./components/RoByteArray";
 export * from "./components/RoDateTime";
 export * from "./components/RoAssociativeArray";
 export * from "./components/Timespan";
@@ -167,7 +169,7 @@ export type BoxedNumber = roInt | roFloat | roDouble | roLongInteger;
 export type BrsPrimitive = BrsInterface | BrsInvalid | BrsBoolean | BrsString | BrsNumber;
 
 /** The set of BrightScript iterable types. */
-export type Iterable = RoArray | RoList | RoAssociativeArray;
+export type Iterable = RoArray | RoList | RoAssociativeArray | RoByteArray;
 
 // this is getting weird - we need a lesThan and greaterThan function?!
 export type AllComponents = { kind: ValueKind.Object } & BrsComponent & BrsValue;

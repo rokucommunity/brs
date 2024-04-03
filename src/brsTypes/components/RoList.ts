@@ -1,4 +1,4 @@
-import { BrsType, Int32, RoArray } from "..";
+import { BrsType, Float, Int32, RoArray } from "..";
 import { BrsValue, ValueKind, BrsBoolean, BrsInvalid } from "../BrsType";
 import { BrsComponent, BrsIterable } from "./BrsComponent";
 import { Callable, StdlibArgument } from "../Callable";
@@ -57,7 +57,9 @@ export class RoList extends BrsComponent implements BrsValue, BrsIterable {
         return [
             "<Component: roList> =",
             "(",
-            ...this.elements.map((el: BrsValue) => `    ${el.toString(this)}`),
+            ...Array.from(this.elements, (el: BrsType) =>
+                el === undefined ? "    invalid" : `    ${el.toString(this)}`
+            ),
             ")",
         ].join("\n");
     }
@@ -381,8 +383,12 @@ export class RoList extends BrsComponent implements BrsValue, BrsIterable {
             args: [new StdlibArgument("array", ValueKind.Object)],
             returns: ValueKind.Void,
         },
-        impl: (_: Interpreter, array: BrsComponent) => {
+        impl: (interpreter: Interpreter, array: BrsComponent) => {
             if (!(array instanceof RoList)) {
+                let location = `${interpreter.location.file}:(${interpreter.location.start.line})`;
+                interpreter.stderr.write(
+                    `BRIGHTSCRIPT: ERROR: roList.Append: invalid parameter type ${array.getComponentName()}: ${location}\n`
+                );
                 return BrsInvalid.Instance;
             }
 
@@ -400,14 +406,11 @@ export class RoList extends BrsComponent implements BrsValue, BrsIterable {
     /** Returns an array entry based on the provided index. */
     private getEntry = new Callable("getEntry", {
         signature: {
-            args: [new StdlibArgument("index", ValueKind.Dynamic)],
+            args: [new StdlibArgument("index", ValueKind.Int32 | ValueKind.Float)],
             returns: ValueKind.Dynamic,
         },
-        impl: (_: Interpreter, index: BrsType) => {
-            if (index.kind === ValueKind.Int32 || index.kind === ValueKind.Float) {
-                return this.elements[Math.trunc(index.getValue())] || BrsInvalid.Instance;
-            }
-            return BrsInvalid.Instance;
+        impl: (_: Interpreter, index: Int32 | Float) => {
+            return this.elements[Math.trunc(index.getValue())] || BrsInvalid.Instance;
         },
     });
 
@@ -416,12 +419,12 @@ export class RoList extends BrsComponent implements BrsValue, BrsIterable {
     private setEntry = new Callable("setEntry", {
         signature: {
             args: [
-                new StdlibArgument("index", ValueKind.Dynamic),
+                new StdlibArgument("index", ValueKind.Int32 | ValueKind.Float),
                 new StdlibArgument("tvalue", ValueKind.Dynamic),
             ],
             returns: ValueKind.Void,
         },
-        impl: (_: Interpreter, index: BrsType, tvalue: BrsType) => {
+        impl: (_: Interpreter, index: Int32 | Float, tvalue: BrsType) => {
             return this.set(index, tvalue);
         },
     });

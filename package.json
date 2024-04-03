@@ -30,6 +30,7 @@
   "dependencies": {
     "chalk": "^4.1.2",
     "commander": "^2.20.3",
+    "crc": "^3.8.0",
     "dayjs": "^1.11.10",
     "decompress": "^4.2.1",
     "fast-glob": "^3.0.1",
@@ -43,6 +44,7 @@
     "xmldoc": "^1.1.2"
   },
   "devDependencies": {
+    "@types/crc": "^3.4.0",
     "@types/decompress": "^4.2.3",
     "@types/istanbul-lib-coverage": "^2.0.3",
     "@types/lolex": "^2.1.3",
