@@ -17,13 +17,17 @@ export interface AAMember {
 export class RoAssociativeArray extends BrsComponent implements BrsValue, BrsIterable {
     readonly kind = ValueKind.Object;
     elements = new Map<string, BrsType>();
+    enumIndex: number;
+    /** Maps lowercased element name to original name used in this.elements.
+     * Main benefit of it is fast, case-insensitive access.
+     */
+    keyMap = new Map<string, Set<string>>();
     private modeCaseSensitive: boolean = false;
 
     constructor(elements: AAMember[]) {
         super("roAssociativeArray");
-        elements.forEach((member) =>
-            this.elements.set(member.name.value.toLowerCase(), member.value)
-        );
+        elements.forEach((member) => this.set(member.name, member.value, true));
+        this.enumIndex = elements.length ? 0 : -1;
 
         this.registerMethods({
             ifAssociativeArray: [
@@ -36,9 +40,10 @@ export class RoAssociativeArray extends BrsComponent implements BrsValue, BrsIte
                 this.keys,
                 this.items,
                 this.lookup,
+                this.lookupCI,
                 this.setmodecasesensitive,
             ],
-            ifEnum: [this.isEmpty],
+            ifEnum: [this.isEmpty, this.isNext, this.next, this.reset],
         });
     }
 
@@ -50,9 +55,9 @@ export class RoAssociativeArray extends BrsComponent implements BrsValue, BrsIte
         return [
             "<Component: roAssociativeArray> =",
             "{",
-            ...Array.from(this.elements.entries()).map(
-                ([key, value]) => `    ${key}: ${value.toString(this)}`
-            ),
+            ...Array.from(this.elements.entries())
+                .sort()
+                .map(([key, value]) => `    ${key}: ${value.toString(this)}`),
             "}",
         ].join("\n");
     }
@@ -77,7 +82,7 @@ export class RoAssociativeArray extends BrsComponent implements BrsValue, BrsIte
             .map((value: BrsType) => value);
     }
 
-    get(index: BrsType) {
+    get(index: BrsType, isCaseSensitive = false) {
         if (index.kind !== ValueKind.String) {
             throw new Error("Associative array indexes must be strings");
         }
@@ -93,17 +98,70 @@ export class RoAssociativeArray extends BrsComponent implements BrsValue, BrsIte
         // method with the desired name separately? That last bit would work but it's pretty gross.
         // That'd allow roArrays to have methods with the methods not accessible via `arr["count"]`.
         // Same with RoAssociativeArrays I guess.
-        let indexValue = this.modeCaseSensitive ? index.value : index.value.toLowerCase();
-        return this.elements.get(indexValue) || this.getMethod(index.value) || BrsInvalid.Instance;
+        return (
+            this.findElement(index.value, isCaseSensitive) ||
+            this.getMethod(index.value) ||
+            BrsInvalid.Instance
+        );
     }
 
-    set(index: BrsType, value: BrsType) {
+    set(index: BrsType, value: BrsType, isCaseSensitive = false) {
         if (index.kind !== ValueKind.String) {
             throw new Error("Associative array indexes must be strings");
         }
-        let indexValue = this.modeCaseSensitive ? index.value : index.value.toLowerCase();
+        // override old key with new one
+        let oldKey = this.findElementKey(index.value);
+        if (!this.modeCaseSensitive && oldKey) {
+            this.elements.delete(oldKey);
+            this.keyMap.set(oldKey.toLowerCase(), new Set()); // clear key set cuz in insensitive mode we should have 1 key in set
+        }
+
+        let indexValue = isCaseSensitive ? index.value : index.value.toLowerCase();
         this.elements.set(indexValue, value);
+
+        let lkey = index.value.toLowerCase();
+        if (!this.keyMap.has(lkey)) {
+            this.keyMap.set(lkey, new Set());
+        }
+        this.keyMap.get(lkey)?.add(indexValue);
+
         return BrsInvalid.Instance;
+    }
+
+    getNext() {
+        const keys = Array.from(this.elements.keys());
+        const index = this.enumIndex;
+        if (index >= 0) {
+            this.enumIndex++;
+            if (this.enumIndex >= keys.length) {
+                this.enumIndex = -1;
+            }
+        }
+        return keys[index];
+    }
+
+    updateNext() {
+        const keys = Array.from(this.elements.keys());
+        const hasItems = keys.length > 0;
+        if (this.enumIndex === -1 && hasItems) {
+            this.enumIndex = 0;
+        } else if (this.enumIndex >= keys.length || !hasItems) {
+            this.enumIndex = -1;
+        }
+    }
+
+    /** if AA is in insensitive mode, it means that we should do insensitive search of real key */
+    private findElementKey(elementKey: string, isCaseSensitiveFind = false) {
+        if (this.modeCaseSensitive && isCaseSensitiveFind) {
+            return elementKey;
+        } else {
+            return this.keyMap.get(elementKey.toLowerCase())?.values().next().value;
+        }
+    }
+
+    private findElement(elementKey: string, isCaseSensitiveFind = false) {
+        let realKey = this.findElementKey(elementKey, isCaseSensitiveFind);
+        return realKey !== undefined ? this.elements.get(realKey) : undefined;
     }
 
     /** Removes all elements from the associative array */
@@ -112,8 +170,10 @@ export class RoAssociativeArray extends BrsComponent implements BrsValue, BrsIte
             args: [],
             returns: ValueKind.Void,
         },
-        impl: (interpreter: Interpreter) => {
+        impl: (_: Interpreter) => {
             this.elements.clear();
+            this.keyMap.clear();
+            this.enumIndex = -1;
             return BrsInvalid.Instance;
         },
     });
@@ -124,8 +184,21 @@ export class RoAssociativeArray extends BrsComponent implements BrsValue, BrsIte
             args: [new StdlibArgument("str", ValueKind.String)],
             returns: ValueKind.Boolean,
         },
-        impl: (interpreter: Interpreter, str: BrsString) => {
-            let deleted = this.elements.delete(str.value.toLowerCase());
+        impl: (_: Interpreter, str: BrsString) => {
+            let key = this.findElementKey(str.value, this.modeCaseSensitive);
+            let deleted = key ? this.elements.delete(key) : false;
+
+            let lKey = str.value.toLowerCase();
+            if (this.modeCaseSensitive) {
+                let keySet = this.keyMap.get(lKey);
+                keySet?.delete(key);
+                if (keySet?.size === 0) {
+                    this.keyMap.delete(lKey);
+                }
+            } else {
+                this.keyMap.delete(lKey);
+            }
+            this.updateNext();
             return BrsBoolean.from(deleted);
         },
     });
@@ -141,8 +214,9 @@ export class RoAssociativeArray extends BrsComponent implements BrsValue, BrsIte
             ],
             returns: ValueKind.Void,
         },
-        impl: (interpreter: Interpreter, key: BrsString, value: BrsType) => {
-            this.set(key, value);
+        impl: (_: Interpreter, key: BrsString, value: BrsType) => {
+            this.set(key, value, /* isCaseSensitive */ true);
+            this.updateNext();
             return BrsInvalid.Instance;
         },
     });
@@ -153,7 +227,7 @@ export class RoAssociativeArray extends BrsComponent implements BrsValue, BrsIte
             args: [],
             returns: ValueKind.Int32,
         },
-        impl: (interpreter: Interpreter) => {
+        impl: (_: Interpreter) => {
             return new Int32(this.elements.size);
         },
     });
@@ -164,9 +238,9 @@ export class RoAssociativeArray extends BrsComponent implements BrsValue, BrsIte
             args: [new StdlibArgument("str", ValueKind.String)],
             returns: ValueKind.Boolean,
         },
-        impl: (interpreter: Interpreter, str: BrsString) => {
-            let strValue = this.modeCaseSensitive ? str.value : str.value.toLowerCase();
-            return this.elements.has(strValue) ? BrsBoolean.True : BrsBoolean.False;
+        impl: (_: Interpreter, str: BrsString) => {
+            let key = this.findElementKey(str.value, this.modeCaseSensitive);
+            return key && this.elements.has(key) ? BrsBoolean.True : BrsBoolean.False;
         },
     });
 
@@ -176,13 +250,16 @@ export class RoAssociativeArray extends BrsComponent implements BrsValue, BrsIte
             args: [new StdlibArgument("obj", ValueKind.Object)],
             returns: ValueKind.Void,
         },
-        impl: (interpreter: Interpreter, obj: BrsType) => {
+        impl: (_: Interpreter, obj: BrsType) => {
             if (!(obj instanceof RoAssociativeArray)) {
                 // TODO: validate against RBI
                 return BrsInvalid.Instance;
             }
 
-            this.elements = new Map<string, BrsType>([...this.elements, ...obj.elements]);
+            obj.elements.forEach((value, key) => {
+                this.set(new BrsString(key), value, true);
+            });
+            this.updateNext();
 
             return BrsInvalid.Instance;
         },
@@ -194,7 +271,7 @@ export class RoAssociativeArray extends BrsComponent implements BrsValue, BrsIte
             args: [],
             returns: ValueKind.Object,
         },
-        impl: (interpreter: Interpreter) => {
+        impl: (_: Interpreter) => {
             return new RoArray(this.getElements());
         },
     });
@@ -205,7 +282,7 @@ export class RoAssociativeArray extends BrsComponent implements BrsValue, BrsIte
             args: [],
             returns: ValueKind.Object,
         },
-        impl: (interpreter: Interpreter) => {
+        impl: (_: Interpreter) => {
             return new RoArray(
                 this.getElements().map((key: BrsString) => {
                     return new RoAssociativeArray([
@@ -223,15 +300,27 @@ export class RoAssociativeArray extends BrsComponent implements BrsValue, BrsIte
         },
     });
 
-    /** Given a key, returns the value associated with that key. This method is case insensitive. */
+    /** Given a key, returns the value associated with that key.
+     * This method is case insensitive either-or case sensitive, depends on whether `setModeCasesensitive` was called or not.
+     */
     private lookup = new Callable("lookup", {
         signature: {
             args: [new StdlibArgument("key", ValueKind.String)],
             returns: ValueKind.Dynamic,
         },
-        impl: (interpreter: Interpreter, key: BrsString) => {
-            let lKey = key.value;
-            return this.get(new BrsString(lKey));
+        impl: (_: Interpreter, key: BrsString) => {
+            return this.get(key, true);
+        },
+    });
+
+    /** Given a key, returns the value associated with that key. This method always is case insensitive. */
+    private lookupCI = new Callable("lookupCI", {
+        signature: {
+            args: [new StdlibArgument("key", ValueKind.String)],
+            returns: ValueKind.Dynamic,
+        },
+        impl: (_: Interpreter, key: BrsString) => {
+            return this.get(key);
         },
     });
 
@@ -241,8 +330,8 @@ export class RoAssociativeArray extends BrsComponent implements BrsValue, BrsIte
             args: [],
             returns: ValueKind.Void,
         },
-        impl: (interpreter: Interpreter) => {
-            this.modeCaseSensitive = !this.modeCaseSensitive;
+        impl: (_: Interpreter) => {
+            this.modeCaseSensitive = true;
             return BrsInvalid.Instance;
         },
     });
@@ -255,8 +344,43 @@ export class RoAssociativeArray extends BrsComponent implements BrsValue, BrsIte
             args: [],
             returns: ValueKind.Boolean,
         },
-        impl: (interpreter: Interpreter) => {
+        impl: (_: Interpreter) => {
             return BrsBoolean.from(this.elements.size === 0);
+        },
+    });
+
+    /** Checks whether the current position is not past the end of the enumeration. */
+    private isNext = new Callable("isNext", {
+        signature: {
+            args: [],
+            returns: ValueKind.Boolean,
+        },
+        impl: (_: Interpreter) => {
+            return BrsBoolean.from(this.enumIndex >= 0);
+        },
+    });
+
+    /** Resets the current position to the first element of the enumeration. */
+    private reset = new Callable("reset", {
+        signature: {
+            args: [],
+            returns: ValueKind.Void,
+        },
+        impl: (_: Interpreter) => {
+            this.enumIndex = this.elements.size > 0 ? 0 : -1;
+            return BrsInvalid.Instance;
+        },
+    });
+
+    /** Increments the position of an enumeration. */
+    private next = new Callable("next", {
+        signature: {
+            args: [],
+            returns: ValueKind.Dynamic,
+        },
+        impl: (_: Interpreter) => {
+            const item = this.getNext();
+            return item ? new BrsString(item) : BrsInvalid.Instance;
         },
     });
 }

@@ -1,5 +1,5 @@
-const brs = require("brs");
-const { Int32, Float, BrsString, RoString, RoArray, BrsBoolean, Callable } = brs.types;
+const brs = require("../../../lib");
+const { Int32, Float, BrsString, RoString, RoArray, RoList, BrsBoolean, Callable } = brs.types;
 const { Interpreter } = require("../../../lib/interpreter");
 
 describe("RoString", () => {
@@ -405,14 +405,49 @@ describe("RoString", () => {
             let tokenize;
 
             beforeEach(() => {
-                let s = new RoString(new BrsString("good dog"));
+                let s = new RoString(new BrsString("🐶good dog🐶"));
                 tokenize = s.getMethod("tokenize");
                 expect(tokenize).toBeInstanceOf(Callable);
             });
 
-            // TODO: implement after RoList exists
-            it.todo("splits by single-character delimiter");
-            it.todo("splits by multi-character delimiter");
+            it("splits characters with an empty string", () => {
+                let result = tokenize.call(interpreter, new BrsString(""));
+                expect(result).toBeInstanceOf(RoList);
+                expect(result.elements).toEqual([new BrsString("🐶good dog🐶")]);
+            });
+
+            it("returns one section for not-found delimiters", () => {
+                let result = tokenize.call(interpreter, new BrsString("/"));
+                expect(result).toBeInstanceOf(RoList);
+                expect(result.elements).toEqual([new BrsString("🐶good dog🐶")]);
+            });
+
+            it("split with leading and trailing matches", () => {
+                let result = tokenize.call(interpreter, new BrsString("🐶"));
+                expect(result).toBeInstanceOf(RoList);
+                expect(result.elements).toEqual([new BrsString("good dog")]);
+            });
+
+            it("splits on multi-character sequences", () => {
+                let result = tokenize.call(interpreter, new BrsString("oo"));
+                expect(result).toBeInstanceOf(RoList);
+                expect(result.elements).toEqual([
+                    new BrsString("🐶g"),
+                    new BrsString("d d"),
+                    new BrsString("g🐶"),
+                ]);
+            });
+
+            it("splits on different character delimiters", () => {
+                let result = tokenize.call(interpreter, new BrsString("o "));
+                expect(result).toBeInstanceOf(RoList);
+                expect(result.elements).toEqual([
+                    new BrsString("🐶g"),
+                    new BrsString("d"),
+                    new BrsString("d"),
+                    new BrsString("g🐶"),
+                ]);
+            });
         });
 
         describe("seString", () => {
@@ -635,6 +670,57 @@ describe("RoString", () => {
                 expect(decodeUriComponent.call(interpreter)).toEqual(
                     new BrsString("http://example.com/?bullet=•")
                 );
+            });
+        });
+
+        describe("startsWith and endsWith", () => {
+            let s;
+            beforeEach(() => {
+                s = new RoString(new BrsString("Hello, World!"));
+            });
+
+            it("startsWith", () => {
+                let startsWith = s.getMethod("startsWith");
+                expect(startsWith).toBeInstanceOf(Callable);
+                expect(startsWith.call(interpreter, new BrsString("Hello"))).toEqual(
+                    BrsBoolean.True
+                );
+                expect(startsWith.call(interpreter, new BrsString("World"), new Int32(7))).toEqual(
+                    BrsBoolean.True
+                );
+                expect(
+                    startsWith.call(interpreter, new BrsString("Universe"), new Int32(0))
+                ).toEqual(BrsBoolean.False);
+            });
+
+            it("endsWith", () => {
+                let endsWith = s.getMethod("endsWith");
+                expect(endsWith).toBeInstanceOf(Callable);
+                expect(endsWith.call(interpreter, new BrsString("World!"))).toEqual(
+                    BrsBoolean.True
+                );
+                expect(endsWith.call(interpreter, new BrsString("Hello"), new Int32(5))).toEqual(
+                    BrsBoolean.True
+                );
+                expect(
+                    endsWith.call(interpreter, new BrsString("Universe!"), new Int32(0))
+                ).toEqual(BrsBoolean.False);
+            });
+        });
+
+        describe("isEmpty", () => {
+            it("check if empty string is empty", () => {
+                let s = new RoString(new BrsString(""));
+                let len = s.getMethod("isEmpty");
+                expect(len).toBeInstanceOf(Callable);
+                expect(len.call(interpreter)).toBe(BrsBoolean.True);
+            });
+
+            it("check if filled string is not empty", () => {
+                let s = new RoString(new BrsString("<3"));
+                let len = s.getMethod("isEmpty");
+                expect(len).toBeInstanceOf(Callable);
+                expect(len.call(interpreter)).toBe(BrsBoolean.False);
             });
         });
     });

@@ -30,7 +30,7 @@ describe("end to end standard libary", () => {
             "false",
             "true",
             "false",
-            "<Component: roArray> =\n[\n    test_backup.txt\n]",
+            '<Component: roArray> =\n[\n    "test_backup.txt"\n]',
             "true",
         ]);
     });
@@ -41,19 +41,23 @@ describe("end to end standard libary", () => {
         expect(allArgs(outputStreams.stdout.write).filter((arg) => arg !== "\n")).toEqual([
             "MIXED CASE",
             "mixed case",
-            "12359",
+            " 12359",
             "ぇ",
             "Mixed",
             "Case",
-            "10",
+            " 10",
             "ed",
-            "7",
-            "10",
+            " 7",
+            " 10",
             " 3.4",
+            " 9.7",
             "-3",
-            "12.34",
+            " 12.34",
+            " 0",
+            " 255",
+            " 170",
             "Mary and Bob",
-            "252",
+            " 252",
             "abababab",
             "!!!!!!!!",
         ]);
@@ -63,20 +67,20 @@ describe("end to end standard libary", () => {
         await execute([resourceFile("stdlib", "math.brs")], outputStreams);
 
         expect(allArgs(outputStreams.stdout.write).filter((arg) => arg !== "\n")).toEqual([
-            "22.19795",
-            "2.85647",
-            "3.342155",
-            "0.4636476",
-            "0.7073883",
-            "0.9999997",
-            "0.999204",
-            "3.5",
-            "17",
-            "17",
-            "204",
+            " 22.19795",
+            " 2.85647",
+            " 3.342155",
+            " 0.4636476",
+            " 0.7073883",
+            " 0.9999997",
+            " 0.999204",
+            " 3.5",
+            " 17",
+            " 17",
+            " 204",
             "-2",
-            "7",
-            "1",
+            " 7",
+            " 1",
             "-1",
         ]);
     });
@@ -101,7 +105,7 @@ describe("end to end standard libary", () => {
                 "    integer: 2147483647",
                 "    longinteger: 2147483650",
                 "    null: invalid",
-                "    string: ok",
+                '    string: "ok"',
                 "}",
             ].join("\n"),
         ]);
@@ -115,7 +119,7 @@ describe("end to end standard libary", () => {
             "    in runme.brs",
             "returned to run.brs",
             "runme.brs returned: ",
-            "2",
+            " 2",
         ]);
     });
 
@@ -126,6 +130,10 @@ describe("end to end standard libary", () => {
             "<Interface: ifFloat>",
             "<Interface: ifAssociativeArray>",
             "<Interface: ifSGNodeDict>",
+            "<Interface: ifStringOps>",
+            "<Interface: ifStringOps>",
+            "<Interface: ifIntOps>",
+            "<Interface: ifToStr>",
         ]);
     });
 });

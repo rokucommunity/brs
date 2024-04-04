@@ -1122,11 +1122,8 @@ export class Parser {
         function printStatement(...additionalterminators: BlockTerminator[]): Stmt.Print {
             let printKeyword = advance();
 
-            let values: (
-                | Expr.Expression
-                | Stmt.PrintSeparator.Tab
-                | Stmt.PrintSeparator.Space
-            )[] = [];
+            let values: (Expr.Expression | Stmt.PrintSeparator.Tab | Stmt.PrintSeparator.Space)[] =
+                [];
 
             //print statements can be empty, so look for empty print conditions
             if (isAtEnd() || check(Lexeme.Newline, Lexeme.Colon)) {
@@ -1425,9 +1422,13 @@ export class Parser {
         }
 
         function prefixUnary(): Expression {
-            if (match(Lexeme.Not, Lexeme.Minus)) {
+            if (match(Lexeme.Not)) {
                 let operator = previous();
                 let right = relational();
+                return new Expr.Unary(operator, right);
+            } else if (match(Lexeme.Minus, Lexeme.Plus)) {
+                let operator = previous();
+                let right = prefixUnary();
                 return new Expr.Unary(operator, right);
             }
 

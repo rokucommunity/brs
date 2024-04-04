@@ -1,7 +1,7 @@
 import { EventEmitter } from "events";
 
 import { Lexeme } from "./Lexeme";
-import { Token, Location } from "./Token";
+import { Token, Location, Comment } from "./Token";
 import { ReservedWords, KeyWords } from "./ReservedWords";
 import { BrsError } from "../Error";
 import { isAlpha, isDecimalDigit, isAlphaNumeric, isHexDigit } from "./Characters";
@@ -12,6 +12,8 @@ import { BrsType, BrsString, Int32, Int64, Float, Double } from "../brsTypes";
 interface ScanResults {
     /** The tokens produced by the Lexer. */
     tokens: Token[];
+    /** The comments produced by the Lexer. */
+    comments: Comment[];
     /** The errors encountered by the Lexer. */
     errors: BrsError[];
 }
@@ -79,6 +81,9 @@ export class Lexer {
         /** The tokens produced from `source`. */
         let tokens: Token[] = [];
 
+        /** The comments produced from `source`. */
+        let comments: Comment[] = [];
+
         /** The errors produced from `source.` */
         let errors: BrsError[] = [];
 
@@ -109,7 +114,7 @@ export class Lexer {
             },
         });
 
-        return { tokens, errors };
+        return { tokens, comments, errors };
 
         /**
          * Determines whether or not the lexer as reached the end of its input.
@@ -234,7 +239,23 @@ export class Lexer {
                     addToken(Lexeme.Semicolon);
                     break;
                 case "?":
-                    addToken(Lexeme.Print);
+                    switch (peek()) {
+                        case ".":
+                            advance();
+                            addToken(Lexeme.Dot);
+                            break;
+                        case "(":
+                            advance();
+                            addToken(Lexeme.LeftParen);
+                            break;
+                        case "[":
+                            advance();
+                            addToken(Lexeme.LeftBrace);
+                            break;
+                        default:
+                            addToken(Lexeme.Print);
+                            break;
+                    }
                     break;
                 case "<":
                     switch (peek()) {
@@ -287,20 +308,22 @@ export class Lexer {
                     }
                     break;
                 case "'":
-                    // BrightScript doesn't have block comments; only line
-                    while (peek() !== "\n" && !isAtEnd()) {
-                        advance();
-                    }
+                    // BrightScript doesn't _technically_ have block comments, but some external
+                    // tools expect a distinction between the two.  Consider any comment with
+                    // non-whitespace characters ahead of it a "line" comment.  Everything else
+                    // (comments starting at zero or indented with only whitespace ahead) is a
+                    // "block" comment.
+                    comment("'");
                     break;
                 case " ":
                 case "\r":
                 case "\t":
-                    // ignore whitespace; indentation isn't signficant in BrightScript
+                    // ignore whitespace; indentation isn't significant in BrightScript
                     break;
                 case "\n":
                     // consecutive newlines aren't significant, because they're just blank lines
                     // so only add blank lines when they're not consecutive
-                    let previous = lastToken();
+                    let previous = peekPrevious();
                     if (previous && previous.kind !== Lexeme.Newline) {
                         addToken(Lexeme.Newline);
                     }
@@ -474,14 +497,13 @@ export class Lexer {
             let numberOfDigits = containsDecimal ? asString.length - 1 : asString.length;
             let designator = peek().toLowerCase();
 
-            if (numberOfDigits >= 10 && designator !== "&") {
-                // numeric literals over 10 digits with no type designator are implicitly Doubles
-                addToken(Lexeme.Double, Double.fromString(asString));
-                return;
-            } else if (designator === "#") {
+            if (designator === "#") {
                 // numeric literals ending with "#" are forced to Doubles
                 advance();
-                asString = source.slice(start, current);
+                addToken(Lexeme.Double, Double.fromString(asString));
+                return;
+            } else if (numberOfDigits >= 10 && designator !== "&") {
+                // numeric literals over 10 digits with no type designator are implicitly Doubles
                 addToken(Lexeme.Double, Double.fromString(asString));
                 return;
             } else if (designator === "d") {
@@ -544,6 +566,9 @@ export class Lexer {
                 addToken(Lexeme.LongInteger, Int64.fromString(asString));
                 return;
             } else {
+                if (designator === "%") {
+                    advance();
+                } // consume the "%"
                 // otherwise, it's a regular integer
                 addToken(Lexeme.Integer, Int32.fromString(asString));
                 return;
@@ -594,7 +619,8 @@ export class Lexer {
                 advance();
             }
 
-            let text = source.slice(start, current).toLowerCase();
+            let originalText = source.slice(start, current);
+            let text = originalText.toLowerCase();
 
             // some identifiers can be split into two words, so check the "next" word and see what we get
             if (
@@ -617,12 +643,10 @@ export class Lexer {
                     advance();
                 } // read the next word
 
-                let twoWords = source.slice(start, current);
-                //replace all of the whitespace with a single space character so we can properly match keyword token types
-                twoWords = twoWords.replace(whitespace, " ");
-                let maybeTokenType = KeyWords[twoWords.toLowerCase()];
-                if (maybeTokenType) {
-                    addToken(maybeTokenType);
+                // replace all of the whitespace with a single space character so we can properly match keyword token types
+                let twoWords = source.slice(start, current).replace(whitespace, " ").toLowerCase();
+                if (KeyWords.hasOwnProperty(twoWords)) {
+                    addToken(KeyWords[twoWords]);
                     return;
                 } else {
                     // reset if the last word and the current word didn't form a multi-word Lexeme
@@ -635,26 +659,61 @@ export class Lexer {
             // may not. Let the parser figure that part out.
             let nextChar = peek();
             if (["$", "%", "!", "#", "&"].includes(nextChar)) {
-                text += nextChar;
+                originalText += nextChar;
                 advance();
             }
 
-            let tokenType = KeyWords[text.toLowerCase()] || Lexeme.Identifier;
+            let textLower = originalText.toLowerCase();
+            let tokenType = KeyWords.hasOwnProperty(textLower)
+                ? KeyWords[textLower]
+                : Lexeme.Identifier;
             if (tokenType === KeyWords.rem) {
                 //the rem keyword can be used as an identifier on objects,
                 //so do a quick look-behind to see if there's a preceeding dot
                 if (checkPrevious(Lexeme.Dot)) {
                     addToken(Lexeme.Identifier);
                 } else {
-                    // The 'rem' keyword can be used to indicate comments as well, so
-                    // consume the rest of the line, but don't add the token; it's not
-                    // particularly useful.
-                    while (peek() !== "\n" && !isAtEnd()) {
-                        advance();
-                    }
+                    // The 'rem' keyword can be used to indicate comments as well
+                    comment(originalText);
                 }
             } else {
                 addToken(tokenType);
+            }
+        }
+
+        function comment(starter: string) {
+            // if the previous token was on this line, consider this comment an "inline" comment,
+            // similar to JS-like `//`.  Everything else is a "block" comment, similar to JS-like
+            // `/* */` or `/** */`
+            const commentType: Comment["type"] =
+                peekPrevious()?.location.start.line === line ? "Line" : "Block";
+
+            let commentText = "";
+            while (peek() !== "\n" && !isAtEnd()) {
+                commentText += advance();
+            }
+
+            const curr: Comment = {
+                type: commentType,
+                starter: starter,
+                value: commentText,
+                loc: locationOf(starter + commentText),
+                range: [start, current],
+            };
+
+            let prev = comments[comments.length - 1];
+            if (
+                prev != null &&
+                prev.type === "Block" &&
+                curr.type === "Block" &&
+                prev.starter === curr.starter &&
+                prev.loc.end.line === curr.loc.start.line - 1
+            ) {
+                prev.loc.end = curr.loc.end;
+                prev.range[1] = curr.range[1];
+                prev.value += `\n${curr.value}`;
+            } else {
+                comments.push(curr);
             }
         }
 
@@ -753,7 +812,7 @@ export class Lexer {
          * Retrieves the token that was most recently added.
          * @returns the most recently added token.
          */
-        function lastToken(): Token | undefined {
+        function peekPrevious(): Token | undefined {
             return tokens[tokens.length - 1];
         }
 

@@ -1,4 +1,4 @@
-const brs = require("brs");
+const brs = require("../../../lib");
 const { Timer } = brs.types;
 
 describe("Timer", () => {
@@ -12,8 +12,8 @@ describe("Timer", () => {
     change: <Component: roAssociativeArray>
     focusable: false
     focusedchild: invalid
-    id: 
-    control: 
+    id: ""
+    control: ""
     repeat: false
     duration: 0
     fire: <UNINITIALIZED>

@@ -159,14 +159,14 @@ describe("Double", () => {
             let two = new Int32(2);
             let result = tenPointFive.modulo(two);
             expect(result.kind).toBe(ValueKind.Double);
-            expect(result.getValue()).toBe(0.5);
+            expect(result.getValue()).toBe(0);
         });
 
         it("modulos Int64 right-hand sides", () => {
             let three = new Int64(3);
             let result = tenPointFive.modulo(three);
             expect(result.kind).toBe(ValueKind.Double);
-            expect(result.getValue()).toBe(1.5);
+            expect(result.getValue()).toBe(1);
         });
 
         it("modulos Float right-hand sides", () => {
@@ -180,7 +180,7 @@ describe("Double", () => {
             let twoPointFive = new Double(2.5);
             let result = tenPointFive.modulo(twoPointFive);
             expect(result.kind).toBe(ValueKind.Double);
-            expect(result.getValue()).toBe(0.5);
+            expect(result.getValue()).toBe(0);
         });
     });
 
@@ -335,41 +335,48 @@ describe("Double", () => {
     describe("equal to", () => {
         const lhs = new Double(2);
 
-        function testGreaterThan(operands) {
+        function testEqualTo(operands) {
             expect(lhs.equalTo(operands.same)).toBe(BrsBoolean.True);
             expect(lhs.equalTo(operands.diff)).toBe(BrsBoolean.False);
         }
 
         it("compares to Int32 right-hand sides", () =>
-            testGreaterThan({
+            testEqualTo({
                 lhs: lhs,
                 same: lhs,
                 diff: new Int32(3),
             }));
 
         it("compares to Int64 right-hand sides", () =>
-            testGreaterThan({
+            testEqualTo({
                 lhs: lhs,
                 same: new Int64(2),
                 diff: new Int64(Math.pow(10, 18)),
             }));
 
         it("compares to Float right-hand sides", () =>
-            testGreaterThan({
+            testEqualTo({
                 lhs: lhs,
                 same: new Float(2),
                 diff: new Float(2.001),
             }));
 
         it("compares to Double right-hand sides", () =>
-            testGreaterThan({
+            testEqualTo({
                 lhs: lhs,
                 same: new Double(2),
                 diff: new Double(2.000000001),
             }));
 
+        it("compares to Boolean right-hand sides", () =>
+            testEqualTo({
+                lhs: lhs,
+                same: BrsBoolean.True,
+                diff: BrsBoolean.False,
+            }));
+
         it("returns false for all other types", () => {
-            let nonNumbers = [new BrsString("hello"), BrsBoolean.True, BrsInvalid.Instance];
+            let nonNumbers = [new BrsString("hello"), BrsInvalid.Instance];
             nonNumbers.forEach((rhs) => expect(lhs.equalTo(rhs)).toBe(BrsBoolean.False));
         });
     });
@@ -392,6 +399,10 @@ describe("Double", () => {
         it("ANDs with Int64 right-hand sides", () => {
             expect(six.and(new Double(5.32323))).toEqual(new Int32(4));
         });
+
+        it("ANDs with Boolean right-hand sides", () => {
+            expect(six.and(BrsBoolean.True)).toBe(BrsBoolean.True);
+        });
     });
 
     describe("bitwise OR", () => {
@@ -411,6 +422,28 @@ describe("Double", () => {
 
         it("ORs with Int64 right-hand sides", () => {
             expect(six.or(new Double(3.4444))).toEqual(new Int32(7));
+        });
+
+        it("ORs with Boolean right-hand sides", () => {
+            expect(six.or(BrsBoolean.False)).toBe(BrsBoolean.True);
+        });
+    });
+
+    describe("bitwise NOT", () => {
+        let minusOne = new Double(-1.333);
+        let zero = new Double(0.777);
+        let one = new Double(1.99999);
+
+        it("NOT -1.333", () => {
+            expect(minusOne.not()).toEqual(new Int32(0));
+        });
+
+        it("NOT 0.777", () => {
+            expect(zero.not()).toEqual(new Int32(-1));
+        });
+
+        it("NOT 1.99999", () => {
+            expect(one.not()).toEqual(new Int32(-2));
         });
     });
 });

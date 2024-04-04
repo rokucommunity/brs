@@ -87,8 +87,13 @@ export async function getComponentDefinitionMap(
     additionalDirs: string[] = [],
     libraryName: string | undefined
 ) {
-    let searchString = `{components,${additionalDirs.join(",")}}`;
-    const componentsPattern = path.join(rootDir, searchString, "**", "*.xml");
+    let searchString = "{components, }";
+    if (additionalDirs.length) {
+        searchString = `{components,${additionalDirs.join(",")}}`;
+    }
+    const componentsPattern = path
+        .join(rootDir, searchString, "**", "*.xml")
+        .replace(/[\/\\]+/g, path.posix.sep);
     const xmlFiles: string[] = fg.sync(componentsPattern, {});
 
     let defs = xmlFiles.map((file) => new ComponentDefinition(file));
@@ -108,11 +113,13 @@ async function processXmlTree(
     // create map of just ComponentDefinition objects
     nodeDefs.map((item) => {
         if (item.isFulfilled && !item.isRejected) {
-            let name = item.value!.name!.toLowerCase();
+            let name = item.value?.name?.toLowerCase();
             if (libraryName) {
                 name = `${libraryName.toLowerCase()}:${name}`;
             }
-            nodeDefMap.set(name, item.value!);
+            if (name) {
+                nodeDefMap.set(name, item.value!);
+            }
         }
     });
 
@@ -174,9 +181,10 @@ async function processXmlTree(
  * @return { fields, functions }: the fields and functions parsed as
  * ComponentFields and ComponentFunctions respectively
  */
-function processInterface(
-    node: XmlDocument
-): { fields: ComponentFields; functions: ComponentFunctions } {
+function processInterface(node: XmlDocument): {
+    fields: ComponentFields;
+    functions: ComponentFunctions;
+} {
     let iface = node.childNamed("interface");
     let fields: ComponentFields = {};
     let functions: ComponentFunctions = {};
@@ -257,8 +265,18 @@ async function getScripts(
 
     for (let script of scripts) {
         let absoluteUri: URL;
+        let posixRoot = rootDir.replace(/[\/\\]+/g, path.posix.sep);
+        let posixPath = xmlPath.replace(/[\/\\]+/g, path.posix.sep);
+
         try {
-            absoluteUri = new URL(script.attr.uri, `pkg:/${path.posix.relative(rootDir, xmlPath)}`);
+            if (process.platform === "win32") {
+                posixRoot = posixRoot.replace(/^[a-zA-Z]:/, "");
+                posixPath = posixPath.replace(/^[a-zA-Z]:/, "");
+            }
+            absoluteUri = new URL(
+                script.attr.uri,
+                `pkg:/${path.posix.relative(posixRoot, posixPath)}`
+            );
         } catch (err) {
             let file = await readFile(xmlPath, "utf-8");
 

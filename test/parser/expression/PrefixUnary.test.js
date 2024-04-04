@@ -1,4 +1,4 @@
-const brs = require("brs");
+const brs = require("../../../lib");
 const { Lexeme } = brs.lexer;
 const { Int32, BrsBoolean } = brs.types;
 
@@ -69,6 +69,60 @@ describe("parser prefix unary expressions", () => {
             token(Lexeme.Minus, "-"),
             token(Lexeme.Minus, "-"),
             token(Lexeme.Minus, "-"),
+            token(Lexeme.Integer, "5", new Int32(5)),
+            EOF,
+        ]);
+
+        expect(errors).toEqual([]);
+        expect(statements).toBeDefined();
+        expect(statements).not.toBeNull();
+        expect(statements).toMatchSnapshot();
+    });
+
+    it("parses unary '+'", () => {
+        let { statements, errors } = parser.parse([
+            identifier("_"),
+            token(Lexeme.Equal, "="),
+            token(Lexeme.Plus, "+"),
+            token(Lexeme.Integer, "5", new Int32(5)),
+            EOF,
+        ]);
+
+        expect(errors).toEqual([]);
+        expect(statements).toBeDefined();
+        expect(statements).not.toBeNull();
+        expect(statements).toMatchSnapshot();
+    });
+
+    it("parses consecutive unary '+'", () => {
+        let { statements, errors } = parser.parse([
+            identifier("_"),
+            token(Lexeme.Equal, "="),
+            token(Lexeme.Plus, "+"),
+            token(Lexeme.Plus, "+"),
+            token(Lexeme.Plus, "+"),
+            token(Lexeme.Plus, "+"),
+            token(Lexeme.Plus, "+"),
+            token(Lexeme.Integer, "5", new Int32(5)),
+            EOF,
+        ]);
+
+        expect(errors).toEqual([]);
+        expect(statements).toBeDefined();
+        expect(statements).not.toBeNull();
+        expect(statements).toMatchSnapshot();
+    });
+
+    it("parses consecutive mixed unary operators", () => {
+        let { statements, errors } = parser.parse([
+            identifier("_"),
+            token(Lexeme.Equal, "="),
+            token(Lexeme.Plus, "-"),
+            token(Lexeme.Plus, "+"),
+            token(Lexeme.Plus, "-"),
+            token(Lexeme.Plus, "+"),
+            token(Lexeme.Plus, "-"),
+            token(Lexeme.Plus, "+"),
             token(Lexeme.Integer, "5", new Int32(5)),
             EOF,
         ]);

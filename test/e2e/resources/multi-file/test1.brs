@@ -11,3 +11,4 @@ end function
 function dependencyFunc()
     return "from dependencyFunc()"
 end function
+

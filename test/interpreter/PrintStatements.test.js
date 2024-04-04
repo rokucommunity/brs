@@ -2,7 +2,7 @@ const Expr = require("../../lib/parser/Expression");
 const Stmt = require("../../lib/parser/Statement");
 const { token, identifier } = require("../parser/ParserTests");
 const { Interpreter } = require("../../lib/interpreter");
-const brs = require("brs");
+const brs = require("../../lib");
 const { Lexeme } = brs.lexer;
 const { Int32, BrsString, BrsInvalid } = brs.types;
 
@@ -101,7 +101,7 @@ describe("interperter print statements", () => {
 
         const [result] = interpreter.exec([ast]);
         expect(result).toEqual(BrsInvalid.Instance);
-        expect(allArgs(stdout.write).join("")).toEqual("foo 4\n");
+        expect(allArgs(stdout.write).join("")).toEqual("foo  4\n");
     });
 
     it("indents to an arbitrary position via `tab`", () => {

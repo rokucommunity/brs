@@ -1,5 +1,6 @@
 import * as fs from "fs";
 import * as readline from "readline";
+import chalk from "chalk";
 
 import { promisify } from "util";
 const mkdtemp = promisify(fs.mkdtemp);
@@ -12,10 +13,10 @@ import {
     getComponentDefinitionMap,
     ComponentDefinition,
     ComponentScript,
-    ComponentNode,
 } from "./componentprocessor";
 import { Parser } from "./parser";
-import { Interpreter, ExecutionOptions, defaultExecutionOptions } from "./interpreter";
+import { Interpreter, ExecutionOptions, defaultExecutionOptions, colorize } from "./interpreter";
+import { resetTestData } from "./extensions";
 import * as BrsError from "./Error";
 import * as LexerParser from "./LexerParser";
 import { CoverageCollector } from "./coverage";
@@ -30,7 +31,6 @@ import * as _parser from "./parser";
 export { _parser as parser };
 import { URL } from "url";
 import * as path from "path";
-import { Return } from "./parser/Statement";
 import pSettle from "p-settle";
 import os from "os";
 
@@ -98,10 +98,16 @@ async function loadFiles(options: Partial<ExecutionOptions>) {
                 );
                 continue;
             }
+            let posixRoot = executionOptions.root.replace(/[\/\\]+/g, path.posix.sep);
+            let posixPath = component.xmlPath.replace(/[\/\\]+/g, path.posix.sep);
+            if (process.platform === "win32") {
+                posixRoot = posixRoot.replace(/^[a-zA-Z]:/, "");
+                posixPath = posixPath.replace(/^[a-zA-Z]:/, "");
+            }
 
             let packageUri = new URL(
                 uri,
-                `pkg:/${path.posix.relative(executionOptions.root, component.xmlPath)}`
+                `pkg:/${path.posix.relative(posixRoot, posixPath)}`
             ).toString();
             if (knownComponentLibraries.has(packageUri)) {
                 continue;
@@ -149,6 +155,9 @@ async function loadFiles(options: Partial<ExecutionOptions>) {
     if (!interpreter) {
         throw new Error("Unable to build interpreter.");
     }
+
+    // Store manifest as a property on the Interpreter for further reusing
+    interpreter.manifest = manifest;
 
     let componentLibraryInterpreters = (await pSettle(componentLibrariesToLoad))
         .filter((result) => result.isFulfilled)
@@ -230,6 +239,10 @@ export async function createExecuteWithScope(
     interpreter.errors = [];
 
     return (filenames: string[], args: BrsTypes.BrsType[]) => {
+        // Reset any mocks so that subsequent executions don't interfere with each other.
+        interpreter.environment.resetMocks();
+        resetTestData();
+
         let ast = lexParseSync(filenames, interpreter.options);
         let execErrors: BrsError.BrsError[] = [];
         let returnValue = interpreter.inSubEnv((subInterpreter) => {
@@ -263,22 +276,37 @@ export function repl() {
         input: process.stdin,
         output: process.stdout,
     });
-    rl.setPrompt("brs> ");
+    rl.setPrompt(`${chalk.magenta("brs")}> `);
     rl.on("line", (line) => {
-        if (line.toLowerCase() === "quit" || line.toLowerCase() === "exit") {
+        const cmd = line.trim().toLowerCase();
+        if (["quit", "exit", "q"].includes(cmd)) {
             process.exit();
+        } else if (["cls", "clear"].includes(cmd)) {
+            process.stdout.write("\x1Bc");
+            rl.prompt();
+            return;
+        } else if (["help", "hint"].includes(cmd)) {
+            printHelp();
+            rl.prompt();
+            return;
+        } else if (["vars", "var"].includes(cmd)) {
+            console.log(chalk.cyanBright(`\r\nLocal variables:\r\n`));
+            console.log(chalk.cyanBright(replInterpreter.debugLocalVariables()));
+            rl.prompt();
+            return;
         }
         let results = run(line, defaultExecutionOptions, replInterpreter);
         if (results) {
             results.map((result) => {
                 if (result !== BrsTypes.BrsInvalid.Instance) {
-                    console.log(result.toString());
+                    console.log(colorize(result.toString()));
                 }
             });
         }
         rl.prompt();
     });
 
+    console.log(colorize("type `help` to see the list of valid REPL commands.\r\n"));
     rl.prompt();
 }
 
@@ -325,4 +353,19 @@ function run(
         //options.stderr.write(e.message);
         return;
     }
+}
+
+/**
+ * Display the help message on the console.
+ */
+function printHelp() {
+    let helpMsg = "\r\n";
+    helpMsg += "REPL Command List:\r\n";
+    helpMsg += "   print|?         Print variable value or expression\r\n";
+    helpMsg += "   var|vars        Display variables and their types/values\r\n";
+    helpMsg += "   help|hint       Show this REPL command list\r\n";
+    helpMsg += "   clear|cls       Clear terminal screen\r\n";
+    helpMsg += "   exit|quit|q     Terminate REPL session\r\n\r\n";
+    helpMsg += "   Type any valid BrightScript expression for a live compile and run.\r\n";
+    console.log(chalk.cyanBright(helpMsg));
 }

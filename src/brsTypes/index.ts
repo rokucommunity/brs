@@ -4,11 +4,12 @@ import {
     BrsBoolean,
     BrsString,
     Uninitialized,
-    Comparable,
     BrsValue,
+    Comparable,
 } from "./BrsType";
 import { RoArray } from "./components/RoArray";
-import { RoDeviceInfo } from "./components/RoDeviceInfo";
+import { RoList } from "./components/RoList";
+import { RoByteArray } from "./components/RoByteArray";
 import { RoAssociativeArray } from "./components/RoAssociativeArray";
 import { Int32 } from "./Int32";
 import { Int64 } from "./Int64";
@@ -18,12 +19,11 @@ import { Callable } from "./Callable";
 import { BrsComponent } from "./components/BrsComponent";
 import { RoString } from "./components/RoString";
 import { BrsInterface } from "./BrsInterface";
-import { RoSGNode } from "./components/RoSGNode";
-import { Font } from "./components/Font";
-import { Group } from "./components/Group";
-import { Scene } from "./components/Scene";
-import { MiniKeyboard } from "./components/MiniKeyboard";
-import { TextEditBox } from "./components/TextEditBox";
+import { RoPath } from "./components/RoPath";
+import { roDouble } from "./components/RoDouble";
+import { roFloat } from "./components/RoFloat";
+import { roInt } from "./components/RoInt";
+import { roLongInteger } from "./components/RoLongInteger";
 
 export * from "./BrsType";
 export * from "./Int32";
@@ -32,19 +32,24 @@ export * from "./Float";
 export * from "./Double";
 export * from "./BrsInterface";
 export * from "./Callable";
+export * from "./components/BrsComponent";
 export * from "./components/RoDeviceInfo";
 export * from "./components/ComponentFactory";
 export * from "./components/RoArray";
+export * from "./components/RoList";
+export * from "./components/RoByteArray";
 export * from "./components/RoDateTime";
 export * from "./components/RoAssociativeArray";
 export * from "./components/Timespan";
 export * from "./components/BrsObjects";
 export * from "./components/RoRegex";
+export * from "./components/RoXMLElement";
 export * from "./components/RoString";
 export * from "./components/RoBoolean";
 export * from "./components/RoDouble";
 export * from "./components/RoFloat";
 export * from "./components/RoInt";
+export * from "./components/RoLongInteger";
 export * from "./components/RoInvalid";
 export * from "./components/RoSGNodeEvent";
 export * from "./components/RoSGNode";
@@ -61,6 +66,9 @@ export * from "./components/ArrayGrid";
 export * from "./components/MarkupGrid";
 export * from "./components/ContentNode";
 export * from "./components/Timer";
+export * from "./components/RoAppInfo";
+export * from "./components/RoPath";
+export * from "./coercion";
 
 /**
  * Determines whether or not the given value is a number.
@@ -68,16 +76,27 @@ export * from "./components/Timer";
  * @returns `true` if `value` is a numeric value, otherwise `false`.
  */
 export function isBrsNumber(value: BrsType): value is BrsNumber {
-    switch (value.kind) {
-        case ValueKind.Int32:
-        case ValueKind.Int64:
-        case ValueKind.Float:
-        case ValueKind.Double:
-            return true;
-        default:
-            return false;
-    }
+    return NumberKinds.has(value.kind);
 }
+
+export function isNumberKind(kind: ValueKind): boolean {
+    return NumberKinds.has(kind);
+}
+
+export const NumberKinds = new Set([
+    ValueKind.Int32,
+    ValueKind.Float,
+    ValueKind.Double,
+    ValueKind.Int64,
+]);
+
+export const PrimitiveKinds = new Set([
+    ValueKind.Uninitialized,
+    ValueKind.Invalid,
+    ValueKind.Boolean,
+    ...NumberKinds,
+    ValueKind.String,
+]);
 
 /**
  * Determines whether or not the given value is a string.
@@ -115,8 +134,33 @@ export function isIterable(value: BrsType): value is Iterable {
     return "get" in value && "getElements" in value && "set" in value;
 }
 
+/**
+ * Determines whether or not the given value can be compared as a string.
+ * @param value the BrightScript value in question.
+ * @returns `true` if `value` can be compared as a string, otherwise `false`.
+ */
+export function isStringComp(value: BrsType): value is BrsString & Comparable {
+    return isBrsString(value) || value instanceof RoPath;
+}
+
+/** Determines whether or not the given value is a BrightScript boxed number.
+ * @param value the BrightScript value in question.
+ * @returns `true` if `value` is a boxed number, otherwise `false`.
+ */
+export function isBoxedNumber(value: BrsType): value is BoxedNumber {
+    return (
+        value instanceof roInt ||
+        value instanceof roFloat ||
+        value instanceof roDouble ||
+        value instanceof roLongInteger
+    );
+}
+
 /** The set of BrightScript numeric types. */
 export type BrsNumber = Int32 | Int64 | Float | Double;
+
+/** The set of BrightScript boxed numeric types. */
+export type BoxedNumber = roInt | roFloat | roDouble | roLongInteger;
 
 /**
  * The set of all comparable BrightScript types. Only primitive (i.e. intrinsic * and unboxed)
@@ -125,10 +169,29 @@ export type BrsNumber = Int32 | Int64 | Float | Double;
 export type BrsPrimitive = BrsInterface | BrsInvalid | BrsBoolean | BrsString | BrsNumber;
 
 /** The set of BrightScript iterable types. */
-export type Iterable = RoArray | RoAssociativeArray;
+export type Iterable = RoArray | RoList | RoAssociativeArray | RoByteArray;
 
 // this is getting weird - we need a lesThan and greaterThan function?!
 export type AllComponents = { kind: ValueKind.Object } & BrsComponent & BrsValue;
 
 /** The set of all supported types in BrightScript. */
 export type BrsType = BrsPrimitive | Iterable | Callable | AllComponents | Uninitialized;
+
+/** The valid ISO Date formats for roDateTime and roTimeSpan parsing */
+export const ValidDateFormats = [
+    "YYYY-MM-DDTHH:mm:ss.SSS[Z]",
+    "YYYY-MM-DDTHH:mm:ss.SSS",
+    "YYYY-MM-DDTHH:mm:ss[Z]",
+    "YYYY-MM-DDTHH:mm:ss",
+    "YYYY-MM-DDTHH:mm[Z]",
+    "YYYY-MM-DDTHH:mm",
+    "YYYY-MM-DDTHH[Z]",
+    "YYYY-MM-DDTHH",
+    "YYYY-MM-DDT",
+    "YYYY-MM-DD[Z]",
+    "YYYY-MM-DD",
+    "YYYY-MM[Z]",
+    "YYYY-MM",
+    "YYYY[Z]",
+    "YYYY",
+];

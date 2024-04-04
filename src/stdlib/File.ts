@@ -1,9 +1,16 @@
-import { Callable, ValueKind, BrsString, BrsBoolean, RoArray, StdlibArgument } from "../brsTypes";
+import {
+    Callable,
+    ValueKind,
+    BrsString,
+    BrsBoolean,
+    RoArray,
+    RoList,
+    StdlibArgument,
+} from "../brsTypes";
 import { Interpreter } from "../interpreter";
 import { URL } from "url";
 import MemoryFileSystem from "memory-fs";
 import * as nanomatch from "nanomatch";
-
 import * as fs from "fs";
 import * as path from "path";
 
@@ -49,11 +56,11 @@ export function getPath(fileUri: string) {
 export function getScopedPath(interpreter: Interpreter, fileUri: string) {
     let url = new URL(fileUri);
     let filePath = getPath(fileUri);
+    let scopedPath = filePath;
     if (url.protocol === "pkg:") {
-        return path.join(interpreter.options.root, filePath);
+        scopedPath = path.join(interpreter.options.root, filePath);
     }
-
-    return filePath;
+    return scopedPath.replace(/[\/\\]+/g, path.posix.sep);
 }
 
 /** Copies a file from src to dst, return true if successful */
@@ -274,8 +281,7 @@ export const MatchFiles = new Callable("MatchFiles", {
     impl: (interpreter: Interpreter, pathArg: BrsString, patternIn: BrsString) => {
         let volume = getVolumeByPath(interpreter, pathArg.value);
         if (volume == null) {
-            // TODO: replace with RoList when that's implemented
-            return new RoArray([]);
+            return new RoList([]);
         }
 
         let localPath = getScopedPath(interpreter, pathArg.value);
@@ -290,11 +296,9 @@ export const MatchFiles = new Callable("MatchFiles", {
 
             matchedFiles = (matchedFiles || []).map((match: string) => new BrsString(match));
 
-            // TODO: replace with RoList when that's implemented
-            return new RoArray(matchedFiles);
+            return new RoList(matchedFiles);
         } catch (err) {
-            // TODO: replace with RoList when that's implemented
-            return new RoArray([]);
+            return new RoList([]);
         }
     },
 });

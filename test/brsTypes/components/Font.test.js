@@ -1,4 +1,4 @@
-const brs = require("brs");
+const brs = require("../../../lib");
 const { Font } = brs.types;
 
 describe("Font", () => {
@@ -12,10 +12,10 @@ describe("Font", () => {
     change: <Component: roAssociativeArray>
     focusable: false
     focusedchild: invalid
-    id: 
-    uri: 
+    id: ""
+    uri: ""
     size: 1
-    fallbackglyph: 
+    fallbackglyph: ""
 }`
             );
         });

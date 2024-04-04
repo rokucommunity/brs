@@ -1,5 +1,7 @@
 .idea/
+.vscode/settings.json
 lib/
 types/
 node_modules/
-.vscode/
+coverage/
+.DS_Store

@@ -1,4 +1,4 @@
-const brs = require("brs");
+const brs = require("../../../lib");
 const { RoArray, RoAssociativeArray, BrsBoolean, BrsString, Int32, BrsInvalid, Float } = brs.types;
 const { Interpreter } = require("../../../lib/interpreter");
 const { createMockStreams } = require("../../e2e/E2ETests");
@@ -25,7 +25,7 @@ describe("RoArray", () => {
 [
     <Component: roArray>
     true
-    a string
+    "a string"
     -1
     invalid
 ]`
@@ -945,6 +945,137 @@ describe("RoArray", () => {
                 expect(reverse).toBeTruthy();
                 expect(reverse.call(interpreter)).toBe(BrsInvalid.Instance);
                 expect(src.elements).toEqual([e, d, i1, c, b, a]);
+            });
+        });
+
+        describe("slice", () => {
+            it("returns a new array with the elements from the given start index to the end of the array", () => {
+                let a = new BrsString("a");
+                let b = new BrsString("b");
+                let c = new BrsString("c");
+                let d = new BrsString("d");
+                let e = new BrsString("e");
+                let f = new BrsString("f");
+                let src = new RoArray([a, b, c, d, e, f]);
+
+                let slice = src.getMethod("slice");
+                expect(slice).toBeTruthy();
+                let result = slice.call(interpreter, new Int32(2));
+                expect(result.elements).toEqual([c, d, e, f]);
+            });
+
+            it("returns a new array with the elements from the given start index to the given end index", () => {
+                let a = new BrsString("a");
+                let b = new BrsString("b");
+                let c = new BrsString("c");
+                let d = new BrsString("d");
+                let e = new BrsString("e");
+                let f = new BrsString("f");
+                let src = new RoArray([a, b, c, d, e, f]);
+
+                let slice = src.getMethod("slice");
+                expect(slice).toBeTruthy();
+                result = slice.call(interpreter, new Int32(1), new Int32(4));
+                expect(result.elements).toEqual([b, c, d]);
+            });
+
+            it("returns an empty array when the start index is greater than the array", () => {
+                let a = new BrsString("a");
+                let b = new BrsString("b");
+                let c = new BrsString("c");
+                let d = new BrsString("d");
+                let e = new BrsString("e");
+                let f = new BrsString("f");
+                let src = new RoArray([a, b, c, d, e, f]);
+
+                let slice = src.getMethod("slice");
+                expect(slice).toBeTruthy();
+                result = slice.call(interpreter, new Int32(6));
+                expect(result.elements).toEqual([]);
+            });
+            it("returns an empty array when the start index is greater than the end index", () => {
+                let a = new BrsString("a");
+                let b = new BrsString("b");
+                let c = new BrsString("c");
+                let d = new BrsString("d");
+                let e = new BrsString("e");
+                let f = new BrsString("f");
+                let src = new RoArray([a, b, c, d, e, f]);
+
+                let slice = src.getMethod("slice");
+                expect(slice).toBeTruthy();
+                result = slice.call(interpreter, new Int32(4), new Int32(3));
+                expect(result.elements).toEqual([]);
+            });
+            it("returns an empty array when the start index is equal to the end index", () => {
+                let a = new BrsString("a");
+                let b = new BrsString("b");
+                let c = new BrsString("c");
+                let d = new BrsString("d");
+                let e = new BrsString("e");
+                let f = new BrsString("f");
+                let src = new RoArray([a, b, c, d, e, f]);
+
+                let slice = src.getMethod("slice");
+                expect(slice).toBeTruthy();
+                result = slice.call(interpreter, new Int32(3), new Int32(3));
+                expect(result.elements).toEqual([]);
+            });
+            it("returns the full array when the start index is negative and greater than the array length", () => {
+                let a = new BrsString("a");
+                let b = new BrsString("b");
+                let c = new BrsString("c");
+                let d = new BrsString("d");
+                let e = new BrsString("e");
+                let f = new BrsString("f");
+                let src = new RoArray([a, b, c, d, e, f]);
+
+                let slice = src.getMethod("slice");
+                expect(slice).toBeTruthy();
+                result = slice.call(interpreter, new Int32(-7));
+                expect(result.elements).toEqual([a, b, c, d, e, f]);
+            });
+            it("returns the last items of the array when the start index is negative and lower than the array length", () => {
+                let a = new BrsString("a");
+                let b = new BrsString("b");
+                let c = new BrsString("c");
+                let d = new BrsString("d");
+                let e = new BrsString("e");
+                let f = new BrsString("f");
+                let src = new RoArray([a, b, c, d, e, f]);
+
+                let slice = src.getMethod("slice");
+                expect(slice).toBeTruthy();
+                result = slice.call(interpreter, new Int32(-4));
+                expect(result.elements).toEqual([c, d, e, f]);
+            });
+            it("returns an empty array when the start index is negative and greater than the end index", () => {
+                let a = new BrsString("a");
+                let b = new BrsString("b");
+                let c = new BrsString("c");
+                let d = new BrsString("d");
+                let e = new BrsString("e");
+                let f = new BrsString("f");
+                let src = new RoArray([a, b, c, d, e, f]);
+
+                let slice = src.getMethod("slice");
+                expect(slice).toBeTruthy();
+                result = slice.call(interpreter, new Int32(-2), new Int32(1));
+                expect(result.elements).toEqual([]);
+            });
+            it("returns an array with a range when the start index is positive and the end index negative", () => {
+                let a = new BrsString("a");
+                let b = new BrsString("b");
+                let c = new BrsString("c");
+                let d = new BrsString("d");
+                let e = new BrsString("e");
+                let f = new BrsString("f");
+                let src = new RoArray([a, b, c, d, e, f]);
+
+                let slice = src.getMethod("slice");
+                expect(slice).toBeTruthy();
+                result = slice.call(interpreter, new Int32(2), new Int32(-2));
+                expect(result.elements).toEqual([c, d]);
             });
         });
     });

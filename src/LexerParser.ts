@@ -1,4 +1,5 @@
 import * as fs from "fs";
+import * as path from "path";
 import { promisify } from "util";
 import pSettle from "p-settle";
 const readFile = promisify(fs.readFile);
@@ -26,12 +27,14 @@ export function getLexerParserFn(
     let memoizedStatements = new Map<string, Promise<Stmt.Statement[]>>();
     return async function parse(filenames: string[]): Promise<Stmt.Statement[]> {
         async function lexAndParseFile(filename: string) {
+            filename = filename.replace(/[\/\\]+/g, path.posix.sep);
             let contents;
             try {
                 contents = await readFile(filename, "utf-8");
             } catch (err) {
+                let errno = (err as NodeJS.ErrnoException)?.errno || -4858;
                 return Promise.reject({
-                    message: `brs: can't open file '${filename}': [Errno ${err.errno}]`,
+                    message: `brs: can't open file '${filename}': [Errno ${errno}]`,
                 });
             }
 

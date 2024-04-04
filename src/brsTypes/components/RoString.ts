@@ -3,7 +3,7 @@ import { RoArray } from "./RoArray";
 import { BrsValue, ValueKind, BrsString, BrsBoolean, BrsInvalid, Comparable } from "../BrsType";
 import { Callable, StdlibArgument } from "../Callable";
 import { Interpreter } from "../../interpreter";
-import { BrsType } from "..";
+import { BrsType, RoList, isStringComp } from "..";
 import { Unboxable } from "../Boxing";
 import { Int32 } from "../Int32";
 import { Float } from "../Float";
@@ -46,53 +46,48 @@ export class RoString extends BrsComponent implements BrsValue, Comparable, Unbo
                 this.decodeUri,
                 this.encodeUriComponent,
                 this.decodeUriComponent,
+                this.startsWith,
+                this.endsWith,
+                this.isEmpty,
             ],
             ifToStr: [this.toStr],
         });
     }
 
-    equalTo(other: BrsType): BrsBoolean {
-        if (other.kind === ValueKind.String) {
-            return BrsBoolean.from(other.value === this.intrinsic.value);
-        }
-
-        if (other instanceof RoString) {
-            return BrsBoolean.from(other.intrinsic.value === this.intrinsic.value);
-        }
-
-        return BrsBoolean.False;
-    }
-
     lessThan(other: BrsType): BrsBoolean {
-        if (other.kind === ValueKind.String) {
-            return this.unbox().lessThan(other);
+        if (isStringComp(other)) {
+            return BrsBoolean.from(this.getValue() < other.getValue());
         }
-
-        if (other instanceof RoString) {
-            return this.unbox().lessThan(other.unbox());
-        }
-
         return BrsBoolean.False;
     }
 
     greaterThan(other: BrsType): BrsBoolean {
-        if (other.kind === ValueKind.String) {
-            return this.unbox().greaterThan(other);
+        if (isStringComp(other)) {
+            return BrsBoolean.from(this.getValue() > other.getValue());
         }
-
-        if (other instanceof RoString) {
-            return this.unbox().greaterThan(other.unbox());
-        }
-
         return BrsBoolean.False;
+    }
+
+    equalTo(other: BrsType): BrsBoolean {
+        if (isStringComp(other)) {
+            return BrsBoolean.from(this.getValue() === other.getValue());
+        }
+        return BrsBoolean.False;
+    }
+
+    concat(other: BrsType): BrsString {
+        if (isStringComp(other)) {
+            return new BrsString(this.intrinsic.value + other.getValue());
+        }
+        return new BrsString(this.intrinsic.value + other.toString());
     }
 
     unbox() {
         return this.intrinsic;
     }
 
-    toString(_parent?: BrsType): string {
-        return this.intrinsic.toString();
+    toString(parent?: BrsType): string {
+        return this.intrinsic.toString(parent);
     }
 
     /**
@@ -340,11 +335,24 @@ export class RoString extends BrsComponent implements BrsValue, Comparable, Unbo
             args: [new StdlibArgument("delim", ValueKind.String)],
             returns: ValueKind.Object,
         },
-        impl: (_interpreter) => {
-            _interpreter.stderr.write(
-                "WARNING: tokenize not yet implemented, because it returns an RoList.  Returning `invalid`."
-            );
-            return BrsInvalid.Instance;
+        impl: (_interpreter, delim: BrsString) => {
+            let str = this.intrinsic.value;
+            let token: string[] = [];
+            let tokens: BrsString[] = [];
+            for (let char of str) {
+                if (delim.value.includes(char)) {
+                    if (token.length > 0) {
+                        tokens.push(new BrsString(token.join("")));
+                        token = [];
+                    }
+                } else {
+                    token.push(char);
+                }
+            }
+            if (token.length > 0) {
+                tokens.push(new BrsString(token.join("")));
+            }
+            return new RoList(tokens);
         },
     });
 
@@ -414,6 +422,17 @@ export class RoString extends BrsComponent implements BrsValue, Comparable, Unbo
         },
     });
 
+    /** returns whether string is empty or not */
+    private isEmpty = new Callable("isEmpty", {
+        signature: {
+            args: [],
+            returns: ValueKind.Boolean,
+        },
+        impl: (_interpreter) => {
+            return BrsBoolean.from(this.intrinsic.value.length === 0);
+        },
+    });
+
     /**
      * Encode the specified string with escape sequences for reserved Uniform Resource Identifier
      * (URI) characters.
@@ -463,6 +482,44 @@ export class RoString extends BrsComponent implements BrsValue, Comparable, Unbo
         },
         impl: (_interpreter) => {
             return new BrsString(decodeURIComponent(this.intrinsic.value));
+        },
+    });
+
+    /** Checks whether the string starts with the substring specified in matchString, starting at the matchPos parameter (0-based character offset). */
+    private startsWith = new Callable("startsWith", {
+        signature: {
+            args: [
+                new StdlibArgument("matchString", ValueKind.String),
+                new StdlibArgument("position", ValueKind.Int32, BrsInvalid.Instance),
+            ],
+            returns: ValueKind.Boolean,
+        },
+        impl: (_: Interpreter, matchString: BrsString, position: Int32 | BrsInvalid) => {
+            if (position instanceof BrsInvalid) {
+                return BrsBoolean.from(this.intrinsic.value.startsWith(matchString.value));
+            }
+            return BrsBoolean.from(
+                this.intrinsic.value.startsWith(matchString.value, position.getValue())
+            );
+        },
+    });
+
+    /** Checks whether the string ends with the substring specified in matchString, starting at the position specified in the length parameter. */
+    private endsWith = new Callable("endsWith", {
+        signature: {
+            args: [
+                new StdlibArgument("matchString", ValueKind.String),
+                new StdlibArgument("position", ValueKind.Int32, BrsInvalid.Instance),
+            ],
+            returns: ValueKind.Boolean,
+        },
+        impl: (_: Interpreter, matchString: BrsString, position: Int32 | BrsInvalid) => {
+            if (position instanceof BrsInvalid) {
+                return BrsBoolean.from(this.intrinsic.value.endsWith(matchString.value));
+            }
+            return BrsBoolean.from(
+                this.intrinsic.value.endsWith(matchString.value, position.getValue())
+            );
         },
     });
 

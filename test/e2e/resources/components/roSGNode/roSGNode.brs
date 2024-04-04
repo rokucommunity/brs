@@ -12,6 +12,7 @@ sub init()
     print "can delete elements: " node1.delete("baz")              ' => true
     print "can look up elements: " node1.lookup("foo") = "foo"     ' => true
     print "can look up elements (brackets): " node1["foo"] = "foo" ' => true
+    print "can case insensitive look up elements: " node1.lookupCI("foO") = "foo" ' => true
     print "can check for existence: " node1.doesExist("bar")       ' => true
 
     node1.clear()
@@ -100,7 +101,7 @@ sub init()
     print "parent child count: " parentNode.getChildCount()         ' => 4
     childNode3.reparent(childNode4, false)
     print "new parent id: " childNode3.getParent().id         ' => new node
-
+    print "new child count after reparent: " childNode4.getChildCount()    ' => 1
     'ifNodeDict tests
     ' no node exists
     currentNode = createObject("roSGNode", "Node")
@@ -212,6 +213,13 @@ sub init()
     ?node.FrameRate
     node.ClipStart = 37
     ?node.ClipStart
+
+    ' ifSGNodeBoundingRect
+    rect = node.boundingRect()
+    print rect.x          ' => 0
+    print rect.y          ' => 0
+    print rect.height  ' => 0
+    print rect.width  ' => 0
 end sub
 
 sub onCB1Called()

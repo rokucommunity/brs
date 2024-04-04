@@ -4,13 +4,19 @@ import { BrsNumber, Numeric } from "./BrsNumber";
 import { ValueKind, Comparable } from "./BrsType";
 import { Float } from "./Float";
 import { Double } from "./Double";
+import { Boxable } from "./Boxing";
+import { roLongInteger } from "./components/RoLongInteger";
 
-export class Int64 implements Numeric, Comparable {
+export class Int64 implements Numeric, Comparable, Boxable {
     readonly kind = ValueKind.Int64;
     private readonly value: Long;
 
     getValue(): Long {
         return this.value;
+    }
+
+    toBoolean(): boolean {
+        return this.value.toNumber() !== 0;
     }
 
     /**
@@ -152,24 +158,22 @@ export class Int64 implements Numeric, Comparable {
         }
     }
 
-    and(rhs: BrsNumber): BrsNumber {
-        switch (rhs.kind) {
-            case ValueKind.Int32:
-            case ValueKind.Int64:
-            case ValueKind.Float:
-            case ValueKind.Double:
-                return new Int64(this.getValue().and(rhs.getValue()));
+    and(rhs: BrsNumber | BrsBoolean): BrsNumber | BrsBoolean {
+        if (rhs.kind === ValueKind.Boolean) {
+            return BrsBoolean.from(this.toBoolean() && rhs.getValue());
         }
+        return new Int64(this.getValue().and(rhs.getValue()));
     }
 
-    or(rhs: BrsNumber): BrsNumber {
-        switch (rhs.kind) {
-            case ValueKind.Int32:
-            case ValueKind.Int64:
-            case ValueKind.Float:
-            case ValueKind.Double:
-                return new Int64(this.getValue().or(rhs.getValue()));
+    or(rhs: BrsNumber | BrsBoolean): BrsNumber | BrsBoolean {
+        if (rhs.kind === ValueKind.Boolean) {
+            return BrsBoolean.from(this.toBoolean() || rhs.getValue());
         }
+        return new Int64(this.getValue().or(rhs.getValue()));
+    }
+
+    not(): BrsNumber {
+        return new Int64(this.getValue().not());
     }
 
     lessThan(other: BrsType): BrsBoolean {
@@ -209,6 +213,8 @@ export class Int64 implements Numeric, Comparable {
                 return new Float(this.getValue().toNumber()).equalTo(other);
             case ValueKind.Double:
                 return new Double(this.getValue().toNumber()).equalTo(other);
+            case ValueKind.Boolean:
+                return other.equalTo(BrsBoolean.from(this.toBoolean()));
             default:
                 return BrsBoolean.False;
         }
@@ -216,5 +222,9 @@ export class Int64 implements Numeric, Comparable {
 
     toString(parent?: BrsType): string {
         return this.value.toString();
+    }
+
+    box() {
+        return new roLongInteger(this);
     }
 }

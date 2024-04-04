@@ -2,7 +2,7 @@ const Expr = require("../../lib/parser/Expression");
 const Stmt = require("../../lib/parser/Statement");
 const { token } = require("../parser/ParserTests");
 const { binary } = require("./InterpreterTests");
-const brs = require("brs");
+const brs = require("../../lib");
 const { Lexeme } = brs.lexer;
 const { Interpreter } = require("../../lib/interpreter");
 
@@ -56,7 +56,7 @@ describe("interpreter arithmetic", () => {
     it("modulos numbers", () => {
         let ast = binary(new brs.types.Int32(2), Lexeme.Mod, new brs.types.Float(1.5));
         let [result] = interpreter.exec([ast]);
-        expect(result.getValue()).toBe(0.5);
+        expect(result.getValue()).toBe(0);
     });
 
     it("exponentiates numbers", () => {
@@ -95,6 +95,50 @@ describe("interpreter arithmetic", () => {
 
         let [result] = interpreter.exec([ast]);
         expect(result.getValue()).toBe(35);
+    });
+
+    it("supports positive and negative unary prefix operators", () => {
+        let ast = [
+            new Stmt.Expression(
+                new Expr.Unary(token(Lexeme.Minus), new Expr.Literal(new brs.types.Int32(4)))
+            ),
+            new Stmt.Expression(
+                new Expr.Unary(token(Lexeme.Plus), new Expr.Literal(new brs.types.Float(3.14159)))
+            ),
+        ];
+
+        let [minusFour, pi] = interpreter.exec(ast);
+        expect(minusFour.getValue()).toBe(-4);
+        expect(pi.getValue()).toBe(3.14159);
+    });
+
+    it("supports silly amounts of mixed unary prefix operators", () => {
+        let ast = [
+            new Stmt.Expression(
+                new Expr.Unary(
+                    token(Lexeme.Plus),
+                    new Expr.Unary(
+                        token(Lexeme.Minus),
+                        new Expr.Unary(
+                            token(Lexeme.Plus),
+                            new Expr.Unary(
+                                token(Lexeme.Minus),
+                                new Expr.Unary(
+                                    token(Lexeme.Plus),
+                                    new Expr.Unary(
+                                        token(Lexeme.Minus),
+                                        new Expr.Literal(new brs.types.Int32(3))
+                                    )
+                                )
+                            )
+                        )
+                    )
+                )
+            ),
+        ];
+
+        let [minusThree] = interpreter.exec(ast);
+        expect(minusThree.getValue()).toBe(-3);
     });
 
     it("doesn't allow non-numeric negation", () => {
@@ -147,6 +191,15 @@ describe("interpreter arithmetic", () => {
         expect(result.getValue()).toBe(7);
     });
 
+    it("bitwise NOTs integer", () => {
+        let ast = new Stmt.Expression(
+            new Expr.Unary(token(Lexeme.Not), new Expr.Literal(new brs.types.Int32(6)))
+        );
+
+        let [result] = interpreter.exec([ast]);
+        expect(result.getValue()).toBe(-7);
+    });
+
     it("bitwise left shift with integers", () => {
         let ast = new Stmt.Expression(
             new Expr.Binary(
@@ -197,7 +250,7 @@ describe("interpreter arithmetic", () => {
         );
 
         expect(() => interpreter.exec([ast])).toThrow(
-            /In a bitshift expression the right value must be >= 0 and < 32/
+            /In a bit shift expression the right value must be >= 0 and < 32/
         );
     });
 
@@ -211,7 +264,7 @@ describe("interpreter arithmetic", () => {
         );
 
         expect(() => interpreter.exec([ast])).toThrow(
-            /In a bitshift expression the right value must be >= 0 and < 32/
+            /In a bit shift expression the right value must be >= 0 and < 32/
         );
     });
 
@@ -225,7 +278,7 @@ describe("interpreter arithmetic", () => {
         );
 
         expect(() => interpreter.exec([ast])).toThrow(
-            /In a bitshift expression the right value must be >= 0 and < 32/
+            /In a bit shift expression the right value must be >= 0 and < 32/
         );
     });
 
@@ -278,7 +331,7 @@ describe("interpreter arithmetic", () => {
         );
 
         expect(() => interpreter.exec([ast])).toThrow(
-            /In a bitshift expression the right value must be >= 0 and < 32/
+            /In a bit shift expression the right value must be >= 0 and < 32/
         );
     });
 
@@ -292,7 +345,7 @@ describe("interpreter arithmetic", () => {
         );
 
         expect(() => interpreter.exec([ast])).toThrow(
-            /In a bitshift expression the right value must be >= 0 and < 32/
+            /In a bit shift expression the right value must be >= 0 and < 32/
         );
     });
 
@@ -306,7 +359,7 @@ describe("interpreter arithmetic", () => {
         );
 
         expect(() => interpreter.exec([ast])).toThrow(
-            /In a bitshift expression the right value must be >= 0 and < 32/
+            /In a bit shift expression the right value must be >= 0 and < 32/
         );
     });
 });
