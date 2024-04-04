@@ -927,7 +927,7 @@ export class RoSGNode extends BrsComponent implements BrsValue, BrsIterable {
                 let callableFunction = interpreter.getCallableFunction(functionname.value);
                 let subscriber = interpreter.environment.hostNode;
                 if (!subscriber) {
-                    let location = `${interpreter.location.file}:(${interpreter.location.start.line})`;
+                    let location = interpreter.formatLocation();
                     interpreter.stderr.write(
                         `BRIGHTSCRIPT: ERROR: roSGNode.ObserveField: no active host node: ${location}\n`
                     );
@@ -961,7 +961,7 @@ export class RoSGNode extends BrsComponent implements BrsValue, BrsIterable {
         },
         impl: (interpreter: Interpreter, fieldname: BrsString, functionname: BrsString) => {
             if (!interpreter.environment.hostNode) {
-                let location = `${interpreter.location.file}:(${interpreter.location.start.line})`;
+                let location = interpreter.formatLocation();
                 interpreter.stderr.write(
                     `BRIGHTSCRIPT: ERROR: roSGNode.unObserveField: no active host node: ${location}\n`
                 );
@@ -991,7 +991,7 @@ export class RoSGNode extends BrsComponent implements BrsValue, BrsIterable {
                 let callableFunction = interpreter.getCallableFunction(functionname.value);
                 let subscriber = interpreter.environment.hostNode;
                 if (!subscriber) {
-                    let location = `${interpreter.location.file}:(${interpreter.location.start.line})`;
+                    let location = interpreter.formatLocation();
                     interpreter.stderr.write(
                         `BRIGHTSCRIPT: ERROR: roSGNode.ObserveField: no active host node: ${location}\n`
                     );
@@ -1022,7 +1022,7 @@ export class RoSGNode extends BrsComponent implements BrsValue, BrsIterable {
         },
         impl: (interpreter: Interpreter, fieldname: BrsString, functionname: BrsString) => {
             if (!interpreter.environment.hostNode) {
-                let location = `${interpreter.location.file}:(${interpreter.location.start.line})`;
+                let location = interpreter.formatLocation();
                 interpreter.stderr.write(
                     `BRIGHTSCRIPT: ERROR: roSGNode.unObserveField: no active host node: ${location}\n`
                 );

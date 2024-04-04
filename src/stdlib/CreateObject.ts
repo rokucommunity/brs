@@ -41,6 +41,13 @@ export const CreateObject = new Callable("CreateObject", {
         }
         let ctor = BrsObjects.get(objName.value.toLowerCase());
 
-        return ctor ? ctor(interpreter, ...additionalArgs) : BrsInvalid.Instance;
+        if (ctor) {
+            try {
+                return ctor(interpreter, ...additionalArgs);
+            } catch (err: any) {
+                postMessage(`warning,${err.message} ${interpreter.formatLocation()}`);
+            }
+        }
+        return BrsInvalid.Instance;
     },
 });
