@@ -45,7 +45,7 @@ export const CreateObject = new Callable("CreateObject", {
             try {
                 return ctor(interpreter, ...additionalArgs);
             } catch (err: any) {
-                postMessage(`warning,${err.message} ${interpreter.formatLocation()}`);
+                interpreter.stderr.write(`${err.message} ${interpreter.formatLocation()}\n`);
             }
         }
         return BrsInvalid.Instance;
