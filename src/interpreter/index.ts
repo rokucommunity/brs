@@ -1701,6 +1701,19 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
         return debugMsg;
     }
 
+    /** Method to return a string with the current source code location
+     * @returns a string representation of the location
+     */
+    formatLocation(location: Location = this.location) {
+        let formattedLocation: string;
+        if (location.start.line) {
+            formattedLocation = `pkg:/${location.file}(${location.start.line})`;
+        } else {
+            formattedLocation = `pkg:/${location.file}(??)`;
+        }
+        return formattedLocation;
+    }
+
     /**
      * Emits an error via this processor's `events` property, then throws it.
      * @param err the ParseError to emit then throw

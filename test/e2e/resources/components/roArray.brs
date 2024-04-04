@@ -1,4 +1,5 @@
 sub Main()
+    ' resizable array tests
     arr = createObject("roArray", 5, true)
     arr.append(["ipsum", "dolor"])
     arr.push("sit")
@@ -12,24 +13,23 @@ sub Main()
     arr.clear()
     print "can empty itself: " arr.isEmpty()    ' => true
 
+    ' fixed size array tests
     animals = ["ant", "bison", "camel", "duck", "elephant"]
+    fixSize = createObject("roArray", 5, false)
+    fixSize.append(animals)
+    print "array length: " fixSize.count() ' => 5
+    print "array capacity: " fixSize.capacity() ' => 5
+    fixSize.push("fox")
+    print "no change after push: " fixSize.count() ' => 5
+    fixSize.clear()
+    print "can empty itself: " arr.isEmpty()    ' => true
+    print "same capacity after clear: " fixSize.capacity() ' => 5
 
     ' slice tests
-    print animals.slice(2).join(",")
-    ' Expected output: camel,duck,elephant
-
-    print animals.slice(2, 4).join(",")
-    ' Expected output: camel,duck
-
-    print animals.slice(1, 5).join(",")
-    ' Expected output: bison,camel,duck,elephant
-
-    print animals.slice(-2).join(",")
-    ' Expected output: duck,elephant
-
-    print animals.slice(2, -1).join(",")
-    ' Expected output: camel,duck
-
-    print animals.slice().join(",")
-    ' Expected output: ant,bison,camel,duck,elephant
+    print animals.slice(2).join(",") ' =>  camel,duck,elephant
+    print animals.slice(2, 4).join(",") ' =>  camel,duck
+    print animals.slice(1, 5).join(",") ' =>  bison,camel,duck,elephant
+    print animals.slice(-2).join(",") ' =>  duck,elephant
+    print animals.slice(2, -1).join(",")' =>  camel,duck
+    print animals.slice().join(",") ' =>  ant,bison,camel,duck,elephant
 end sub

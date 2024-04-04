@@ -28,7 +28,11 @@ import { RoPath } from "./RoPath";
 /** Map containing a list of BrightScript components that can be created. */
 export const BrsObjects = new Map<string, Function>([
     ["roassociativearray", (_: Interpreter) => new RoAssociativeArray([])],
-    ["roarray", (_: Interpreter) => new RoArray([])],
+    [
+        "roarray",
+        (interpreter: Interpreter, capacity: Int32 | Float, resizable: BrsBoolean) =>
+            new RoArray(capacity, resizable),
+    ],
     ["rolist", (_: Interpreter) => new RoList([])],
     ["robytearray", (_: Interpreter) => new RoByteArray()],
     ["rodatetime", (_: Interpreter) => new RoDateTime()],
