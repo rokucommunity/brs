@@ -43,7 +43,7 @@ describe("interperter print statements", () => {
         expect(allArgs(stdout.write).join("")).toEqual("foobarbaz\n");
     });
 
-    it("prints multiple values with space separators", () => {
+    it("prints multiple values with semi-colon separators", () => {
         const ast = new Stmt.Print(tokens, [
             new Expr.Literal(new BrsString("foo")),
             token(Lexeme.Semicolon, ";"),
@@ -54,7 +54,7 @@ describe("interperter print statements", () => {
 
         const [result] = interpreter.exec([ast]);
         expect(result).toEqual(BrsInvalid.Instance);
-        expect(allArgs(stdout.write).join("")).toEqual("foo bar baz\n");
+        expect(allArgs(stdout.write).join("")).toEqual("foobarbaz\n");
     });
 
     it("aligns values to 16-charcater tab stops", () => {
@@ -87,7 +87,7 @@ describe("interperter print statements", () => {
 
         const [result] = interpreter.exec([ast]);
         expect(result).toEqual(BrsInvalid.Instance);
-        expect(allArgs(stdout.write).join("")).toEqual("foo bar baz");
+        expect(allArgs(stdout.write).join("")).toEqual("foobarbaz");
     });
 
     it("inserts the current position via `pos`", () => {
@@ -101,7 +101,7 @@ describe("interperter print statements", () => {
 
         const [result] = interpreter.exec([ast]);
         expect(result).toEqual(BrsInvalid.Instance);
-        expect(allArgs(stdout.write).join("")).toEqual("foo  4\n");
+        expect(allArgs(stdout.write).join("")).toEqual("foo 3\n");
     });
 
     it("indents to an arbitrary position via `tab`", () => {

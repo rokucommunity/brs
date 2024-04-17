@@ -9,9 +9,9 @@ describe("cli", () => {
         let rootDir = path.join(__dirname, "resources");
 
         let command = [
-            "FORCE_COLOR=0",
             "node",
             path.join(process.cwd(), "bin", "cli.js"),
+            "--no-color",
             "--root",
             rootDir,
             path.join(rootDir, "requires-manifest.brs"),
@@ -23,10 +23,10 @@ describe("cli", () => {
 
     it("defaults --root to process.cwd()", async () => {
         let command = [
-            "FORCE_COLOR=0",
             "node",
             path.join(process.cwd(), "bin", "cli.js"),
             "requires-manifest.brs",
+            "--no-color",
         ].join(" ");
 
         let { stdout } = await exec(command, {
@@ -38,10 +38,10 @@ describe("cli", () => {
     it("prints syntax errors once", async () => {
         let filename = "errors/syntax-error.brs";
         let command = [
-            "FORCE_COLOR=0",
             "node",
             path.join(process.cwd(), "bin", "cli.js"),
             filename,
+            "--no-color",
         ].join(" ");
         try {
             await exec(command, {
@@ -57,10 +57,10 @@ describe("cli", () => {
     it("prints eval errors once", async () => {
         let filename = "errors/uninitialized-object.brs";
         let command = [
-            "FORCE_COLOR=0",
             "node",
             path.join(process.cwd(), "bin", "cli.js"),
             filename,
+            "--no-color",
         ].join(" ");
         let { stderr } = await exec(command, {
             cwd: path.join(__dirname, "resources"),

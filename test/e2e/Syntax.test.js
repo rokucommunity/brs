@@ -216,7 +216,7 @@ describe("end to end syntax", () => {
 
         expect(allArgs(outputStreams.stdout.write).join("")).toEqual(
             "lorem  1psum\n" +
-                " 9  is equal to  9\n" +
+                " 9 is equal to 9\n" +
                 //   0   0   0   1   1   2   2   2   3   3   4   4   4   5   5
                 //   0   4   8   2   6   0   4   8   2   6   0   4   8   2   6
                 "column a        column b        column c        column d\n" +

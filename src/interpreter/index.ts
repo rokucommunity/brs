@@ -413,13 +413,6 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
                         this.stdout.write(" ".repeat(16 - (this.stdout.position() % 16)));
                         break;
                     case Lexeme.Semicolon:
-                        if (index === statement.expressions.length - 1) {
-                            // Don't write an extra space for trailing `;` in print lists.
-                            // They're used to suppress trailing newlines in `print` statements
-                            break;
-                        }
-
-                        this.stdout.write(" ");
                         break;
                     default:
                         this.addError(
