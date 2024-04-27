@@ -57,7 +57,7 @@ sub main()
     print deviceInfo.getGraphicsPlatform()
     print deviceInfo.enableCodecCapChangedEvent(true)
     print deviceInfo.getAudioOutputChannel()
-    print deviceInfo.getAudioDecoderInfo().count()
+    print deviceInfo.getAudioDecodeInfo().count()
     audioDecoderInfo = deviceInfo.canDecodeAudio({ "audio_format": { "codec": "aac"} })
     print audioDecoderInfo.result
     print deviceInfo.getSoundEffectsVolume()
