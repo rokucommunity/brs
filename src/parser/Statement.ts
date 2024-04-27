@@ -10,6 +10,8 @@ export interface Visitor<T> {
     visitAssignment(statement: Assignment): BrsType;
     visitDim(statement: Dim): BrsType;
     visitExpression(statement: Expression): BrsType;
+    visitContinueFor(statement: ContinueFor): never;
+    visitContinueWhile(statement: ContinueWhile): never;
     visitExitFor(statement: ExitFor): never;
     visitExitWhile(statement: ExitWhile): never;
     visitPrint(statement: Print): BrsType;
@@ -136,6 +138,46 @@ export class Expression extends AstNode implements Statement {
 
     get location() {
         return this.expression.location;
+    }
+}
+
+export class ContinueFor extends AstNode implements Statement {
+    constructor(
+        readonly tokens: {
+            continueFor: Token;
+        }
+    ) {
+        super("ContinueFor");
+    }
+    public parent: AstNode | undefined;
+    public get loc(): Location {
+        throw new Error("Method not implemented.");
+    }
+
+    accept<R>(visitor: Visitor<R>): BrsType {
+        return visitor.visitContinueFor(this);
+    }
+
+    get location() {
+        return this.tokens.continueFor.location;
+    }
+}
+
+export class ContinueWhile extends AstNode implements Statement {
+    constructor(
+        readonly tokens: {
+            continueWhile: Token;
+        }
+    ) {
+        super("ExitFor");
+    }
+
+    accept<R>(visitor: Visitor<R>): BrsType {
+        return visitor.visitContinueWhile(this);
+    }
+
+    get location() {
+        return this.tokens.continueWhile.location;
     }
 }
 

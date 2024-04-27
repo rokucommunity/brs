@@ -1055,12 +1055,20 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
         return BrsInvalid.Instance;
     }
 
+    visitContinueFor(statement: Stmt.ContinueFor): never {
+        throw new Stmt.ContinueForReason(statement.location);
+    }
+
     visitExitFor(statement: Stmt.ExitFor): never {
         throw new Stmt.ExitForReason(statement.location);
     }
 
-    visitExitWhile(expression: Stmt.ExitWhile): never {
-        throw new Stmt.ExitWhileReason(expression.location);
+    visitContinueWhile(statement: Stmt.ContinueWhile): never {
+        throw new Stmt.ContinueWhileReason(statement.location);
+    }
+
+    visitExitWhile(statement: Stmt.ExitWhile): never {
+        throw new Stmt.ExitWhileReason(statement.location);
     }
 
     visitCall(expression: Expr.Call) {
@@ -1294,8 +1302,6 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
             )
         );
 
-        let loopExitReason: Stmt.BlockEnd | undefined;
-
         if (increment.getValue() > 0) {
             while (
                 (this.evaluate(new Expr.Variable(counterName)) as Int32 | Float)
@@ -1308,9 +1314,8 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
                     this.execute(statement.body);
                 } catch (reason) {
                     if (reason instanceof Stmt.ExitForReason) {
-                        loopExitReason = reason;
                         break;
-                    } else {
+                    } else if (!(reason instanceof Stmt.ContinueForReason)) {
                         // re-throw returns, runtime errors, etc.
                         throw reason;
                     }
@@ -1331,9 +1336,8 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
                     this.execute(statement.body);
                 } catch (reason) {
                     if (reason instanceof Stmt.ExitForReason) {
-                        loopExitReason = reason;
                         break;
-                    } else {
+                    } else if (!(reason instanceof Stmt.ContinueForReason)) {
                         // re-throw returns, runtime errors, etc.
                         throw reason;
                     }
@@ -1369,7 +1373,7 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
                 if (reason instanceof Stmt.ExitForReason) {
                     // break out of the loop
                     return false;
-                } else {
+                } else if (!(reason instanceof Stmt.ContinueForReason)) {
                     // re-throw returns, runtime errors, etc.
                     throw reason;
                 }
@@ -1389,7 +1393,7 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
             } catch (reason) {
                 if (reason instanceof Stmt.ExitWhileReason) {
                     break;
-                } else {
+                } else if (!(reason instanceof Stmt.ContinueWhileReason)) {
                     // re-throw returns, runtime errors, etc.
                     throw reason;
                 }
@@ -1508,51 +1512,51 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
         return BrsInvalid.Instance;
     }
 
-    visitIncrement(expression: Stmt.Increment) {
-        let target = this.evaluate(expression.value);
+    visitIncrement(statement: Stmt.Increment) {
+        let target = this.evaluate(statement.value);
         if (isBoxedNumber(target)) {
             target = target.unbox();
         }
 
         if (!isBrsNumber(target)) {
-            let operation = expression.token.kind === Lexeme.PlusPlus ? "increment" : "decrement";
+            let operation = statement.token.kind === Lexeme.PlusPlus ? "increment" : "decrement";
             return this.addError(
                 new BrsError(
                     `Attempting to ${operation} value of non-numeric type ${ValueKind.toString(
                         target.kind
                     )}`,
-                    expression.location
+                    statement.location
                 )
             );
         }
 
         let result: BrsNumber;
-        if (expression.token.kind === Lexeme.PlusPlus) {
+        if (statement.token.kind === Lexeme.PlusPlus) {
             result = target.add(new Int32(1));
         } else {
             result = target.subtract(new Int32(1));
         }
 
-        if (expression.value instanceof Expr.Variable) {
+        if (statement.value instanceof Expr.Variable) {
             // store the result of the operation
-            this.environment.define(Scope.Function, expression.value.name.text, result);
-        } else if (expression.value instanceof Expr.DottedGet) {
+            this.environment.define(Scope.Function, statement.value.name.text, result);
+        } else if (statement.value instanceof Expr.DottedGet) {
             // immediately execute a dotted "set" statement
             this.execute(
                 new Stmt.DottedSet(
-                    expression.value.obj,
-                    expression.value.name,
-                    new Expr.Literal(result, expression.location)
+                    statement.value.obj,
+                    statement.value.name,
+                    new Expr.Literal(result, statement.location)
                 )
             );
-        } else if (expression.value instanceof Expr.IndexedGet) {
+        } else if (statement.value instanceof Expr.IndexedGet) {
             // immediately execute an indexed "set" statement
             this.execute(
                 new Stmt.IndexedSet(
-                    expression.value.obj,
-                    expression.value.index,
-                    new Expr.Literal(result, expression.location),
-                    expression.value.closingSquare
+                    statement.value.obj,
+                    statement.value.index,
+                    new Expr.Literal(result, statement.location),
+                    statement.value.closingSquare
                 )
             );
         }

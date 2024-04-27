@@ -70,6 +70,8 @@ export enum Lexeme {
     Box = "Box",
     Catch = "Catch",
     CreateObject = "CreateObject",
+    ContinueFor = "ContinueFor",
+    ContinueWhile = "ContinueWhile",
     Dim = "Dim",
     Else = "Else",
     ElseIf = "ElseIf",

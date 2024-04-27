@@ -48,6 +48,8 @@ const assignmentOperators = [
 const allowedProperties = [
     Lexeme.And,
     Lexeme.Box,
+    Lexeme.ContinueFor,
+    Lexeme.ContinueWhile,
     Lexeme.CreateObject,
     Lexeme.Dim,
     Lexeme.Else,
@@ -600,6 +602,10 @@ export class Parser {
                 return whileStatement();
             }
 
+            if (check(Lexeme.ContinueWhile)) {
+                return continueWhile();
+            }
+
             if (check(Lexeme.ExitWhile)) {
                 return exitWhile();
             }
@@ -610,6 +616,10 @@ export class Parser {
 
             if (check(Lexeme.ForEach)) {
                 return forEachStatement();
+            }
+
+            if (check(Lexeme.ContinueFor)) {
+                return continueFor();
             }
 
             if (check(Lexeme.ExitFor)) {
@@ -688,6 +698,12 @@ export class Parser {
             );
         }
 
+        function continueWhile(): Stmt.ContinueWhile {
+            let keyword = advance();
+            checkOrThrow("Expected newline after 'continue while'", Lexeme.Newline);
+            return new Stmt.ContinueWhile({ continueWhile: keyword });
+        }
+
         function exitWhile(): Stmt.ExitWhile {
             let keyword = advance();
             checkOrThrow("Expected newline after 'exit while'", Lexeme.Newline);
@@ -763,6 +779,12 @@ export class Parser {
                 target,
                 maybeBody.body
             );
+        }
+
+        function continueFor(): Stmt.ContinueFor {
+            let keyword = advance();
+            checkOrThrow("Expected newline after 'continue for'", Lexeme.Newline);
+            return new Stmt.ContinueFor({ continueFor: keyword });
         }
 
         function exitFor(): Stmt.ExitFor {

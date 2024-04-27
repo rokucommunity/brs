@@ -217,8 +217,16 @@ export class FileCoverage implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType
         return BrsInvalid.Instance;
     }
 
+    visitContinueFor(statement: Stmt.ContinueFor): never {
+        throw new Stmt.ContinueForReason(statement.location);
+    }
+
     visitExitFor(statement: Stmt.ExitFor): never {
         throw new Stmt.ExitForReason(statement.location);
+    }
+
+    visitContinueWhile(statement: Stmt.ContinueWhile): never {
+        throw new Stmt.ContinueWhileReason(statement.location);
     }
 
     visitExitWhile(statement: Stmt.ExitWhile): never {
