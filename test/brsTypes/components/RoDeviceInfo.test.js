@@ -1,12 +1,5 @@
 const brs = require("../../../lib");
-const {
-    RoDeviceInfo,
-    RoAssociativeArray,
-    RoArray,
-    BrsBoolean,
-    BrsString,
-    Int32,
-} = brs.types;
+const { RoDeviceInfo, RoAssociativeArray, RoArray, BrsBoolean, BrsString, Int32 } = brs.types;
 const { Interpreter } = require("../../../lib/interpreter");
 
 describe("RoDeviceInfo", () => {

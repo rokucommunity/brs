@@ -90,7 +90,9 @@ describe("RoXMLElement", () => {
             ['>bad_tag id="12" <  some text >/bad_tag<', false],
             ["", false],
         ];
-        test.todo("fix implementation: the first test case should return false and is returning true");
+        test.todo(
+            "fix implementation: the first test case should return false and is returning true"
+        );
         testCases.forEach(([xmlString, expected]) => {
             (xmlString === "<tag>some text<tag>" ? test.skip : test)(
                 `test parse with string ${xmlString}`,
