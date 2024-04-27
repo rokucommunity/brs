@@ -115,7 +115,9 @@ export class RoString extends BrsComponent implements BrsValue, Comparable, Unbo
                 returns: ValueKind.Void,
             },
             impl: (_interpreter, s: BrsString, len: Int32) => {
-                this.intrinsic = new BrsString(s.value.substr(0, len.getValue()));
+                const length = len.getValue();
+                this.intrinsic =
+                    length <= 0 ? new BrsString("") : new BrsString(s.value.slice(0, length));
                 return BrsInvalid.Instance;
             },
         }
@@ -140,9 +142,10 @@ export class RoString extends BrsComponent implements BrsValue, Comparable, Unbo
             returns: ValueKind.Void,
         },
         impl: (_interpreter, s: BrsString, len: Int32) => {
-            this.intrinsic = this.intrinsic.concat(
-                new BrsString(s.value.substr(0, len.getValue()))
-            );
+            const length = len.getValue();
+            if (length > 0) {
+                this.intrinsic = this.intrinsic.concat(new BrsString(s.value.slice(0, length)));
+            }
             return BrsInvalid.Instance;
         },
     });
@@ -176,8 +179,9 @@ export class RoString extends BrsComponent implements BrsValue, Comparable, Unbo
             returns: ValueKind.String,
         },
         impl: (_interpreter, len: Int32) => {
-            let source = this.intrinsic.value;
-            return new BrsString(source.substr(source.length - len.getValue()));
+            const source = this.intrinsic.value;
+            const length = len.getValue();
+            return length <= 0 ? new BrsString("") : new BrsString(source.slice(-length));
         },
     });
 
@@ -243,6 +247,9 @@ export class RoString extends BrsComponent implements BrsValue, Comparable, Unbo
                 returns: ValueKind.Int32,
             },
             impl: (_interpreter, startIndex: Int32, substring: BrsString) => {
+                if (substring.value === "") {
+                    return new Int32(startIndex.getValue() < 0 ? 0 : startIndex.getValue());
+                }
                 return new Int32(
                     this.intrinsic.value.indexOf(substring.value, startIndex.getValue())
                 );
