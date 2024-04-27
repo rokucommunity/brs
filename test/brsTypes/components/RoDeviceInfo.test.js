@@ -2,13 +2,10 @@ const brs = require("../../../lib");
 const {
     RoDeviceInfo,
     RoAssociativeArray,
-    RoSGNode,
     RoArray,
     BrsBoolean,
     BrsString,
     Int32,
-    BrsInvalid,
-    ValueKind,
 } = brs.types;
 const { Interpreter } = require("../../../lib/interpreter");
 
@@ -462,13 +459,11 @@ describe("RoDeviceInfo", () => {
             it("should return fake supported gfx resolution info.", () => {
                 let deviceInfo = new RoDeviceInfo();
                 let method = deviceInfo.getMethod("getSupportedGraphicsResolutions");
-                let aa = method.call(interpreter);
-                let items = aa.getMethod("items");
-                let result = items.call(interpreter);
+                let array = method.call(interpreter);
 
                 expect(method).toBeTruthy();
-                expect(items).toBeTruthy();
-                expect(result.elements).toEqual(new RoArray([]).elements);
+                expect(array).toBeTruthy();
+                expect(array.elements).toEqual(new RoArray([]).elements);
             });
         });
         describe("canDecodeVideo", () => {
@@ -534,10 +529,10 @@ describe("RoDeviceInfo", () => {
                 expect(method.call(interpreter)).toEqual(new BrsString(""));
             });
         });
-        describe("getAudioDecoderInfo", () => {
+        describe("getAudioDecodeInfo", () => {
             it("should return fake audio decoder info", () => {
                 let deviceInfo = new RoDeviceInfo();
-                let method = deviceInfo.getMethod("getAudioDecoderInfo");
+                let method = deviceInfo.getMethod("getAudioDecodeInfo");
                 let aa = method.call(interpreter);
                 let items = aa.getMethod("items");
                 let result = items.call(interpreter);

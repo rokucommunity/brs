@@ -1,5 +1,5 @@
 import { BrsValue, ValueKind, BrsString, BrsBoolean, BrsInvalid } from "../BrsType";
-import { BrsType, Int32 } from "..";
+import { BrsType, Int32, RoArray } from "..";
 import { BrsComponent } from "./BrsComponent";
 import { Callable, StdlibArgument } from "../Callable";
 import { RoAssociativeArray, AAMember } from "./RoAssociativeArray";
@@ -71,7 +71,7 @@ export class RoDeviceInfo extends BrsComponent implements BrsValue {
                 this.getGraphicsPlatform,
                 this.enableCodecCapChangedEvent,
                 this.getAudioOutputChannel,
-                this.getAudioDecoderInfo,
+                this.getAudioDecodeInfo,
                 this.canDecodeAudio,
                 this.getSoundEffectsVolume,
                 this.isAudioGuideEnabled,
@@ -525,7 +525,7 @@ export class RoDeviceInfo extends BrsComponent implements BrsValue {
             returns: ValueKind.Object,
         },
         impl: (_interpreter) => {
-            return new RoAssociativeArray([]);
+            return new RoArray([]);
         },
     });
 
@@ -585,7 +585,7 @@ export class RoDeviceInfo extends BrsComponent implements BrsValue {
         },
     });
 
-    private getAudioDecoderInfo = new Callable("getAudioDecoderInfo", {
+    private getAudioDecodeInfo = new Callable("getAudioDecodeInfo", {
         signature: {
             args: [],
             returns: ValueKind.Object,
