@@ -268,6 +268,11 @@ export class FileCoverage implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType
         return BrsInvalid.Instance;
     }
 
+    visitThrow(statement: Stmt.Throw) {
+        // TODO: implement statement/expression coverage for throw
+        return BrsInvalid.Instance;
+    }
+
     visitFor(statement: Stmt.For) {
         this.execute(statement.counterDeclaration);
         this.evaluate(statement.counterDeclaration.value);

@@ -29,7 +29,14 @@ import {
 import { Lexeme, Location } from "../lexer";
 import { isToken } from "../lexer/Token";
 import { Expr, Stmt, ComponentScopeResolver } from "../parser";
-import { BrsError, getLoggerUsing } from "../Error";
+import {
+    BrsError,
+    ErrorCode,
+    RuntimeError,
+    RuntimeErrorCode,
+    findErrorCode,
+    getLoggerUsing,
+} from "../Error";
 
 import * as StdLib from "../stdlib";
 import { _brs_ } from "../extensions";
@@ -38,7 +45,6 @@ import { Scope, Environment, NotFound } from "./Environment";
 import { TypeMismatch } from "./TypeMismatch";
 import { OutputProxy } from "./OutputProxy";
 import { toCallable } from "./BrsFunction";
-import { Runtime } from "../parser/Statement";
 import { RoAssociativeArray } from "../brsTypes/components/RoAssociativeArray";
 import MemoryFileSystem from "memory-fs";
 import { BrsComponent } from "../brsTypes/components/BrsComponent";
@@ -98,7 +104,7 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
     readonly events = new EventEmitter();
 
     /** The set of errors detected from executing an AST. */
-    errors: (BrsError | Runtime)[] = [];
+    errors: (BrsError | RuntimeError)[] = [];
 
     get environment() {
         return this._environment;
@@ -127,7 +133,7 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
      * @param errorHandler the function to call for every runtime error emitted after subscribing
      * @returns an object with a `dispose` function, used to unsubscribe from errors
      */
-    public onError(errorHandler: (err: BrsError | Runtime) => void) {
+    public onError(errorHandler: (err: BrsError | RuntimeError) => void) {
         this.events.on("err", errorHandler);
         return {
             dispose: () => {
@@ -140,7 +146,7 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
      * Convenience function to subscribe to a single `err` event emitted by `interpreter.events`.
      * @param errorHandler the function to call for the first runtime error emitted after subscribing
      */
-    public onErrorOnce(errorHandler: (err: BrsError | Runtime) => void) {
+    public onErrorOnce(errorHandler: (err: BrsError | RuntimeError) => void) {
         this.events.once("err", errorHandler);
     }
 
@@ -1046,8 +1052,109 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
     }
 
     visitTryCatch(statement: Stmt.TryCatch): BrsInvalid {
-        this.visitBlock(statement.tryBlock);
+        try {
+            this.visitBlock(statement.tryBlock);
+        } catch (err: any) {
+            if (!(err instanceof BrsError)) {
+                throw err;
+            }
+            const btArray = this.formatBacktrace(err.location, err.backTrace);
+            let errCode = RuntimeErrorCode.Internal;
+            let errMessage = err.message;
+            if (err instanceof RuntimeError) {
+                errCode = err.errCode;
+            }
+            const errorAA = new RoAssociativeArray([
+                { name: new BrsString("backtrace"), value: btArray },
+                { name: new BrsString("message"), value: new BrsString(errMessage) },
+                { name: new BrsString("number"), value: new Int32(errCode.errno) },
+                { name: new BrsString("rethrown"), value: BrsBoolean.False },
+            ]);
+            if (err instanceof RuntimeError && err.extraFields?.size) {
+                for (const [key, value] of err.extraFields) {
+                    errorAA.set(new BrsString(key), value);
+                    if (key === "rethrown" && toBool(value)) {
+                        errorAA.set(new BrsString("rethrow_backtrace"), btArray);
+                    }
+                }
+            }
+            this.environment.define(Scope.Function, statement.errorBinding.name.text, errorAA);
+            this.visitBlock(statement.catchBlock);
+        }
         return BrsInvalid.Instance;
+        // Helper Function
+        function toBool(value: BrsType): boolean {
+            return isBrsBoolean(value) && value.toBoolean();
+        }
+    }
+
+    visitThrow(statement: Stmt.Throw): never {
+        let errCode = RuntimeErrorCode.UserDefined;
+        errCode.message = "";
+        const extraFields: Map<string, BrsType> = new Map<string, BrsType>();
+        let toThrow = this.evaluate(statement.value);
+        if (isStringComp(toThrow)) {
+            errCode.message = toThrow.getValue();
+        } else if (toThrow instanceof RoAssociativeArray) {
+            for (const [key, element] of toThrow.elements) {
+                if (key.toLowerCase() === "number") {
+                    errCode = validateErrorNumber(element, errCode);
+                } else if (key.toLowerCase() === "message") {
+                    errCode = validateErrorMessage(element, errCode);
+                } else if (key.toLowerCase() === "backtrace") {
+                    if (element instanceof RoArray) {
+                        extraFields.set("backtrace", element);
+                        extraFields.set("rethrown", BrsBoolean.True);
+                    } else {
+                        errCode = RuntimeErrorCode.MalformedThrow;
+                        errCode.message = `Thrown "backtrace" is not an object.`;
+                    }
+                } else if (key.toLowerCase() !== "rethrown") {
+                    extraFields.set(key, element);
+                }
+                if (errCode.errno === RuntimeErrorCode.MalformedThrow.errno) {
+                    extraFields.clear();
+                    break;
+                }
+            }
+        } else {
+            errCode = RuntimeErrorCode.MalformedThrow;
+            errCode.message = `Thrown value neither string nor roAssociativeArray.`;
+        }
+        throw new RuntimeError(
+            errCode,
+            errCode.message,
+            statement.location,
+            extraFields,
+            this.stack
+        );
+        // Validation Functions
+        function validateErrorNumber(element: BrsType, errCode: ErrorCode): ErrorCode {
+            if (element instanceof Int32) {
+                errCode.errno = element.getValue();
+                if (errCode.message === "") {
+                    const foundErr = findErrorCode(element.getValue());
+                    errCode.message = foundErr ? foundErr.message : "UNKNOWN ERROR";
+                }
+            } else if (!(element instanceof BrsInvalid)) {
+                return {
+                    errno: RuntimeErrorCode.MalformedThrow.errno,
+                    message: `Thrown "number" is not an integer.`,
+                };
+            }
+            return errCode;
+        }
+        function validateErrorMessage(element: BrsType, errCode: ErrorCode): ErrorCode {
+            if (element instanceof BrsString) {
+                errCode.message = element.toString();
+            } else if (!(element instanceof BrsInvalid)) {
+                return {
+                    errno: RuntimeErrorCode.MalformedThrow.errno,
+                    message: `Thrown "message" is not a string.`,
+                };
+            }
+            return errCode;
+        }
     }
 
     visitBlock(block: Stmt.Block): BrsType {
@@ -1126,49 +1233,45 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
 
                 let returnedValue = (reason as Stmt.ReturnValue).value;
                 let returnLocation = (reason as Stmt.ReturnValue).location;
+                const signatureKind = satisfiedSignature.signature.returns;
 
-                if (returnedValue && satisfiedSignature.signature.returns === ValueKind.Void) {
+                if (returnedValue && signatureKind === ValueKind.Void) {
                     this.addError(
-                        new Stmt.Runtime(
-                            `Attempting to return value of non-void type ${ValueKind.toString(
-                                returnedValue.kind
-                            )} ` + `from function ${callee.getName()} with void return type.`,
-                            returnLocation
-                        )
+                        new RuntimeError(RuntimeErrorCode.ReturnWithValue, "", returnLocation)
                     );
                 }
 
-                if (!returnedValue && satisfiedSignature.signature.returns !== ValueKind.Void) {
+                if (!returnedValue && signatureKind !== ValueKind.Void) {
                     this.addError(
-                        new Stmt.Runtime(
-                            `Attempting to return void value from function ${callee.getName()} with non-void return type.`,
-                            returnLocation
-                        )
+                        new RuntimeError(RuntimeErrorCode.ReturnWithoutValue, "", returnLocation)
                     );
+                }
+
+                if (returnedValue) {
+                    let coercedValue = tryCoerce(returnedValue, signatureKind);
+                    if (coercedValue != null) {
+                        return coercedValue;
+                    }
                 }
 
                 if (
                     returnedValue &&
-                    isBoxable(returnedValue) &&
-                    satisfiedSignature.signature.returns === ValueKind.Object
+                    signatureKind !== ValueKind.Dynamic &&
+                    signatureKind !== returnedValue.kind
                 ) {
-                    returnedValue = returnedValue.box();
-                }
-
-                if (
-                    returnedValue &&
-                    satisfiedSignature.signature.returns !== ValueKind.Dynamic &&
-                    satisfiedSignature.signature.returns !== returnedValue.kind
-                ) {
-                    this.addError(
-                        new Stmt.Runtime(
-                            `Attempting to return value of type ${ValueKind.toString(
-                                returnedValue.kind
-                            )}, ` +
-                                `but function ${callee.getName()} declares return value of type ` +
-                                ValueKind.toString(satisfiedSignature.signature.returns),
-                            returnLocation
-                        )
+                    return this.addError(
+                        new TypeMismatch({
+                            message: `Unable to cast`,
+                            left: {
+                                type: signatureKind,
+                                location: returnLocation,
+                            },
+                            right: {
+                                type: returnedValue,
+                                location: returnLocation,
+                            },
+                            cast: true,
+                        })
                     );
                 }
 
@@ -1669,10 +1772,38 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
     }
 
     /**
+     * Returns the Backtrace formatted as a string or an array
+     * @param loc the location of the error
+     * @param asString a boolean, if true returns the backtrace as a string, otherwise as an array
+     * @param bt the backtrace array
+     * @returns a string or an array with the backtrace formatted
+     */
+    formatBacktrace(loc: Location, bt?: Location[]): RoArray {
+        const backTrace = bt ?? this.stack;
+        const btArray: BrsType[] = [];
+        for (let index = backTrace.length - 1; index >= 0; index--) {
+            const trace = backTrace[index];
+            const line = loc.start.line;
+            btArray.unshift(
+                new RoAssociativeArray([
+                    {
+                        name: new BrsString("filename"),
+                        value: new BrsString(loc?.file ?? "()"),
+                    },
+                    { name: new BrsString("function"), value: new BrsString("") },
+                    { name: new BrsString("line_number"), value: new Int32(line) },
+                ])
+            );
+            loc = trace;
+        }
+        return new RoArray(btArray);
+    }
+
+    /**
      * Method to return the current scope of the interpreter for the REPL and Micro Debugger
      * @returns a string representation of the local variables in the current scope
      */
-    debugLocalVariables(): string {
+    formatLocalVariables(): string {
         let debugMsg = `${"global".padEnd(16)} Interface:ifGlobal\r\n`;
         debugMsg += `${"m".padEnd(16)} roAssociativeArray count:${
             this.environment.getM().getElements().length

@@ -291,7 +291,7 @@ export function repl() {
             return;
         } else if (["vars", "var"].includes(cmd)) {
             console.log(chalk.cyanBright(`\r\nLocal variables:\r\n`));
-            console.log(chalk.cyanBright(replInterpreter.debugLocalVariables()));
+            console.log(chalk.cyanBright(replInterpreter.formatLocalVariables()));
             rl.prompt();
             return;
         }

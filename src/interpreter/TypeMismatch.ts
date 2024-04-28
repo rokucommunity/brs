@@ -1,5 +1,5 @@
 import { BrsType, ValueKind } from "../brsTypes";
-import { BrsError } from "../Error";
+import { RuntimeError, RuntimeErrorCode } from "../Error";
 import type { Location } from "../lexer";
 
 /** Wraps up the metadata associated with a type mismatch error. */
@@ -13,6 +13,7 @@ export interface TypeMismatchMetadata {
     left: TypeAndLocation;
     /** The value on the right-hand side of a binary operator. */
     right?: TypeAndLocation;
+    cast?: boolean;
 }
 
 export type TypeAndLocation = {
@@ -26,23 +27,21 @@ export type TypeAndLocation = {
  * Creates a "type mismatch"-like error message, but with the appropriate types specified.
  * @return a type mismatch error that will be tracked by this module.
  */
-export class TypeMismatch extends BrsError {
+export class TypeMismatch extends RuntimeError {
     constructor(mismatchMetadata: TypeMismatchMetadata) {
-        let messageLines = [
-            mismatchMetadata.message,
-            `    left: ${ValueKind.toString(getKind(mismatchMetadata.left.type))}`,
-        ];
-        let location = mismatchMetadata.left.location;
-
-        if (mismatchMetadata.right) {
-            messageLines.push(
-                `    right: ${ValueKind.toString(getKind(mismatchMetadata.right.type))}`
-            );
-
-            location.end = mismatchMetadata.right.location.end;
+        const errCode = RuntimeErrorCode.TypeMismatch;
+        let errMessage = `${errCode.message} ${mismatchMetadata.message} `;
+        if (!mismatchMetadata.cast) {
+            errMessage += `"${ValueKind.toString(getKind(mismatchMetadata.left.type))}"`;
+            if (mismatchMetadata.right) {
+                errMessage += ` and "${ValueKind.toString(getKind(mismatchMetadata.right.type))}"`;
+            }
+        } else if (mismatchMetadata.right) {
+            errMessage += `"${ValueKind.toString(getKind(mismatchMetadata.right.type))}"`;
+            errMessage += ` to "${ValueKind.toString(getKind(mismatchMetadata.left.type))}"`;
         }
-
-        super(messageLines.join("\n"), location);
+        errMessage += ".";
+        super(errCode, errMessage, mismatchMetadata.left.location);
     }
 }
 
