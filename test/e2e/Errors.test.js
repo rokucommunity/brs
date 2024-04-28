@@ -22,7 +22,9 @@ describe("Runtime errors", () => {
 
         let errOutput = allArgs(outputStreams.stderr.write).filter((arg) => arg !== "\n");
         expect(
-            errOutput[0].includes("Attempting to retrieve property from non-iterable value")
+            errOutput[0].includes(
+                "'Dot' Operator attempted with invalid BrightScript Component or interface reference."
+            )
         ).toBeTruthy();
     });
 
@@ -31,7 +33,9 @@ describe("Runtime errors", () => {
 
         let errOutput = allArgs(outputStreams.stderr.write).filter((arg) => arg !== "\n");
         expect(
-            errOutput[0].includes("Attempting to retrieve property from non-iterable value")
+            errOutput[0].includes(
+                "'Dot' Operator attempted with invalid BrightScript Component or interface reference."
+            )
         ).toBeTruthy();
     });
 

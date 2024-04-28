@@ -508,18 +508,13 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
             return BrsInvalid.Instance;
         }
 
-        // NOTE: Roku's dim implementation creates a resizable, empty array for the
-        //   bottom children. Resizable arrays aren't implemented yet (issue #530),
-        //   so when that's added this code should be updated so the bottom-level arrays
-        //   are resizable, but empty
         let dimensionValues: number[] = [];
         statement.dimensions.forEach((expr) => {
             let val = this.evaluate(expr);
             if (val.kind !== ValueKind.Int32) {
                 this.addError(
-                    new BrsError(`Dim expression must evaluate to an integer`, expr.location)
+                    new RuntimeError(RuntimeErrorCode.NonNumericArrayIndex, "", expr.location)
                 );
-                return BrsInvalid.Instance;
             }
             // dim takes max-index, so +1 to get the actual array size
             dimensionValues.push(val.getValue() + 1);
@@ -600,23 +595,16 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
                     return left.leftShift(right);
                 } else if (isBrsNumber(left) && isBrsNumber(right)) {
                     return this.addError(
-                        new TypeMismatch({
-                            message:
-                                "Type Mismatch. In a bit shift expression the right value must be >= 0 and < 32.",
-                            left: {
-                                type: left,
-                                location: expression.left.location,
-                            },
-                            right: {
-                                type: right,
-                                location: expression.right.location,
-                            },
-                        })
+                        new RuntimeError(
+                            RuntimeErrorCode.BadBitShift,
+                            "",
+                            expression.right.location
+                        )
                     );
                 } else {
                     return this.addError(
                         new TypeMismatch({
-                            message: "Type Mismatch. Attempting to bit shift non-numeric values.",
+                            message: `Operator "<<" can't be applied to`,
                             left: {
                                 type: left,
                                 location: expression.left.location,
@@ -639,23 +627,16 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
                     return left.rightShift(right);
                 } else if (isBrsNumber(left) && isBrsNumber(right)) {
                     return this.addError(
-                        new TypeMismatch({
-                            message:
-                                "Type Mismatch. In a bit shift expression the right value must be >= 0 and < 32.",
-                            left: {
-                                type: left,
-                                location: expression.left.location,
-                            },
-                            right: {
-                                type: right,
-                                location: expression.right.location,
-                            },
-                        })
+                        new RuntimeError(
+                            RuntimeErrorCode.BadBitShift,
+                            "",
+                            expression.right.location
+                        )
                     );
                 } else {
                     return this.addError(
                         new TypeMismatch({
-                            message: "Type Mismatch. Attempting to bit shift non-numeric values.",
+                            message: `Operator ">>" can't be applied to`,
                             left: {
                                 type: left,
                                 location: expression.left.location,
@@ -674,7 +655,7 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
                 } else {
                     return this.addError(
                         new TypeMismatch({
-                            message: "Type Mismatch. Attempting to subtract non-numeric values.",
+                            message: `Operator "-" can't be applied to`,
                             left: {
                                 type: left,
                                 location: expression.left.location,
@@ -693,7 +674,7 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
                 } else {
                     return this.addError(
                         new TypeMismatch({
-                            message: "Type Mismatch. Attempting to multiply non-numeric values.",
+                            message: `Operator "*" can't be applied to`,
                             left: {
                                 type: left,
                                 location: expression.left.location,
@@ -711,8 +692,7 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
                 } else {
                     return this.addError(
                         new TypeMismatch({
-                            message:
-                                "Type Mismatch. Attempting to exponentiate non-numeric values.",
+                            message: `Operator "^" can't be applied to`,
                             left: {
                                 type: left,
                                 location: expression.left.location,
@@ -731,7 +711,7 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
                 }
                 return this.addError(
                     new TypeMismatch({
-                        message: "Type Mismatch. Attempting to divide non-numeric values.",
+                        message: `Operator "/" can't be applied to`,
                         left: {
                             type: left,
                             location: expression.left.location,
@@ -748,7 +728,7 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
                 } else {
                     return this.addError(
                         new TypeMismatch({
-                            message: "Type Mismatch. Attempting to modulo non-numeric values.",
+                            message: `Operator "mod" can't be applied to`,
                             left: {
                                 type: left,
                                 location: expression.left.location,
@@ -767,8 +747,7 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
                 } else {
                     return this.addError(
                         new TypeMismatch({
-                            message:
-                                "Type Mismatch. Attempting to integer-divide non-numeric values.",
+                            message: `Operator "\\" can't be applied to`,
                             left: {
                                 type: left,
                                 location: expression.left.location,
@@ -789,7 +768,7 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
                 } else {
                     return this.addError(
                         new TypeMismatch({
-                            message: "Type Mismatch. Attempting to add non-homogeneous values.",
+                            message: `Operator "+" can't be applied to`,
                             left: {
                                 type: left,
                                 location: expression.left.location,
@@ -811,7 +790,7 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
 
                 return this.addError(
                     new TypeMismatch({
-                        message: "Type Mismatch. Attempting to compare non-homogeneous values.",
+                        message: `Operator ">" can't be applied to`,
                         left: {
                             type: left,
                             location: expression.left.location,
@@ -833,7 +812,7 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
 
                 return this.addError(
                     new TypeMismatch({
-                        message: "Type Mismatch. Attempting to compare non-homogeneous values.",
+                        message: `Operator ">=" can't be applied to`,
                         left: {
                             type: left,
                             location: expression.left.location,
@@ -855,7 +834,7 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
 
                 return this.addError(
                     new TypeMismatch({
-                        message: "Type Mismatch. Attempting to compare non-homogeneous values.",
+                        message: `Operator "<" can't be applied to`,
                         left: {
                             type: left,
                             location: expression.left.location,
@@ -876,7 +855,7 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
 
                 return this.addError(
                     new TypeMismatch({
-                        message: "Type Mismatch. Attempting to compare non-homogeneous values.",
+                        message: `Operator "<=" can't be applied to`,
                         left: {
                             type: left,
                             location: expression.left.location,
@@ -894,7 +873,7 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
 
                 return this.addError(
                     new TypeMismatch({
-                        message: "Type Mismatch. Attempting to compare non-homogeneous values.",
+                        message: `Operator "=" can't be applied to`,
                         left: {
                             type: left,
                             location: expression.left.location,
@@ -912,7 +891,7 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
 
                 return this.addError(
                     new TypeMismatch({
-                        message: "Type Mismatch. Attempting to compare non-homogeneous values.",
+                        message: `Operator "<>" can't be applied to`,
                         left: {
                             type: left,
                             location: expression.left.location,
@@ -935,8 +914,7 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
 
                     return this.addError(
                         new TypeMismatch({
-                            message:
-                                "Type Mismatch. Attempting to 'and' boolean with non-boolean value",
+                            message: `Operator "and" can't be applied to`,
                             left: {
                                 type: left,
                                 location: expression.left.location,
@@ -956,8 +934,7 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
 
                     return this.addError(
                         new TypeMismatch({
-                            message:
-                                "Type Mismatch. Attempting to bitwise 'and' number with non-numeric value",
+                            message: `Operator "and" can't be applied to`,
                             left: {
                                 type: left,
                                 location: expression.left.location,
@@ -971,7 +948,7 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
                 } else {
                     return this.addError(
                         new TypeMismatch({
-                            message: "Type Mismatch. Attempting to 'and' unexpected values",
+                            message: `Operator "and" can't be applied to`,
                             left: {
                                 type: left,
                                 location: expression.left.location,
@@ -994,8 +971,7 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
                     } else {
                         return this.addError(
                             new TypeMismatch({
-                                message:
-                                    "Type Mismatch. Attempting to 'or' boolean with non-boolean value",
+                                message: `Operator "or" can't be applied to`,
                                 left: {
                                     type: left,
                                     location: expression.left.location,
@@ -1015,8 +991,7 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
 
                     return this.addError(
                         new TypeMismatch({
-                            message:
-                                "Type Mismatch. Attempting to bitwise 'or' number with non-numeric expression",
+                            message: `Operator "or" can't be applied to`,
                             left: {
                                 type: left,
                                 location: expression.left.location,
@@ -1030,7 +1005,7 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
                 } else {
                     return this.addError(
                         new TypeMismatch({
-                            message: "Type Mismatch. Attempting to 'or' unexpected values",
+                            message: `Operator "or" can't be applied to`,
                             left: {
                                 type: left,
                                 location: expression.left.location,
@@ -1196,8 +1171,9 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
 
         if (!isBrsCallable(callee)) {
             return this.addError(
-                new BrsError(
-                    `'${functionName}' is not a function and cannot be called.`,
+                new RuntimeError(
+                    RuntimeErrorCode.NotAFunction,
+                    "",
                     expression.closingParen.location
                 )
             );
@@ -1302,7 +1278,7 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
                 }
                 return target;
             } catch (err: any) {
-                return this.addError(new BrsError(err.message, expression.name.location));
+                this.addError(new BrsError(err.message, expression.name.location));
             }
         }
 
@@ -1311,17 +1287,11 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
             try {
                 return boxedSource.getMethod(expression.name.text) || BrsInvalid.Instance;
             } catch (err: any) {
-                return this.addError(new BrsError(err.message, expression.name.location));
+                this.addError(new BrsError(err.message, expression.name.location));
             }
         } else {
-            return this.addError(
-                new TypeMismatch({
-                    message: "DottedGet: Attempting to retrieve property from non-iterable value",
-                    left: {
-                        type: source,
-                        location: expression.location,
-                    },
-                })
+            this.addError(
+                new RuntimeError(RuntimeErrorCode.DotOnNonObject, "", expression.name.location)
             );
         }
     }
@@ -1330,13 +1300,7 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
         let source = this.evaluate(expression.obj);
         if (!isIterable(source)) {
             this.addError(
-                new TypeMismatch({
-                    message: "IndexedGet: Attempting to retrieve property from non-iterable value",
-                    left: {
-                        type: source,
-                        location: expression.location,
-                    },
-                })
+                new RuntimeError(RuntimeErrorCode.UndimmedArray, "", expression.location)
             );
         }
 
@@ -1567,15 +1531,7 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
         let value = this.evaluate(statement.value);
 
         if (!isIterable(source)) {
-            return this.addError(
-                new TypeMismatch({
-                    message: "Attempting to set property on non-iterable value",
-                    left: {
-                        type: source,
-                        location: statement.name.location,
-                    },
-                })
-            );
+            this.addError(new RuntimeError(RuntimeErrorCode.BadLHS, "", statement.name.location));
         }
 
         try {
@@ -1591,15 +1547,7 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
         let source = this.evaluate(statement.obj);
 
         if (!isIterable(source)) {
-            return this.addError(
-                new TypeMismatch({
-                    message: "Attempting to set property on non-iterable value",
-                    left: {
-                        type: source,
-                        location: statement.obj.location,
-                    },
-                })
-            );
+            this.addError(new RuntimeError(RuntimeErrorCode.BadLHS, "", statement.obj.location));
         }
 
         let index = this.evaluate(statement.index);
@@ -1638,13 +1586,14 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
 
         if (!isBrsNumber(target)) {
             let operation = statement.token.kind === Lexeme.PlusPlus ? "increment" : "decrement";
-            return this.addError(
-                new BrsError(
-                    `Attempting to ${operation} value of non-numeric type ${ValueKind.toString(
-                        target.kind
-                    )}`,
-                    statement.location
-                )
+            this.addError(
+                new TypeMismatch({
+                    message: `Attempting to ${operation} value of non-numeric type`,
+                    left: {
+                        type: target,
+                        location: statement.location,
+                    },
+                })
             );
         }
 

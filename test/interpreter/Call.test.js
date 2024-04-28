@@ -197,9 +197,7 @@ describe("interpreter calls", () => {
             ),
         ];
 
-        expect(() => interpreter.exec(ast)).toThrow(
-            /Attempting to return value of type Integer, but function foo declares return value of type String/
-        );
+        expect(() => interpreter.exec(ast)).toThrow(/Type Mismatch./);
     });
 
     it("boxes invalid when return type is Object", () => {
@@ -269,7 +267,9 @@ describe("interpreter calls", () => {
             ),
         ];
 
-        expect(() => interpreter.exec(ast)).toThrow(/Attempting to return value of non-void type/);
+        expect(() => interpreter.exec(ast)).toThrow(
+            /Return can not have a return-value if inside a Sub or Function with Void return type./
+        );
     });
 
     it("errors when returning void from a non-void return", () => {
@@ -296,6 +296,6 @@ describe("interpreter calls", () => {
             ),
         ];
 
-        expect(() => interpreter.exec(ast)).toThrow(/Attempting to return void value/);
+        expect(() => interpreter.exec(ast)).toThrow(/Return must return a value./);
     });
 });
