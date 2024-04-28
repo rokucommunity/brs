@@ -1,7 +1,14 @@
-import { Identifier } from "../lexer";
-import { BrsType, RoAssociativeArray, Int32, BrsInvalid, RoSGNode, Callable } from "../brsTypes";
+import { Identifier, Location } from "../lexer";
+import {
+    BrsType,
+    RoAssociativeArray,
+    Int32,
+    BrsInvalid,
+    RoSGNode,
+    Callable,
+    Signature,
+} from "../brsTypes";
 import { ComponentDefinition } from "../componentprocessor";
-import { BrsError } from "../Error";
 
 /** The logical region from a particular variable or function that defines where it may be accessed from. */
 export enum Scope {
@@ -18,6 +25,14 @@ export class NotFound extends Error {
     constructor(reason: string) {
         super(reason);
     }
+}
+
+/** The definition of a trace point to be added to the stack trace */
+export interface TracePoint {
+    functionName: string;
+    functionLoc: Location;
+    callLoc: Location;
+    signature: Signature;
 }
 
 /** Holds a set of values in multiple scopes and provides access operations to them. */
@@ -59,6 +74,8 @@ export class Environment {
     /** The BrightScript `m` pointer, analogous to JavaScript's `this` pointer. */
     private mPointer = new RoAssociativeArray([]);
     private rootM: RoAssociativeArray;
+    /** Execution stack trace */
+    private stackTrace = new Array<TracePoint>();
     /**
      * The one true focus of the scenegraph app, only one component can have focus at a time.
      * Note: this focus is only meaningful if the node being set focus to
@@ -127,6 +144,35 @@ export class Environment {
      */
     public setRootM(newMPointer: RoAssociativeArray): void {
         this.rootM = newMPointer;
+    }
+
+    /**
+     * Add a trace point to the environment stack
+     * @param name The name of the function
+     * @param functionLoc The location of the function
+     * @param callLoc The location of the call
+     * @param signature The signature of the function
+     */
+    public addToStack(
+        name: string,
+        functionLoc: Location,
+        callLoc: Location,
+        signature: Signature
+    ) {
+        this.stackTrace.push({
+            functionName: name,
+            functionLoc: functionLoc,
+            callLoc: callLoc,
+            signature: signature,
+        });
+    }
+
+    /**
+     * Retrieves the stack trace of the environment
+     * @returns the array containing the current stack trace
+     */
+    public getStackTrace() {
+        return this.stackTrace;
     }
 
     /**

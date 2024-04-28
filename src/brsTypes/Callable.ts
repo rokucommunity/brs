@@ -145,6 +145,9 @@ export class Callable implements Brs.BrsValue {
     /** The context (m) that this callable is running under (if `undefined` is running on root m) */
     private context: Brs.RoAssociativeArray | undefined;
 
+    /** The location where this callable is on the source code */
+    private location: Location | undefined;
+
     /**
      * Calls the function this `Callable` represents with the provided `arg`uments using the
      * provided `Interpreter` instance.
@@ -225,6 +228,14 @@ export class Callable implements Brs.BrsValue {
 
     setContext(context: Brs.RoAssociativeArray) {
         this.context = context;
+    }
+
+    setLocation(location: Location) {
+        this.location = location;
+    }
+
+    getLocation() {
+        return this.location;
     }
 
     /**

@@ -1,9 +1,10 @@
 import { BrsType } from "./brsTypes";
+import { TracePoint } from "./interpreter/Environment";
 import type { Location } from "./lexer";
 import chalk from "chalk";
 
 export class BrsError extends Error {
-    constructor(message: string, readonly location: Location, public backTrace?: Location[]) {
+    constructor(message: string, readonly location: Location, public backTrace?: TracePoint[]) {
         super(message);
     }
 
@@ -51,7 +52,7 @@ export class RuntimeError extends BrsError {
         message: string,
         location: Location,
         readonly extraFields?: Map<string, BrsType>,
-        readonly backTrace?: Location[]
+        readonly backTrace?: TracePoint[]
     ) {
         if (message.trim() === "") {
             message = errCode.message;

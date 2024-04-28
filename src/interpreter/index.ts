@@ -41,7 +41,7 @@ import {
 import * as StdLib from "../stdlib";
 import { _brs_ } from "../extensions";
 
-import { Scope, Environment, NotFound } from "./Environment";
+import { Scope, Environment, NotFound, TracePoint } from "./Environment";
 import { TypeMismatch } from "./TypeMismatch";
 import { OutputProxy } from "./OutputProxy";
 import { toCallable } from "./BrsFunction";
@@ -97,6 +97,7 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
     readonly stderr: OutputProxy;
     readonly temporaryVolume: MemoryFileSystem = new MemoryFileSystem();
 
+    // TODO: Replace this with the new stack trace implementation on the Environment
     stack: Location[] = [];
     location: Location;
 
@@ -244,8 +245,8 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
      */
     inSubEnv(func: (interpreter: Interpreter) => BrsType, environment?: Environment): BrsType {
         let originalEnvironment = this._environment;
-        let newEnv = environment || this._environment.createSubEnvironment();
-
+        let newEnv = environment ?? this._environment.createSubEnvironment();
+        newEnv.getStackTrace().push(...originalEnvironment.getStackTrace());
         // Set the focused node of the sub env, because our current env has the most up-to-date reference.
         newEnv.setFocusedNode(this._environment.getFocusedNode());
 
@@ -1126,7 +1127,7 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
             errCode.message,
             statement.location,
             extraFields,
-            this.stack
+            this.environment.getStackTrace()
         );
         // Validation Functions
         function validateErrorNumber(element: BrsType, errCode: ErrorCode): ErrorCode {
@@ -1223,6 +1224,12 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
                 }
                 return this.inSubEnv((subInterpreter) => {
                     subInterpreter.environment.setM(mPointer);
+                    let funcLoc = callee.getLocation();
+                    if (funcLoc) {
+                        let callLoc = expression.callee.location;
+                        let sign = callee.signatures[0].signature;
+                        subInterpreter.environment.addToStack(functionName, funcLoc, callLoc, sign);
+                    }
                     return callee.call(this, ...args);
                 });
             } catch (reason) {
@@ -1774,15 +1781,21 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
     /**
      * Returns the Backtrace formatted as a string or an array
      * @param loc the location of the error
-     * @param asString a boolean, if true returns the backtrace as a string, otherwise as an array
-     * @param bt the backtrace array
+     * @param bt the backtrace array, default is current stack trace
      * @returns a string or an array with the backtrace formatted
      */
-    formatBacktrace(loc: Location, bt?: Location[]): RoArray {
-        const backTrace = bt ?? this.stack;
+    formatBacktrace(loc: Location, bt?: TracePoint[]): RoArray {
+        const backTrace = bt ?? this.environment.getStackTrace();
         const btArray: BrsType[] = [];
         for (let index = backTrace.length - 1; index >= 0; index--) {
-            const trace = backTrace[index];
+            const func = backTrace[index];
+            const kind = ValueKind.toString(func.signature.returns);
+            let args = "";
+            func.signature.args.forEach((arg) => {
+                args += args !== "" ? "," : "";
+                args += `${arg.name.text} As ${ValueKind.toString(arg.type.kind)}`;
+            });
+            const funcSign = `${func.functionName}(${args}) As ${kind}`;
             const line = loc.start.line;
             btArray.unshift(
                 new RoAssociativeArray([
@@ -1790,11 +1803,11 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
                         name: new BrsString("filename"),
                         value: new BrsString(loc?.file ?? "()"),
                     },
-                    { name: new BrsString("function"), value: new BrsString("") },
+                    { name: new BrsString("function"), value: new BrsString(funcSign) },
                     { name: new BrsString("line_number"), value: new Int32(line) },
                 ])
             );
-            loc = trace;
+            loc = func.callLoc;
         }
         return new RoArray(btArray);
     }
@@ -1855,6 +1868,9 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
      * @param err the ParseError to emit then throw
      */
     public addError(err: BrsError): never {
+        if (!err.backTrace) {
+            err.backTrace = this.environment.getStackTrace();
+        }
         this.errors.push(err);
         this.events.emit("err", err);
         throw err;
