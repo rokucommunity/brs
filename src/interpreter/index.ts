@@ -1315,7 +1315,9 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
                 } catch (reason) {
                     if (reason instanceof Stmt.ExitForReason) {
                         break;
-                    } else if (!(reason instanceof Stmt.ContinueForReason)) {
+                    } else if (reason instanceof Stmt.ContinueForReason) {
+                        // continue to the next iteration
+                    } else {
                         // re-throw returns, runtime errors, etc.
                         throw reason;
                     }
@@ -1337,7 +1339,9 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
                 } catch (reason) {
                     if (reason instanceof Stmt.ExitForReason) {
                         break;
-                    } else if (!(reason instanceof Stmt.ContinueForReason)) {
+                    } else if (reason instanceof Stmt.ContinueForReason) {
+                        // continue to the next iteration
+                    } else {
                         // re-throw returns, runtime errors, etc.
                         throw reason;
                     }
@@ -1373,7 +1377,9 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
                 if (reason instanceof Stmt.ExitForReason) {
                     // break out of the loop
                     return false;
-                } else if (!(reason instanceof Stmt.ContinueForReason)) {
+                } else if (reason instanceof Stmt.ContinueForReason) {
+                    // continue to the next iteration
+                } else {
                     // re-throw returns, runtime errors, etc.
                     throw reason;
                 }
@@ -1393,7 +1399,9 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
             } catch (reason) {
                 if (reason instanceof Stmt.ExitWhileReason) {
                     break;
-                } else if (!(reason instanceof Stmt.ContinueWhileReason)) {
+                } else if (reason instanceof Stmt.ContinueWhileReason) {
+                    // continue to the next iteration
+                } else {
                     // re-throw returns, runtime errors, etc.
                     throw reason;
                 }
