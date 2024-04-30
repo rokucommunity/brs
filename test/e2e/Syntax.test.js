@@ -211,6 +211,17 @@ describe("end to end syntax", () => {
         ]);
     });
 
+    test("continue.brs", async () => {
+        await execute([resourceFile("continue.brs")], outputStreams);
+
+        expect(allArgs(outputStreams.stdout.write).filter((arg) => arg !== "\n")).toEqual([
+            "orange",
+            "lime",
+            " 0",
+            " 2",
+        ]);
+    });
+
     test("print.brs", async () => {
         await execute([resourceFile("print.brs")], outputStreams);
 

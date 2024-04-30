@@ -145,4 +145,33 @@ describe("interpreter for-each loops", () => {
 
         expect(blockSpy).toHaveBeenCalledTimes(1);
     });
+
+    it("iterates across all elements of an array skipping `exit for` with `continue for`", () => {
+        const block = new Stmt.Block([
+            new Stmt.ContinueFor({ continueFor: token(Lexeme.ContinueFor, "continue for") }),
+            new Stmt.ExitFor({ exitFor: token(Lexeme.ExitFor, "exit for") }),
+        ]);
+        const blockSpy = jest.spyOn(block, "accept");
+
+        const statements = [
+            new Stmt.Assignment(
+                { equals: token(Lexeme.Equals, "=") },
+                identifier("array"),
+                filledArray
+            ),
+            new Stmt.ForEach(
+                {
+                    forEach: token(Lexeme.ForEach, "for each"),
+                    in: identifier("in"),
+                    endFor: token(Lexeme.EndFor, "end for"),
+                },
+                identifier("element"),
+                new Expr.Variable(identifier("array")),
+                block
+            ),
+        ];
+        interpreter.exec(statements);
+
+        expect(blockSpy).toHaveBeenCalledTimes(3);
+    });
 });
