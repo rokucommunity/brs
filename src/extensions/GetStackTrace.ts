@@ -30,14 +30,15 @@ export const GetStackTrace = new Callable("GetStackTrace", {
         returns: ValueKind.Object,
     },
     impl: (interpreter: Interpreter, numEntries: Int32, excludePatterns: BrsType) => {
-        let stack = interpreter.stack;
-
+        let stack = interpreter.stack.slice();
         // Filter out any files that the consumer doesn't want to include
         if (excludePatterns instanceof RoArray) {
             excludePatterns.getValue().forEach((pattern) => {
                 if (isBrsString(pattern)) {
                     let regexFilter = new RegExp(pattern.value);
-                    stack = stack.filter((location) => !regexFilter.test(location.file));
+                    stack = stack.filter(
+                        (tracePoint) => !regexFilter.test(tracePoint.functionLoc.file)
+                    );
                 }
             });
         } else if (!(excludePatterns instanceof BrsInvalid)) {
@@ -47,19 +48,19 @@ export const GetStackTrace = new Callable("GetStackTrace", {
         return new RoArray(
             stack
                 // Filter out any internal stack traces.
-                .filter((location) => !INTERNAL_REGEX_FILTER.test(location.file))
+                .filter((tracePoint) => !INTERNAL_REGEX_FILTER.test(tracePoint.functionLoc.file))
                 // Remove any duplicate entries that appear next to each other in the stack.
-                .filter((location, index, locations) => {
+                .filter((tracePoint, index, backTrace) => {
                     if (index === 0) return true;
-                    let prevLocation = locations[index - 1];
-                    return !Location.equalTo(location, prevLocation);
+                    let prevLocation = backTrace[index - 1].functionLoc;
+                    return !Location.equalTo(tracePoint.functionLoc, prevLocation);
                 })
-                .map(
-                    (location) =>
-                        new BrsString(
-                            `${location.file}:${location.start.line}:${location.start.column}`
-                        )
-                )
+                .map((tracePoint) => {
+                    const location = tracePoint.functionLoc;
+                    return new BrsString(
+                        `${location.file}:${location.start.line}:${location.start.column}`
+                    );
+                })
                 // Get the last item on the stack
                 .slice(-1 * numEntries.getValue())
                 .reverse()

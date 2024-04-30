@@ -24,6 +24,7 @@ import {
     isBoxedNumber,
     roInvalid,
     PrimitiveKinds,
+    Signature,
 } from "../brsTypes";
 
 import { Lexeme, Location } from "../lexer";
@@ -41,7 +42,7 @@ import {
 import * as StdLib from "../stdlib";
 import { _brs_ } from "../extensions";
 
-import { Scope, Environment, NotFound, TracePoint } from "./Environment";
+import { Scope, Environment, NotFound } from "./Environment";
 import { TypeMismatch } from "./TypeMismatch";
 import { OutputProxy } from "./OutputProxy";
 import { toCallable } from "./BrsFunction";
@@ -87,9 +88,18 @@ export const defaultExecutionOptions: ExecutionOptions = {
 };
 Object.freeze(defaultExecutionOptions);
 
+/** The definition of a trace point to be added to the stack trace */
+export interface TracePoint {
+    functionName: string;
+    functionLoc: Location;
+    callLoc: Location;
+    signature?: Signature;
+}
+
 export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType> {
     private _environment = new Environment();
-    private coverageCollector: CoverageCollector | null = null;
+    private _stack = new Array<TracePoint>();
+    private _coverageCollector: CoverageCollector | null = null;
     private _manifest: PP.Manifest | undefined;
 
     readonly options: ExecutionOptions;
@@ -97,8 +107,6 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
     readonly stderr: OutputProxy;
     readonly temporaryVolume: MemoryFileSystem = new MemoryFileSystem();
 
-    // TODO: Replace this with the new stack trace implementation on the Environment
-    stack: Location[] = [];
     location: Location;
 
     /** Allows consumers to observe errors as they're detected. */
@@ -111,6 +119,10 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
         return this._environment;
     }
 
+    get stack() {
+        return this._stack;
+    }
+
     get manifest() {
         return this._manifest != null ? this._manifest : new Map<string, ManifestValue>();
     }
@@ -119,13 +131,17 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
         this._manifest = manifest;
     }
 
+    addToStack(tracePoint: TracePoint) {
+        this._stack.push(tracePoint);
+    }
+
     setCoverageCollector(collector: CoverageCollector) {
-        this.coverageCollector = collector;
+        this._coverageCollector = collector;
     }
 
     reportCoverageHit(statement: Expr.Expression | Stmt.Statement) {
-        if (this.options.generateCoverage && this.coverageCollector) {
-            this.coverageCollector.logHit(statement);
+        if (this.options.generateCoverage && this._coverageCollector) {
+            this._coverageCollector.logHit(statement);
         }
     }
 
@@ -246,23 +262,20 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
     inSubEnv(func: (interpreter: Interpreter) => BrsType, environment?: Environment): BrsType {
         let originalEnvironment = this._environment;
         let newEnv = environment ?? this._environment.createSubEnvironment();
-        newEnv.getStackTrace().push(...originalEnvironment.getStackTrace());
         // Set the focused node of the sub env, because our current env has the most up-to-date reference.
         newEnv.setFocusedNode(this._environment.getFocusedNode());
 
-        let returnValue;
         try {
             this._environment = newEnv;
-            returnValue = func(this);
+            const returnValue = func(this);
             this._environment = originalEnvironment;
             this._environment.setFocusedNode(newEnv.getFocusedNode());
+            return returnValue;
         } catch (err) {
             this._environment = originalEnvironment;
             this._environment.setFocusedNode(newEnv.getFocusedNode());
             throw err;
         }
-
-        return returnValue;
     }
 
     exec(statements: ReadonlyArray<Stmt.Statement>, ...args: BrsType[]) {
@@ -1102,7 +1115,7 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
             errCode.message,
             statement.location,
             extraFields,
-            this.environment.getStackTrace()
+            this._stack.slice()
         );
         // Validation Functions
         function validateErrorNumber(element: BrsType, errCode: ErrorCode): ErrorCode {
@@ -1200,13 +1213,20 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
                 }
                 return this.inSubEnv((subInterpreter) => {
                     subInterpreter.environment.setM(mPointer);
-                    let funcLoc = callee.getLocation();
-                    if (funcLoc) {
-                        let callLoc = expression.callee.location;
-                        let sign = callee.signatures[0].signature;
-                        subInterpreter.environment.addToStack(functionName, funcLoc, callLoc, sign);
+                    this._stack.push({
+                        functionName: functionName,
+                        functionLoc: callee.getLocation() ?? this.location,
+                        callLoc: expression.callee.location,
+                        signature: signature,
+                    });
+                    try {
+                        const returnValue = callee.call(this, ...args);
+                        this._stack.pop();
+                        return returnValue;
+                    } catch (err) {
+                        this._stack.pop();
+                        throw err;
                     }
-                    return callee.call(this, ...args);
                 });
             } catch (reason) {
                 if (!(reason instanceof Stmt.BlockEnd)) {
@@ -1695,36 +1715,16 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
 
     evaluate(this: Interpreter, expression: Expr.Expression): BrsType {
         this.location = expression.location;
-        this.stack.push(this.location);
         this.reportCoverageHit(expression);
 
-        let value;
-        try {
-            value = expression.accept<BrsType>(this);
-            this.stack.pop();
-        } catch (err) {
-            this.stack.pop();
-            throw err;
-        }
-
-        return value;
+        return expression.accept<BrsType>(this);
     }
 
     execute(this: Interpreter, statement: Stmt.Statement): BrsType {
         this.location = statement.location;
-        this.stack.push(this.location);
         this.reportCoverageHit(statement);
 
-        let value;
-        try {
-            value = statement.accept<BrsType>(this);
-            this.stack.pop();
-        } catch (err) {
-            this.stack.pop();
-            throw err;
-        }
-
-        return value;
+        return statement.accept<BrsType>(this);
     }
 
     /**
@@ -1734,29 +1734,31 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
      * @returns a string or an array with the backtrace formatted
      */
     formatBacktrace(loc: Location, bt?: TracePoint[]): RoArray {
-        const backTrace = bt ?? this.environment.getStackTrace();
+        const backTrace = bt ?? this._stack;
         const btArray: BrsType[] = [];
         for (let index = backTrace.length - 1; index >= 0; index--) {
             const func = backTrace[index];
-            const kind = ValueKind.toString(func.signature.returns);
-            let args = "";
-            func.signature.args.forEach((arg) => {
-                args += args !== "" ? "," : "";
-                args += `${arg.name.text} As ${ValueKind.toString(arg.type.kind)}`;
-            });
-            const funcSign = `${func.functionName}(${args}) As ${kind}`;
-            const line = loc.start.line;
-            btArray.unshift(
-                new RoAssociativeArray([
-                    {
-                        name: new BrsString("filename"),
-                        value: new BrsString(loc?.file ?? "()"),
-                    },
-                    { name: new BrsString("function"), value: new BrsString(funcSign) },
-                    { name: new BrsString("line_number"), value: new Int32(line) },
-                ])
-            );
-            loc = func.callLoc;
+            if (func.signature) {
+                const kind = ValueKind.toString(func.signature.returns);
+                let args = "";
+                func.signature.args.forEach((arg) => {
+                    args += args !== "" ? "," : "";
+                    args += `${arg.name.text} As ${ValueKind.toString(arg.type.kind)}`;
+                });
+                const funcSign = `${func.functionName}(${args}) As ${kind}`;
+                const line = loc.start.line;
+                btArray.unshift(
+                    new RoAssociativeArray([
+                        {
+                            name: new BrsString("filename"),
+                            value: new BrsString(loc?.file ?? "()"),
+                        },
+                        { name: new BrsString("function"), value: new BrsString(funcSign) },
+                        { name: new BrsString("line_number"), value: new Int32(line) },
+                    ])
+                );
+                loc = func.callLoc;
+            }
         }
         return new RoArray(btArray);
     }
@@ -1818,7 +1820,7 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
      */
     public addError(err: BrsError): never {
         if (!err.backTrace) {
-            err.backTrace = this.environment.getStackTrace();
+            err.backTrace = this._stack.slice();
         }
         this.errors.push(err);
         this.events.emit("err", err);

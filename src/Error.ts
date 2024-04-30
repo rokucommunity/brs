@@ -1,5 +1,5 @@
 import { BrsType } from "./brsTypes";
-import { TracePoint } from "./interpreter/Environment";
+import { TracePoint } from "./interpreter";
 import type { Location } from "./lexer";
 import chalk from "chalk";
 
