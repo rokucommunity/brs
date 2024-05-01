@@ -99,6 +99,7 @@ export interface TracePoint {
 export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType> {
     private _environment = new Environment();
     private _stack = new Array<TracePoint>();
+    private _tryMode = false;
     private _coverageCollector: CoverageCollector | null = null;
     private _manifest: PP.Manifest | undefined;
 
@@ -381,7 +382,7 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
 
     visitNamedFunction(statement: Stmt.Function): BrsType {
         if (statement.name.isReserved) {
-            return this.addError(
+            this.addError(
                 new BrsError(
                     `Cannot create a named function with reserved name '${statement.name.text}'`,
                     statement.name.location
@@ -392,7 +393,7 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
         if (this.environment.has(statement.name, [Scope.Module])) {
             // TODO: Figure out how to determine where the original version was declared
             // Maybe `Environment.define` records the location along with the value?
-            return this.addError(
+            this.addError(
                 new BrsError(
                     `Attempting to declare function '${statement.name.text}', but ` +
                         `a property of that name already exists in this scope.`,
@@ -490,7 +491,7 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
             if (coercedValue != null) {
                 value = coercedValue;
             } else {
-                return this.addError(
+                this.addError(
                     new TypeMismatch({
                         message: `Type Mismatch. Attempting to assign incorrect value to statically-typed variable '${name}'`,
                         left: {
@@ -607,7 +608,7 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
                 ) {
                     return left.leftShift(right);
                 } else if (isBrsNumber(left) && isBrsNumber(right)) {
-                    return this.addError(
+                    this.addError(
                         new RuntimeError(
                             RuntimeErrorCode.BadBitShift,
                             "",
@@ -615,7 +616,7 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
                         )
                     );
                 } else {
-                    return this.addError(
+                    this.addError(
                         new TypeMismatch({
                             message: `Operator "<<" can't be applied to`,
                             left: {
@@ -639,7 +640,7 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
                 ) {
                     return left.rightShift(right);
                 } else if (isBrsNumber(left) && isBrsNumber(right)) {
-                    return this.addError(
+                    this.addError(
                         new RuntimeError(
                             RuntimeErrorCode.BadBitShift,
                             "",
@@ -647,7 +648,7 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
                         )
                     );
                 } else {
-                    return this.addError(
+                    this.addError(
                         new TypeMismatch({
                             message: `Operator ">>" can't be applied to`,
                             left: {
@@ -666,7 +667,7 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
                 if (isBrsNumber(left) && isBrsNumber(right)) {
                     return left.subtract(right);
                 } else {
-                    return this.addError(
+                    this.addError(
                         new TypeMismatch({
                             message: `Operator "-" can't be applied to`,
                             left: {
@@ -685,7 +686,7 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
                 if (isBrsNumber(left) && isBrsNumber(right)) {
                     return left.multiply(right);
                 } else {
-                    return this.addError(
+                    this.addError(
                         new TypeMismatch({
                             message: `Operator "*" can't be applied to`,
                             left: {
@@ -703,7 +704,7 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
                 if (isBrsNumber(left) && isBrsNumber(right)) {
                     return left.pow(right);
                 } else {
-                    return this.addError(
+                    this.addError(
                         new TypeMismatch({
                             message: `Operator "^" can't be applied to`,
                             left: {
@@ -722,7 +723,7 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
                 if (isBrsNumber(left) && isBrsNumber(right)) {
                     return left.divide(right);
                 }
-                return this.addError(
+                this.addError(
                     new TypeMismatch({
                         message: `Operator "/" can't be applied to`,
                         left: {
@@ -739,7 +740,7 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
                 if (isBrsNumber(left) && isBrsNumber(right)) {
                     return left.modulo(right);
                 } else {
-                    return this.addError(
+                    this.addError(
                         new TypeMismatch({
                             message: `Operator "mod" can't be applied to`,
                             left: {
@@ -758,7 +759,7 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
                 if (isBrsNumber(left) && isBrsNumber(right)) {
                     return left.intDivide(right);
                 } else {
-                    return this.addError(
+                    this.addError(
                         new TypeMismatch({
                             message: `Operator "\\" can't be applied to`,
                             left: {
@@ -779,7 +780,7 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
                 } else if (isStringComp(left) && isStringComp(right)) {
                     return left.concat(right);
                 } else {
-                    return this.addError(
+                    this.addError(
                         new TypeMismatch({
                             message: `Operator "+" can't be applied to`,
                             left: {
@@ -801,7 +802,7 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
                     return left.greaterThan(right);
                 }
 
-                return this.addError(
+                this.addError(
                     new TypeMismatch({
                         message: `Operator ">" can't be applied to`,
                         left: {
@@ -823,7 +824,7 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
                     return left.greaterThan(right).or(left.equalTo(right));
                 }
 
-                return this.addError(
+                this.addError(
                     new TypeMismatch({
                         message: `Operator ">=" can't be applied to`,
                         left: {
@@ -845,7 +846,7 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
                     return left.lessThan(right);
                 }
 
-                return this.addError(
+                this.addError(
                     new TypeMismatch({
                         message: `Operator "<" can't be applied to`,
                         left: {
@@ -866,7 +867,7 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
                     return left.lessThan(right).or(left.equalTo(right));
                 }
 
-                return this.addError(
+                this.addError(
                     new TypeMismatch({
                         message: `Operator "<=" can't be applied to`,
                         left: {
@@ -884,7 +885,7 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
                     return left.equalTo(right);
                 }
 
-                return this.addError(
+                this.addError(
                     new TypeMismatch({
                         message: `Operator "=" can't be applied to`,
                         left: {
@@ -902,7 +903,7 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
                     return left.equalTo(right).not();
                 }
 
-                return this.addError(
+                this.addError(
                     new TypeMismatch({
                         message: `Operator "<>" can't be applied to`,
                         left: {
@@ -925,7 +926,7 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
                         return (left as BrsBoolean).and(right);
                     }
 
-                    return this.addError(
+                    this.addError(
                         new TypeMismatch({
                             message: `Operator "and" can't be applied to`,
                             left: {
@@ -945,7 +946,7 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
                         return left.and(right);
                     }
 
-                    return this.addError(
+                    this.addError(
                         new TypeMismatch({
                             message: `Operator "and" can't be applied to`,
                             left: {
@@ -959,7 +960,7 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
                         })
                     );
                 } else {
-                    return this.addError(
+                    this.addError(
                         new TypeMismatch({
                             message: `Operator "and" can't be applied to`,
                             left: {
@@ -982,7 +983,7 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
                     if (isBrsBoolean(right) || isBrsNumber(right)) {
                         return (left as BrsBoolean).or(right);
                     } else {
-                        return this.addError(
+                        this.addError(
                             new TypeMismatch({
                                 message: `Operator "or" can't be applied to`,
                                 left: {
@@ -1002,7 +1003,7 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
                         return left.or(right);
                     }
 
-                    return this.addError(
+                    this.addError(
                         new TypeMismatch({
                             message: `Operator "or" can't be applied to`,
                             left: {
@@ -1016,7 +1017,7 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
                         })
                     );
                 } else {
-                    return this.addError(
+                    this.addError(
                         new TypeMismatch({
                             message: `Operator "or" can't be applied to`,
                             left: {
@@ -1031,7 +1032,7 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
                     );
                 }
             default:
-                return this.addError(
+                this.addError(
                     new BrsError(
                         `Received unexpected token kind '${expression.token.kind}'`,
                         expression.token.location
@@ -1041,9 +1042,13 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
     }
 
     visitTryCatch(statement: Stmt.TryCatch): BrsInvalid {
+        let tryMode = this._tryMode;
         try {
+            this._tryMode = true;
             this.visitBlock(statement.tryBlock);
+            this._tryMode = tryMode;
         } catch (err: any) {
+            this._tryMode = tryMode;
             if (!(err instanceof BrsError)) {
                 throw err;
             }
@@ -1183,7 +1188,7 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
         let args = expression.args.map(this.evaluate, this);
 
         if (!isBrsCallable(callee)) {
-            return this.addError(
+            this.addError(
                 new RuntimeError(
                     RuntimeErrorCode.NotAFunction,
                     "",
@@ -1262,7 +1267,7 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
                     signatureKind !== ValueKind.Dynamic &&
                     signatureKind !== returnedValue.kind
                 ) {
-                    return this.addError(
+                    this.addError(
                         new TypeMismatch({
                             message: `Unable to cast`,
                             left: {
@@ -1281,7 +1286,7 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
                 return returnedValue || BrsInvalid.Instance;
             }
         } else {
-            return this.addError(
+            this.addError(
                 generateArgumentMismatchError(callee, args, expression.closingParen.location)
             );
         }
@@ -1345,7 +1350,7 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
         try {
             return source.get(index, true);
         } catch (err: any) {
-            return this.addError(new BrsError(err.message, expression.closingSquare.location));
+            this.addError(new BrsError(err.message, expression.closingSquare.location));
         }
     }
 
@@ -1557,7 +1562,7 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
         try {
             source.set(new BrsString(statement.name.text), value);
         } catch (err: any) {
-            return this.addError(new BrsError(err.message, statement.name.location));
+            this.addError(new BrsError(err.message, statement.name.location));
         }
 
         return BrsInvalid.Instance;
@@ -1572,7 +1577,7 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
 
         let index = this.evaluate(statement.index);
         if (!isBrsNumber(index) && !isBrsString(index)) {
-            return this.addError(
+            this.addError(
                 new TypeMismatch({
                     message: "Attempting to set property on iterable with illegal index type",
                     left: {
@@ -1592,7 +1597,7 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
         try {
             source.set(index, value, true);
         } catch (err: any) {
-            return this.addError(new BrsError(err.message, statement.closingSquare.location));
+            this.addError(new BrsError(err.message, statement.closingSquare.location));
         }
 
         return BrsInvalid.Instance;
@@ -1663,7 +1668,7 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
                 if (isBrsNumber(right)) {
                     return right.multiply(new Int32(-1));
                 } else {
-                    return this.addError(
+                    this.addError(
                         new BrsError(
                             `Attempting to negate non-numeric value.
                             value type: ${ValueKind.toString(right.kind)}`,
@@ -1675,7 +1680,7 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
                 if (isBrsNumber(right)) {
                     return right;
                 } else {
-                    return this.addError(
+                    this.addError(
                         new BrsError(
                             `Attempting to apply unary positive operator to non-numeric value.
                             value type: ${ValueKind.toString(right.kind)}`,
@@ -1687,7 +1692,7 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
                 if (isBrsBoolean(right) || isBrsNumber(right)) {
                     return right.not();
                 } else {
-                    return this.addError(
+                    this.addError(
                         new BrsError(
                             `Type Mismatch. Operator "not" can't be applied to "${ValueKind.toString(
                                 right.kind
@@ -1822,8 +1827,11 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
         if (!err.backTrace) {
             err.backTrace = this._stack.slice();
         }
-        this.errors.push(err);
-        this.events.emit("err", err);
+        if (!this._tryMode) {
+            // do not save/emit the error if we are in a try block
+            this.errors.push(err);
+            this.events.emit("err", err);
+        }
         throw err;
     }
 
