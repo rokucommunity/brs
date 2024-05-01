@@ -654,8 +654,8 @@ export class RoSGNode extends BrsComponent implements BrsValue, BrsIterable {
                                     functionToCall.getLocation() ?? interpreter.location;
                                 interpreter.addToStack({
                                     functionName: functionName.value,
-                                    functionLoc: funcLoc,
-                                    callLoc: funcLoc,
+                                    functionLocation: funcLoc,
+                                    callLocation: funcLoc,
                                     signature: satisfiedSignature.signature,
                                 });
                                 try {
@@ -673,7 +673,8 @@ export class RoSGNode extends BrsComponent implements BrsValue, BrsIterable {
                                     generateArgumentMismatchError(
                                         functionToCall,
                                         functionArgs,
-                                        interpreter.stack[interpreter.stack.length - 1].functionLoc
+                                        interpreter.stack[interpreter.stack.length - 1]
+                                            .functionLocation
                                     )
                                 );
                             }

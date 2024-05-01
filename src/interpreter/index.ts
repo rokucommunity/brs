@@ -91,8 +91,8 @@ Object.freeze(defaultExecutionOptions);
 /** The definition of a trace point to be added to the stack trace */
 export interface TracePoint {
     functionName: string;
-    functionLoc: Location;
-    callLoc: Location;
+    functionLocation: Location;
+    callLocation: Location;
     signature?: Signature;
 }
 
@@ -1220,8 +1220,8 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
                     subInterpreter.environment.setM(mPointer);
                     this._stack.push({
                         functionName: functionName,
-                        functionLoc: callee.getLocation() ?? this.location,
-                        callLoc: expression.callee.location,
+                        functionLocation: callee.getLocation() ?? this.location,
+                        callLocation: expression.callee.location,
                         signature: signature,
                     });
                     try {
@@ -1750,7 +1750,7 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
                     args += args !== "" ? "," : "";
                     args += `${arg.name.text} As ${ValueKind.toString(arg.type.kind)}`;
                 });
-                const funcSign = `${func.functionName}(${args}) As ${kind}`;
+                const funcSignature = `${func.functionName}(${args}) As ${kind}`;
                 const line = loc.start.line;
                 btArray.unshift(
                     new RoAssociativeArray([
@@ -1758,11 +1758,11 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
                             name: new BrsString("filename"),
                             value: new BrsString(loc?.file ?? "()"),
                         },
-                        { name: new BrsString("function"), value: new BrsString(funcSign) },
+                        { name: new BrsString("function"), value: new BrsString(funcSignature) },
                         { name: new BrsString("line_number"), value: new Int32(line) },
                     ])
                 );
-                loc = func.callLoc;
+                loc = func.callLocation;
             }
         }
         return new RoArray(btArray);
