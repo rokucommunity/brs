@@ -1,4 +1,4 @@
-import { Identifier, Location } from "../lexer";
+import { Identifier } from "../lexer";
 import {
     BrsType,
     RoAssociativeArray,
@@ -6,7 +6,6 @@ import {
     BrsInvalid,
     RoSGNode,
     Callable,
-    Signature,
 } from "../brsTypes";
 import { ComponentDefinition } from "../componentprocessor";
 
