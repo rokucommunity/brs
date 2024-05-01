@@ -50,8 +50,8 @@ export class RuntimeError extends BrsError {
     constructor(
         readonly errCode: ErrorCode,
         location: Location,
+        readonly backTrace?: TracePoint[],
         readonly extraFields?: Map<string, BrsType>,
-        readonly backTrace?: TracePoint[]
     ) {
         super(errCode.message, location, backTrace);
     }

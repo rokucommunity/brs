@@ -1107,7 +1107,7 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
             errCode = RuntimeErrorCode.MalformedThrow;
             errCode.message = `Thrown value neither string nor roAssociativeArray.`;
         }
-        throw new RuntimeError(errCode, statement.location, extraFields, this._stack.slice());
+        throw new RuntimeError(errCode, statement.location, this._stack.slice(), extraFields);
         // Validation Functions
         function validateErrorNumber(element: BrsType, errCode: ErrorCode): ErrorCode {
             if (element instanceof Int32) {
