@@ -48,17 +48,17 @@ export class BrsError extends Error {
 /** An error thrown when a BrightScript runtime error is encountered. */
 export class RuntimeError extends BrsError {
     constructor(
-        readonly errCode: ErrorCode,
+        readonly errorDetail: ErrorDetail,
         location: Location,
         readonly backTrace?: TracePoint[],
         readonly extraFields?: Map<string, BrsType>
     ) {
-        super(errCode.message, location, backTrace);
+        super(errorDetail.message, location, backTrace);
     }
 }
 
-/** Any error code provided by the reference brightscript implementation. */
-export type ErrorCode = {
+/** Any error detail provided by the reference brightscript implementation. */
+export type ErrorDetail = {
     /** The unique ID of the error. */
     errno: number;
     /** The human-readable version */
@@ -66,12 +66,12 @@ export type ErrorCode = {
 };
 
 /**
- * Function to find the error code by the errno
+ * Function to find the error detail by the errno
  * @param errno number of the error code
- * @returns the error code
+ * @returns the error detail object
  */
-export function findErrorCode(errno: number): ErrorCode | null {
-    for (const [_, value] of Object.entries(RuntimeErrorCode)) {
+export function findErrorDetail(errno: number): ErrorDetail | null {
+    for (const [_, value] of Object.entries(RuntimeErrorDetail)) {
         if (value.errno === errno) {
             return value;
         }
@@ -79,8 +79,8 @@ export function findErrorCode(errno: number): ErrorCode | null {
     return null;
 }
 
-/** Enumerator with the Roku Runtime Error codes */
-export const RuntimeErrorCode = {
+/** Enumerator with the RBI Runtime Error codes */
+export const RuntimeErrorDetail = {
     NextWithoutFor: {
         errno: 0,
         message: "Next Without For.",
