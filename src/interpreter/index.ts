@@ -1733,10 +1733,10 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
     }
 
     /**
-     * Returns the Backtrace formatted as a string or an array
+     * Returns the Backtrace formatted as an array for Try/Catch
      * @param loc the location of the error
      * @param bt the backtrace array, default is current stack trace
-     * @returns a string or an array with the backtrace formatted
+     * @returns an array with the backtrace formatted
      */
     formatBacktrace(loc: Location, bt?: TracePoint[]): RoArray {
         const backTrace = bt ?? this._stack;
