@@ -527,7 +527,7 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
             let val = this.evaluate(expr);
             if (val.kind !== ValueKind.Int32) {
                 this.addError(
-                    new RuntimeError(RuntimeErrorCode.NonNumericArrayIndex, "", expr.location)
+                    new RuntimeError(RuntimeErrorCode.NonNumericArrayIndex, expr.location)
                 );
             }
             // dim takes max-index, so +1 to get the actual array size
@@ -609,11 +609,7 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
                     return left.leftShift(right);
                 } else if (isBrsNumber(left) && isBrsNumber(right)) {
                     return this.addError(
-                        new RuntimeError(
-                            RuntimeErrorCode.BadBitShift,
-                            "",
-                            expression.right.location
-                        )
+                        new RuntimeError(RuntimeErrorCode.BadBitShift, expression.right.location)
                     );
                 } else {
                     return this.addError(
@@ -641,11 +637,7 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
                     return left.rightShift(right);
                 } else if (isBrsNumber(left) && isBrsNumber(right)) {
                     return this.addError(
-                        new RuntimeError(
-                            RuntimeErrorCode.BadBitShift,
-                            "",
-                            expression.right.location
-                        )
+                        new RuntimeError(RuntimeErrorCode.BadBitShift, expression.right.location)
                     );
                 } else {
                     return this.addError(
@@ -1115,13 +1107,7 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
             errCode = RuntimeErrorCode.MalformedThrow;
             errCode.message = `Thrown value neither string nor roAssociativeArray.`;
         }
-        throw new RuntimeError(
-            errCode,
-            errCode.message,
-            statement.location,
-            extraFields,
-            this._stack.slice()
-        );
+        throw new RuntimeError(errCode, statement.location, extraFields, this._stack.slice());
         // Validation Functions
         function validateErrorNumber(element: BrsType, errCode: ErrorCode): ErrorCode {
             if (element instanceof Int32) {
@@ -1189,11 +1175,7 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
 
         if (!isBrsCallable(callee)) {
             this.addError(
-                new RuntimeError(
-                    RuntimeErrorCode.NotAFunction,
-                    "",
-                    expression.closingParen.location
-                )
+                new RuntimeError(RuntimeErrorCode.NotAFunction, expression.closingParen.location)
             );
         }
 
@@ -1245,13 +1227,13 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
 
                 if (returnedValue && signatureKind === ValueKind.Void) {
                     this.addError(
-                        new RuntimeError(RuntimeErrorCode.ReturnWithValue, "", returnLocation)
+                        new RuntimeError(RuntimeErrorCode.ReturnWithValue, returnLocation)
                     );
                 }
 
                 if (!returnedValue && signatureKind !== ValueKind.Void) {
                     this.addError(
-                        new RuntimeError(RuntimeErrorCode.ReturnWithoutValue, "", returnLocation)
+                        new RuntimeError(RuntimeErrorCode.ReturnWithoutValue, returnLocation)
                     );
                 }
 
@@ -1316,7 +1298,7 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
             }
         } else {
             this.addError(
-                new RuntimeError(RuntimeErrorCode.DotOnNonObject, "", expression.name.location)
+                new RuntimeError(RuntimeErrorCode.DotOnNonObject, expression.name.location)
             );
         }
     }
@@ -1324,9 +1306,7 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
     visitIndexedGet(expression: Expr.IndexedGet): BrsType {
         let source = this.evaluate(expression.obj);
         if (!isIterable(source)) {
-            this.addError(
-                new RuntimeError(RuntimeErrorCode.UndimmedArray, "", expression.location)
-            );
+            this.addError(new RuntimeError(RuntimeErrorCode.UndimmedArray, expression.location));
         }
 
         let index = this.evaluate(expression.index);
@@ -1556,7 +1536,7 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
         let value = this.evaluate(statement.value);
 
         if (!isIterable(source)) {
-            this.addError(new RuntimeError(RuntimeErrorCode.BadLHS, "", statement.name.location));
+            this.addError(new RuntimeError(RuntimeErrorCode.BadLHS, statement.name.location));
         }
 
         try {
@@ -1572,7 +1552,7 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
         let source = this.evaluate(statement.obj);
 
         if (!isIterable(source)) {
-            this.addError(new RuntimeError(RuntimeErrorCode.BadLHS, "", statement.obj.location));
+            this.addError(new RuntimeError(RuntimeErrorCode.BadLHS, statement.obj.location));
         }
 
         let index = this.evaluate(statement.index);
