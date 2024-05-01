@@ -34,8 +34,8 @@ describe("GetStackTrace", () => {
         ].forEach((location) => {
             interpreter.addToStack({
                 functionName: "(internal)",
-                functionLoc: location,
-                callLoc: location,
+                functionLocation: location,
+                callLocation: location,
             });
         });
     });
