@@ -54,9 +54,7 @@ describe("function argument type checking", () => {
             outputStreams
         ).catch(() => {
             const output = allArgs(stderr);
-            expect(output[0]).toMatch(
-                /Attempting to return value of type Integer, but function returnsString declares return value of type String/
-            );
+            expect(output[0]).toMatch(/Type Mismatch./);
         });
     });
 

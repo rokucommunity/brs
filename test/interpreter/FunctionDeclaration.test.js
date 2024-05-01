@@ -159,7 +159,7 @@ describe("interpreter function declarations", () => {
             ),
         ];
 
-        expect(() => interpreter.exec(statements)).toThrow("Attempting to return value of type");
+        expect(() => interpreter.exec(statements)).toThrow("Type Mismatch.");
     });
 
     it("evaluates default arguments", () => {

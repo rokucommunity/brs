@@ -70,7 +70,7 @@ describe("callFunc", () => {
                 .map((arg) => arg.trim())
         ).toEqual([
             expect.stringContaining(
-                `test/e2e/resources/components/call-func/scripts/throw/wrong-arg-type.brs(5,4-46): Provided arguments don't match stronglyTyped's signature.
+                `test/e2e/resources/components/call-func/scripts/throw/wrong-arg-type.brs(5,40-43): Provided arguments don't match stronglyTyped's signature.
     function stronglyTyped(arg1 as String) as String:
         * Argument 'arg1' must be of type String, but received Object.`
             ),
@@ -82,7 +82,7 @@ describe("callFunc", () => {
 
         expect(allArgs(outputStreams.stderr.write).filter((arg) => arg !== "\n")).toEqual([
             expect.stringContaining(
-                `test/e2e/resources/components/call-func/scripts/throw/no-args.brs(5,4-34): Provided arguments don't match stronglyTyped's signature.
+                `test/e2e/resources/components/call-func/scripts/throw/no-args.brs(5,18-33): Provided arguments don't match stronglyTyped's signature.
     function stronglyTyped(arg1 as String) as String:
         * stronglyTyped requires at least 1 arguments, but received 0.`
             ),

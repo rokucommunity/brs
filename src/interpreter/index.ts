@@ -24,12 +24,20 @@ import {
     isBoxedNumber,
     roInvalid,
     PrimitiveKinds,
+    Signature,
 } from "../brsTypes";
 
 import { Lexeme, Location } from "../lexer";
 import { isToken } from "../lexer/Token";
 import { Expr, Stmt, ComponentScopeResolver } from "../parser";
-import { BrsError, getLoggerUsing } from "../Error";
+import {
+    BrsError,
+    ErrorDetail,
+    RuntimeError,
+    RuntimeErrorDetail,
+    findErrorDetail,
+    getLoggerUsing,
+} from "../Error";
 
 import * as StdLib from "../stdlib";
 import { _brs_ } from "../extensions";
@@ -38,7 +46,6 @@ import { Scope, Environment, NotFound } from "./Environment";
 import { TypeMismatch } from "./TypeMismatch";
 import { OutputProxy } from "./OutputProxy";
 import { toCallable } from "./BrsFunction";
-import { Runtime } from "../parser/Statement";
 import { RoAssociativeArray } from "../brsTypes/components/RoAssociativeArray";
 import MemoryFileSystem from "memory-fs";
 import { BrsComponent } from "../brsTypes/components/BrsComponent";
@@ -81,9 +88,19 @@ export const defaultExecutionOptions: ExecutionOptions = {
 };
 Object.freeze(defaultExecutionOptions);
 
+/** The definition of a trace point to be added to the stack trace */
+export interface TracePoint {
+    functionName: string;
+    functionLocation: Location;
+    callLocation: Location;
+    signature?: Signature;
+}
+
 export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType> {
     private _environment = new Environment();
-    private coverageCollector: CoverageCollector | null = null;
+    private _stack = new Array<TracePoint>();
+    private _tryMode = false;
+    private _coverageCollector: CoverageCollector | null = null;
     private _manifest: PP.Manifest | undefined;
 
     readonly options: ExecutionOptions;
@@ -91,17 +108,20 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
     readonly stderr: OutputProxy;
     readonly temporaryVolume: MemoryFileSystem = new MemoryFileSystem();
 
-    stack: Location[] = [];
     location: Location;
 
     /** Allows consumers to observe errors as they're detected. */
     readonly events = new EventEmitter();
 
     /** The set of errors detected from executing an AST. */
-    errors: (BrsError | Runtime)[] = [];
+    errors: (BrsError | RuntimeError)[] = [];
 
     get environment() {
         return this._environment;
+    }
+
+    get stack() {
+        return this._stack;
     }
 
     get manifest() {
@@ -112,13 +132,17 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
         this._manifest = manifest;
     }
 
+    addToStack(tracePoint: TracePoint) {
+        this._stack.push(tracePoint);
+    }
+
     setCoverageCollector(collector: CoverageCollector) {
-        this.coverageCollector = collector;
+        this._coverageCollector = collector;
     }
 
     reportCoverageHit(statement: Expr.Expression | Stmt.Statement) {
-        if (this.options.generateCoverage && this.coverageCollector) {
-            this.coverageCollector.logHit(statement);
+        if (this.options.generateCoverage && this._coverageCollector) {
+            this._coverageCollector.logHit(statement);
         }
     }
 
@@ -127,7 +151,7 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
      * @param errorHandler the function to call for every runtime error emitted after subscribing
      * @returns an object with a `dispose` function, used to unsubscribe from errors
      */
-    public onError(errorHandler: (err: BrsError | Runtime) => void) {
+    public onError(errorHandler: (err: BrsError | RuntimeError) => void) {
         this.events.on("err", errorHandler);
         return {
             dispose: () => {
@@ -140,7 +164,7 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
      * Convenience function to subscribe to a single `err` event emitted by `interpreter.events`.
      * @param errorHandler the function to call for the first runtime error emitted after subscribing
      */
-    public onErrorOnce(errorHandler: (err: BrsError | Runtime) => void) {
+    public onErrorOnce(errorHandler: (err: BrsError | RuntimeError) => void) {
         this.events.once("err", errorHandler);
     }
 
@@ -238,24 +262,21 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
      */
     inSubEnv(func: (interpreter: Interpreter) => BrsType, environment?: Environment): BrsType {
         let originalEnvironment = this._environment;
-        let newEnv = environment || this._environment.createSubEnvironment();
-
+        let newEnv = environment ?? this._environment.createSubEnvironment();
         // Set the focused node of the sub env, because our current env has the most up-to-date reference.
         newEnv.setFocusedNode(this._environment.getFocusedNode());
 
-        let returnValue;
         try {
             this._environment = newEnv;
-            returnValue = func(this);
+            const returnValue = func(this);
             this._environment = originalEnvironment;
             this._environment.setFocusedNode(newEnv.getFocusedNode());
+            return returnValue;
         } catch (err) {
             this._environment = originalEnvironment;
             this._environment.setFocusedNode(newEnv.getFocusedNode());
             throw err;
         }
-
-        return returnValue;
     }
 
     exec(statements: ReadonlyArray<Stmt.Statement>, ...args: BrsType[]) {
@@ -361,7 +382,7 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
 
     visitNamedFunction(statement: Stmt.Function): BrsType {
         if (statement.name.isReserved) {
-            return this.addError(
+            this.addError(
                 new BrsError(
                     `Cannot create a named function with reserved name '${statement.name.text}'`,
                     statement.name.location
@@ -372,7 +393,7 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
         if (this.environment.has(statement.name, [Scope.Module])) {
             // TODO: Figure out how to determine where the original version was declared
             // Maybe `Environment.define` records the location along with the value?
-            return this.addError(
+            this.addError(
                 new BrsError(
                     `Attempting to declare function '${statement.name.text}', but ` +
                         `a property of that name already exists in this scope.`,
@@ -470,7 +491,7 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
             if (coercedValue != null) {
                 value = coercedValue;
             } else {
-                return this.addError(
+                this.addError(
                     new TypeMismatch({
                         message: `Type Mismatch. Attempting to assign incorrect value to statically-typed variable '${name}'`,
                         left: {
@@ -501,18 +522,13 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
             return BrsInvalid.Instance;
         }
 
-        // NOTE: Roku's dim implementation creates a resizable, empty array for the
-        //   bottom children. Resizable arrays aren't implemented yet (issue #530),
-        //   so when that's added this code should be updated so the bottom-level arrays
-        //   are resizable, but empty
         let dimensionValues: number[] = [];
         statement.dimensions.forEach((expr) => {
             let val = this.evaluate(expr);
             if (val.kind !== ValueKind.Int32) {
                 this.addError(
-                    new BrsError(`Dim expression must evaluate to an integer`, expr.location)
+                    new RuntimeError(RuntimeErrorDetail.NonNumericArrayIndex, expr.location)
                 );
-                return BrsInvalid.Instance;
             }
             // dim takes max-index, so +1 to get the actual array size
             dimensionValues.push(val.getValue() + 1);
@@ -593,23 +609,12 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
                     return left.leftShift(right);
                 } else if (isBrsNumber(left) && isBrsNumber(right)) {
                     return this.addError(
-                        new TypeMismatch({
-                            message:
-                                "Type Mismatch. In a bit shift expression the right value must be >= 0 and < 32.",
-                            left: {
-                                type: left,
-                                location: expression.left.location,
-                            },
-                            right: {
-                                type: right,
-                                location: expression.right.location,
-                            },
-                        })
+                        new RuntimeError(RuntimeErrorDetail.BadBitShift, expression.right.location)
                     );
                 } else {
                     return this.addError(
                         new TypeMismatch({
-                            message: "Type Mismatch. Attempting to bit shift non-numeric values.",
+                            message: `Operator "<<" can't be applied to`,
                             left: {
                                 type: left,
                                 location: expression.left.location,
@@ -632,23 +637,12 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
                     return left.rightShift(right);
                 } else if (isBrsNumber(left) && isBrsNumber(right)) {
                     return this.addError(
-                        new TypeMismatch({
-                            message:
-                                "Type Mismatch. In a bit shift expression the right value must be >= 0 and < 32.",
-                            left: {
-                                type: left,
-                                location: expression.left.location,
-                            },
-                            right: {
-                                type: right,
-                                location: expression.right.location,
-                            },
-                        })
+                        new RuntimeError(RuntimeErrorDetail.BadBitShift, expression.right.location)
                     );
                 } else {
                     return this.addError(
                         new TypeMismatch({
-                            message: "Type Mismatch. Attempting to bit shift non-numeric values.",
+                            message: `Operator ">>" can't be applied to`,
                             left: {
                                 type: left,
                                 location: expression.left.location,
@@ -667,7 +661,7 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
                 } else {
                     return this.addError(
                         new TypeMismatch({
-                            message: "Type Mismatch. Attempting to subtract non-numeric values.",
+                            message: `Operator "-" can't be applied to`,
                             left: {
                                 type: left,
                                 location: expression.left.location,
@@ -686,7 +680,7 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
                 } else {
                     return this.addError(
                         new TypeMismatch({
-                            message: "Type Mismatch. Attempting to multiply non-numeric values.",
+                            message: `Operator "*" can't be applied to`,
                             left: {
                                 type: left,
                                 location: expression.left.location,
@@ -704,8 +698,7 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
                 } else {
                     return this.addError(
                         new TypeMismatch({
-                            message:
-                                "Type Mismatch. Attempting to exponentiate non-numeric values.",
+                            message: `Operator "^" can't be applied to`,
                             left: {
                                 type: left,
                                 location: expression.left.location,
@@ -724,7 +717,7 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
                 }
                 return this.addError(
                     new TypeMismatch({
-                        message: "Type Mismatch. Attempting to divide non-numeric values.",
+                        message: `Operator "/" can't be applied to`,
                         left: {
                             type: left,
                             location: expression.left.location,
@@ -741,7 +734,7 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
                 } else {
                     return this.addError(
                         new TypeMismatch({
-                            message: "Type Mismatch. Attempting to modulo non-numeric values.",
+                            message: `Operator "mod" can't be applied to`,
                             left: {
                                 type: left,
                                 location: expression.left.location,
@@ -760,8 +753,7 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
                 } else {
                     return this.addError(
                         new TypeMismatch({
-                            message:
-                                "Type Mismatch. Attempting to integer-divide non-numeric values.",
+                            message: `Operator "\\" can't be applied to`,
                             left: {
                                 type: left,
                                 location: expression.left.location,
@@ -782,7 +774,7 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
                 } else {
                     return this.addError(
                         new TypeMismatch({
-                            message: "Type Mismatch. Attempting to add non-homogeneous values.",
+                            message: `Operator "+" can't be applied to`,
                             left: {
                                 type: left,
                                 location: expression.left.location,
@@ -804,7 +796,7 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
 
                 return this.addError(
                     new TypeMismatch({
-                        message: "Type Mismatch. Attempting to compare non-homogeneous values.",
+                        message: `Operator ">" can't be applied to`,
                         left: {
                             type: left,
                             location: expression.left.location,
@@ -826,7 +818,7 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
 
                 return this.addError(
                     new TypeMismatch({
-                        message: "Type Mismatch. Attempting to compare non-homogeneous values.",
+                        message: `Operator ">=" can't be applied to`,
                         left: {
                             type: left,
                             location: expression.left.location,
@@ -848,7 +840,7 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
 
                 return this.addError(
                     new TypeMismatch({
-                        message: "Type Mismatch. Attempting to compare non-homogeneous values.",
+                        message: `Operator "<" can't be applied to`,
                         left: {
                             type: left,
                             location: expression.left.location,
@@ -869,7 +861,7 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
 
                 return this.addError(
                     new TypeMismatch({
-                        message: "Type Mismatch. Attempting to compare non-homogeneous values.",
+                        message: `Operator "<=" can't be applied to`,
                         left: {
                             type: left,
                             location: expression.left.location,
@@ -887,7 +879,7 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
 
                 return this.addError(
                     new TypeMismatch({
-                        message: "Type Mismatch. Attempting to compare non-homogeneous values.",
+                        message: `Operator "=" can't be applied to`,
                         left: {
                             type: left,
                             location: expression.left.location,
@@ -905,7 +897,7 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
 
                 return this.addError(
                     new TypeMismatch({
-                        message: "Type Mismatch. Attempting to compare non-homogeneous values.",
+                        message: `Operator "<>" can't be applied to`,
                         left: {
                             type: left,
                             location: expression.left.location,
@@ -928,8 +920,7 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
 
                     return this.addError(
                         new TypeMismatch({
-                            message:
-                                "Type Mismatch. Attempting to 'and' boolean with non-boolean value",
+                            message: `Operator "and" can't be applied to`,
                             left: {
                                 type: left,
                                 location: expression.left.location,
@@ -949,8 +940,7 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
 
                     return this.addError(
                         new TypeMismatch({
-                            message:
-                                "Type Mismatch. Attempting to bitwise 'and' number with non-numeric value",
+                            message: `Operator "and" can't be applied to`,
                             left: {
                                 type: left,
                                 location: expression.left.location,
@@ -964,7 +954,7 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
                 } else {
                     return this.addError(
                         new TypeMismatch({
-                            message: "Type Mismatch. Attempting to 'and' unexpected values",
+                            message: `Operator "and" can't be applied to`,
                             left: {
                                 type: left,
                                 location: expression.left.location,
@@ -987,8 +977,7 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
                     } else {
                         return this.addError(
                             new TypeMismatch({
-                                message:
-                                    "Type Mismatch. Attempting to 'or' boolean with non-boolean value",
+                                message: `Operator "or" can't be applied to`,
                                 left: {
                                     type: left,
                                     location: expression.left.location,
@@ -1008,8 +997,7 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
 
                     return this.addError(
                         new TypeMismatch({
-                            message:
-                                "Type Mismatch. Attempting to bitwise 'or' number with non-numeric expression",
+                            message: `Operator "or" can't be applied to`,
                             left: {
                                 type: left,
                                 location: expression.left.location,
@@ -1023,7 +1011,7 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
                 } else {
                     return this.addError(
                         new TypeMismatch({
-                            message: "Type Mismatch. Attempting to 'or' unexpected values",
+                            message: `Operator "or" can't be applied to`,
                             left: {
                                 type: left,
                                 location: expression.left.location,
@@ -1036,7 +1024,7 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
                     );
                 }
             default:
-                return this.addError(
+                this.addError(
                     new BrsError(
                         `Received unexpected token kind '${expression.token.kind}'`,
                         expression.token.location
@@ -1046,8 +1034,107 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
     }
 
     visitTryCatch(statement: Stmt.TryCatch): BrsInvalid {
-        this.visitBlock(statement.tryBlock);
+        let tryMode = this._tryMode;
+        try {
+            this._tryMode = true;
+            this.visitBlock(statement.tryBlock);
+            this._tryMode = tryMode;
+        } catch (err: any) {
+            this._tryMode = tryMode;
+            if (!(err instanceof BrsError)) {
+                throw err;
+            }
+            const btArray = this.formatBacktrace(err.location, err.backTrace);
+            let errDetail = RuntimeErrorDetail.Internal;
+            let errMessage = err.message;
+            if (err instanceof RuntimeError) {
+                errDetail = err.errorDetail;
+            }
+            const errorAA = new RoAssociativeArray([
+                { name: new BrsString("backtrace"), value: btArray },
+                { name: new BrsString("message"), value: new BrsString(errMessage) },
+                { name: new BrsString("number"), value: new Int32(errDetail.errno) },
+                { name: new BrsString("rethrown"), value: BrsBoolean.False },
+            ]);
+            if (err instanceof RuntimeError && err.extraFields?.size) {
+                for (const [key, value] of err.extraFields) {
+                    errorAA.set(new BrsString(key), value);
+                    if (key === "rethrown" && toBool(value)) {
+                        errorAA.set(new BrsString("rethrow_backtrace"), btArray);
+                    }
+                }
+            }
+            this.environment.define(Scope.Function, statement.errorBinding.name.text, errorAA);
+            this.visitBlock(statement.catchBlock);
+        }
         return BrsInvalid.Instance;
+        // Helper Function
+        function toBool(value: BrsType): boolean {
+            return isBrsBoolean(value) && value.toBoolean();
+        }
+    }
+
+    visitThrow(statement: Stmt.Throw): never {
+        let errDetail = RuntimeErrorDetail.UserDefined;
+        errDetail.message = "";
+        const extraFields: Map<string, BrsType> = new Map<string, BrsType>();
+        let toThrow = this.evaluate(statement.value);
+        if (isStringComp(toThrow)) {
+            errDetail.message = toThrow.getValue();
+        } else if (toThrow instanceof RoAssociativeArray) {
+            for (const [key, element] of toThrow.elements) {
+                if (key.toLowerCase() === "number") {
+                    errDetail = validateErrorNumber(element, errDetail);
+                } else if (key.toLowerCase() === "message") {
+                    errDetail = validateErrorMessage(element, errDetail);
+                } else if (key.toLowerCase() === "backtrace") {
+                    if (element instanceof RoArray) {
+                        extraFields.set("backtrace", element);
+                        extraFields.set("rethrown", BrsBoolean.True);
+                    } else {
+                        errDetail = RuntimeErrorDetail.MalformedThrow;
+                        errDetail.message = `Thrown "backtrace" is not an object.`;
+                    }
+                } else if (key.toLowerCase() !== "rethrown") {
+                    extraFields.set(key, element);
+                }
+                if (errDetail.errno === RuntimeErrorDetail.MalformedThrow.errno) {
+                    extraFields.clear();
+                    break;
+                }
+            }
+        } else {
+            errDetail = RuntimeErrorDetail.MalformedThrow;
+            errDetail.message = `Thrown value neither string nor roAssociativeArray.`;
+        }
+        throw new RuntimeError(errDetail, statement.location, this._stack.slice(), extraFields);
+        // Validation Functions
+        function validateErrorNumber(element: BrsType, errDetail: ErrorDetail): ErrorDetail {
+            if (element instanceof Int32) {
+                errDetail.errno = element.getValue();
+                if (errDetail.message === "") {
+                    const foundErr = findErrorDetail(element.getValue());
+                    errDetail.message = foundErr ? foundErr.message : "UNKNOWN ERROR";
+                }
+            } else if (!(element instanceof BrsInvalid)) {
+                return {
+                    errno: RuntimeErrorDetail.MalformedThrow.errno,
+                    message: `Thrown "number" is not an integer.`,
+                };
+            }
+            return errDetail;
+        }
+        function validateErrorMessage(element: BrsType, errDetail: ErrorDetail): ErrorDetail {
+            if (element instanceof BrsString) {
+                errDetail.message = element.toString();
+            } else if (!(element instanceof BrsInvalid)) {
+                return {
+                    errno: RuntimeErrorDetail.MalformedThrow.errno,
+                    message: `Thrown "message" is not a string.`,
+                };
+            }
+            return errDetail;
+        }
     }
 
     visitBlock(block: Stmt.Block): BrsType {
@@ -1087,11 +1174,8 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
         let args = expression.args.map(this.evaluate, this);
 
         if (!isBrsCallable(callee)) {
-            return this.addError(
-                new BrsError(
-                    `'${functionName}' is not a function and cannot be called.`,
-                    expression.closingParen.location
-                )
+            this.addError(
+                new RuntimeError(RuntimeErrorDetail.NotAFunction, expression.closingParen.location)
             );
         }
 
@@ -1116,7 +1200,20 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
                 }
                 return this.inSubEnv((subInterpreter) => {
                     subInterpreter.environment.setM(mPointer);
-                    return callee.call(this, ...args);
+                    this._stack.push({
+                        functionName: functionName,
+                        functionLocation: callee.getLocation() ?? this.location,
+                        callLocation: expression.callee.location,
+                        signature: signature,
+                    });
+                    try {
+                        const returnValue = callee.call(this, ...args);
+                        this._stack.pop();
+                        return returnValue;
+                    } catch (err) {
+                        this._stack.pop();
+                        throw err;
+                    }
                 });
             } catch (reason) {
                 if (!(reason instanceof Stmt.BlockEnd)) {
@@ -1126,56 +1223,52 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
 
                 let returnedValue = (reason as Stmt.ReturnValue).value;
                 let returnLocation = (reason as Stmt.ReturnValue).location;
+                const signatureKind = satisfiedSignature.signature.returns;
 
-                if (returnedValue && satisfiedSignature.signature.returns === ValueKind.Void) {
+                if (returnedValue && signatureKind === ValueKind.Void) {
                     this.addError(
-                        new Stmt.Runtime(
-                            `Attempting to return value of non-void type ${ValueKind.toString(
-                                returnedValue.kind
-                            )} ` + `from function ${callee.getName()} with void return type.`,
-                            returnLocation
-                        )
+                        new RuntimeError(RuntimeErrorDetail.ReturnWithValue, returnLocation)
                     );
                 }
 
-                if (!returnedValue && satisfiedSignature.signature.returns !== ValueKind.Void) {
+                if (!returnedValue && signatureKind !== ValueKind.Void) {
                     this.addError(
-                        new Stmt.Runtime(
-                            `Attempting to return void value from function ${callee.getName()} with non-void return type.`,
-                            returnLocation
-                        )
+                        new RuntimeError(RuntimeErrorDetail.ReturnWithoutValue, returnLocation)
                     );
+                }
+
+                if (returnedValue) {
+                    let coercedValue = tryCoerce(returnedValue, signatureKind);
+                    if (coercedValue != null) {
+                        return coercedValue;
+                    }
                 }
 
                 if (
                     returnedValue &&
-                    isBoxable(returnedValue) &&
-                    satisfiedSignature.signature.returns === ValueKind.Object
-                ) {
-                    returnedValue = returnedValue.box();
-                }
-
-                if (
-                    returnedValue &&
-                    satisfiedSignature.signature.returns !== ValueKind.Dynamic &&
-                    satisfiedSignature.signature.returns !== returnedValue.kind
+                    signatureKind !== ValueKind.Dynamic &&
+                    signatureKind !== returnedValue.kind
                 ) {
                     this.addError(
-                        new Stmt.Runtime(
-                            `Attempting to return value of type ${ValueKind.toString(
-                                returnedValue.kind
-                            )}, ` +
-                                `but function ${callee.getName()} declares return value of type ` +
-                                ValueKind.toString(satisfiedSignature.signature.returns),
-                            returnLocation
-                        )
+                        new TypeMismatch({
+                            message: `Unable to cast`,
+                            left: {
+                                type: signatureKind,
+                                location: returnLocation,
+                            },
+                            right: {
+                                type: returnedValue,
+                                location: returnLocation,
+                            },
+                            cast: true,
+                        })
                     );
                 }
 
                 return returnedValue || BrsInvalid.Instance;
             }
         } else {
-            return this.addError(
+            this.addError(
                 generateArgumentMismatchError(callee, args, expression.closingParen.location)
             );
         }
@@ -1192,7 +1285,7 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
                 }
                 return target;
             } catch (err: any) {
-                return this.addError(new BrsError(err.message, expression.name.location));
+                this.addError(new BrsError(err.message, expression.name.location));
             }
         }
 
@@ -1201,17 +1294,11 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
             try {
                 return boxedSource.getMethod(expression.name.text) || BrsInvalid.Instance;
             } catch (err: any) {
-                return this.addError(new BrsError(err.message, expression.name.location));
+                this.addError(new BrsError(err.message, expression.name.location));
             }
         } else {
-            return this.addError(
-                new TypeMismatch({
-                    message: "DottedGet: Attempting to retrieve property from non-iterable value",
-                    left: {
-                        type: source,
-                        location: expression.location,
-                    },
-                })
+            this.addError(
+                new RuntimeError(RuntimeErrorDetail.DotOnNonObject, expression.name.location)
             );
         }
     }
@@ -1219,15 +1306,7 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
     visitIndexedGet(expression: Expr.IndexedGet): BrsType {
         let source = this.evaluate(expression.obj);
         if (!isIterable(source)) {
-            this.addError(
-                new TypeMismatch({
-                    message: "IndexedGet: Attempting to retrieve property from non-iterable value",
-                    left: {
-                        type: source,
-                        location: expression.location,
-                    },
-                })
-            );
+            this.addError(new RuntimeError(RuntimeErrorDetail.UndimmedArray, expression.location));
         }
 
         let index = this.evaluate(expression.index);
@@ -1251,7 +1330,7 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
         try {
             return source.get(index, true);
         } catch (err: any) {
-            return this.addError(new BrsError(err.message, expression.closingSquare.location));
+            this.addError(new BrsError(err.message, expression.closingSquare.location));
         }
     }
 
@@ -1457,21 +1536,13 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
         let value = this.evaluate(statement.value);
 
         if (!isIterable(source)) {
-            return this.addError(
-                new TypeMismatch({
-                    message: "Attempting to set property on non-iterable value",
-                    left: {
-                        type: source,
-                        location: statement.name.location,
-                    },
-                })
-            );
+            this.addError(new RuntimeError(RuntimeErrorDetail.BadLHS, statement.name.location));
         }
 
         try {
             source.set(new BrsString(statement.name.text), value);
         } catch (err: any) {
-            return this.addError(new BrsError(err.message, statement.name.location));
+            this.addError(new BrsError(err.message, statement.name.location));
         }
 
         return BrsInvalid.Instance;
@@ -1481,20 +1552,12 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
         let source = this.evaluate(statement.obj);
 
         if (!isIterable(source)) {
-            return this.addError(
-                new TypeMismatch({
-                    message: "Attempting to set property on non-iterable value",
-                    left: {
-                        type: source,
-                        location: statement.obj.location,
-                    },
-                })
-            );
+            this.addError(new RuntimeError(RuntimeErrorDetail.BadLHS, statement.obj.location));
         }
 
         let index = this.evaluate(statement.index);
         if (!isBrsNumber(index) && !isBrsString(index)) {
-            return this.addError(
+            this.addError(
                 new TypeMismatch({
                     message: "Attempting to set property on iterable with illegal index type",
                     left: {
@@ -1514,7 +1577,7 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
         try {
             source.set(index, value, true);
         } catch (err: any) {
-            return this.addError(new BrsError(err.message, statement.closingSquare.location));
+            this.addError(new BrsError(err.message, statement.closingSquare.location));
         }
 
         return BrsInvalid.Instance;
@@ -1528,13 +1591,14 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
 
         if (!isBrsNumber(target)) {
             let operation = statement.token.kind === Lexeme.PlusPlus ? "increment" : "decrement";
-            return this.addError(
-                new BrsError(
-                    `Attempting to ${operation} value of non-numeric type ${ValueKind.toString(
-                        target.kind
-                    )}`,
-                    statement.location
-                )
+            this.addError(
+                new TypeMismatch({
+                    message: `Attempting to ${operation} value of non-numeric type`,
+                    left: {
+                        type: target,
+                        location: statement.location,
+                    },
+                })
             );
         }
 
@@ -1636,43 +1700,59 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
 
     evaluate(this: Interpreter, expression: Expr.Expression): BrsType {
         this.location = expression.location;
-        this.stack.push(this.location);
         this.reportCoverageHit(expression);
 
-        let value;
-        try {
-            value = expression.accept<BrsType>(this);
-            this.stack.pop();
-        } catch (err) {
-            this.stack.pop();
-            throw err;
-        }
-
-        return value;
+        return expression.accept<BrsType>(this);
     }
 
     execute(this: Interpreter, statement: Stmt.Statement): BrsType {
         this.location = statement.location;
-        this.stack.push(this.location);
         this.reportCoverageHit(statement);
 
-        let value;
-        try {
-            value = statement.accept<BrsType>(this);
-            this.stack.pop();
-        } catch (err) {
-            this.stack.pop();
-            throw err;
-        }
+        return statement.accept<BrsType>(this);
+    }
 
-        return value;
+    /**
+     * Returns the Backtrace formatted as an array for Try/Catch
+     * @param loc the location of the error
+     * @param bt the backtrace array, default is current stack trace
+     * @returns an array with the backtrace formatted
+     */
+    formatBacktrace(loc: Location, bt?: TracePoint[]): RoArray {
+        const backTrace = bt ?? this._stack;
+        const btArray: BrsType[] = [];
+        for (let index = backTrace.length - 1; index >= 0; index--) {
+            const func = backTrace[index];
+            if (func.signature) {
+                const kind = ValueKind.toString(func.signature.returns);
+                let args = "";
+                func.signature.args.forEach((arg) => {
+                    args += args !== "" ? "," : "";
+                    args += `${arg.name.text} As ${ValueKind.toString(arg.type.kind)}`;
+                });
+                const funcSignature = `${func.functionName}(${args}) As ${kind}`;
+                const line = loc.start.line;
+                btArray.unshift(
+                    new RoAssociativeArray([
+                        {
+                            name: new BrsString("filename"),
+                            value: new BrsString(loc?.file ?? "()"),
+                        },
+                        { name: new BrsString("function"), value: new BrsString(funcSignature) },
+                        { name: new BrsString("line_number"), value: new Int32(line) },
+                    ])
+                );
+                loc = func.callLocation;
+            }
+        }
+        return new RoArray(btArray);
     }
 
     /**
      * Method to return the current scope of the interpreter for the REPL and Micro Debugger
      * @returns a string representation of the local variables in the current scope
      */
-    debugLocalVariables(): string {
+    formatLocalVariables(): string {
         let debugMsg = `${"global".padEnd(16)} Interface:ifGlobal\r\n`;
         debugMsg += `${"m".padEnd(16)} roAssociativeArray count:${
             this.environment.getM().getElements().length
@@ -1724,8 +1804,14 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
      * @param err the ParseError to emit then throw
      */
     public addError(err: BrsError): never {
-        this.errors.push(err);
-        this.events.emit("err", err);
+        if (!err.backTrace) {
+            err.backTrace = this._stack.slice();
+        }
+        if (!this._tryMode) {
+            // do not save/emit the error if we are in a try block
+            this.errors.push(err);
+            this.events.emit("err", err);
+        }
         throw err;
     }
 

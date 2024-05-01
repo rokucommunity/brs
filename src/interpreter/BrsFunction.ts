@@ -15,7 +15,7 @@ import { Scope, Environment } from "./Environment";
  * @returns a `Callable` version of that function
  */
 export function toCallable(func: Expr.Function, name: string = "[Function]") {
-    return new Callable(name, {
+    const callFunc = new Callable(name, {
         signature: {
             args: func.parameters,
             returns: func.returns,
@@ -26,4 +26,6 @@ export function toCallable(func: Expr.Function, name: string = "[Function]") {
             return func.body.accept(interpreter);
         },
     });
+    callFunc.setLocation(func.location);
+    return callFunc;
 }

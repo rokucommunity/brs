@@ -72,7 +72,7 @@ describe("interpreter boolean algebra", () => {
             )
         );
 
-        expect(() => interpreter.exec([ast])).toThrow(/Attempting to 'and' boolean/);
+        expect(() => interpreter.exec([ast])).toThrow(/Type Mismatch./);
     });
 
     it("mixed-type ORs with Number non-zero", () => {
@@ -110,6 +110,6 @@ describe("interpreter boolean algebra", () => {
             )
         );
 
-        expect(() => interpreter.exec([ast])).toThrow(/Attempting to 'or' boolean/);
+        expect(() => interpreter.exec([ast])).toThrow(/Type Mismatch./);
     });
 });

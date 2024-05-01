@@ -39,6 +39,3 @@ export class ReturnValue extends BlockEnd {
         super("`return` encountered", location);
     }
 }
-
-/** An error thrown when a BrightScript runtime error is encountered. */
-export class Runtime extends BlockEnd {}

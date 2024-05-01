@@ -610,8 +610,8 @@ export class RoSGNode extends BrsComponent implements BrsValue, BrsIterable {
             },
             impl: (
                 interpreter: Interpreter,
-                functionname: BrsString,
-                ...functionargs: BrsType[]
+                functionName: BrsString,
+                ...functionArgs: BrsType[]
             ) => {
                 // We need to search the callee's environment for this function rather than the caller's.
                 let componentDef = interpreter.environment.nodeDefMap.get(
@@ -619,20 +619,20 @@ export class RoSGNode extends BrsComponent implements BrsValue, BrsIterable {
                 );
 
                 // Only allow public functions (defined in the interface) to be called.
-                if (componentDef && functionname.value in componentDef.functions) {
+                if (componentDef && functionName.value in componentDef.functions) {
                     // Use the mocked component functions instead of the real one, if it's a mocked component.
                     if (interpreter.environment.isMockedObject(this.nodeSubtype.toLowerCase())) {
-                        let maybeMethod = this.getMethod(functionname.value);
+                        let maybeMethod = this.getMethod(functionName.value);
                         return (
-                            maybeMethod?.call(interpreter, ...functionargs) || BrsInvalid.Instance
+                            maybeMethod?.call(interpreter, ...functionArgs) || BrsInvalid.Instance
                         );
                     }
 
                     return interpreter.inSubEnv((subInterpreter) => {
-                        let functionToCall = subInterpreter.getCallableFunction(functionname.value);
+                        let functionToCall = subInterpreter.getCallableFunction(functionName.value);
                         if (!functionToCall) {
                             interpreter.stderr.write(
-                                `Ignoring attempt to call non-implemented function ${functionname}`
+                                `Ignoring attempt to call non-implemented function ${functionName}`
                             );
                             return BrsInvalid.Instance;
                         }
@@ -643,16 +643,38 @@ export class RoSGNode extends BrsComponent implements BrsValue, BrsIterable {
 
                         try {
                             // Determine whether the function should get arguments or not.
-                            if (functionToCall.getFirstSatisfiedSignature(functionargs)) {
-                                return functionToCall.call(subInterpreter, ...functionargs);
-                            } else if (functionToCall.getFirstSatisfiedSignature([])) {
-                                return functionToCall.call(subInterpreter);
+                            let satisfiedSignature =
+                                functionToCall.getFirstSatisfiedSignature(functionArgs);
+                            let args = satisfiedSignature ? functionArgs : [];
+                            if (!satisfiedSignature) {
+                                satisfiedSignature = functionToCall.getFirstSatisfiedSignature([]);
+                            }
+                            if (satisfiedSignature) {
+                                const funcLoc =
+                                    functionToCall.getLocation() ?? interpreter.location;
+                                interpreter.addToStack({
+                                    functionName: functionName.value,
+                                    functionLocation: funcLoc,
+                                    callLocation: funcLoc,
+                                    signature: satisfiedSignature.signature,
+                                });
+                                try {
+                                    const returnValue = functionToCall.call(
+                                        subInterpreter,
+                                        ...args
+                                    );
+                                    interpreter.stack.pop();
+                                    return returnValue;
+                                } catch (err) {
+                                    throw err;
+                                }
                             } else {
                                 return interpreter.addError(
                                     generateArgumentMismatchError(
                                         functionToCall,
-                                        functionargs,
-                                        subInterpreter.stack[subInterpreter.stack.length - 1]
+                                        functionArgs,
+                                        interpreter.stack[interpreter.stack.length - 1]
+                                            .functionLocation
                                     )
                                 );
                             }
@@ -667,7 +689,7 @@ export class RoSGNode extends BrsComponent implements BrsValue, BrsIterable {
                 }
 
                 interpreter.stderr.write(
-                    `Warning calling function in ${this.nodeSubtype}: no function interface specified for ${functionname}`
+                    `Warning calling function in ${this.nodeSubtype}: no function interface specified for ${functionName}`
                 );
                 return BrsInvalid.Instance;
             },

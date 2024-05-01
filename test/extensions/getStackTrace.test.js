@@ -1,6 +1,6 @@
 const brs = require("../../lib");
 const { Int32 } = require("../../lib/brsTypes/Int32");
-const { Callable, BrsString, BrsInvalid, RoArray, RoAssociativeArray, ValueKind } = brs.types;
+const { BrsString, RoArray } = brs.types;
 const { GetStackTrace } = require("../../lib/extensions/GetStackTrace");
 const { Interpreter } = require("../../lib/interpreter");
 
@@ -9,7 +9,7 @@ describe("GetStackTrace", () => {
 
     beforeEach(() => {
         interpreter = new Interpreter();
-        interpreter.stack = [
+        [
             {
                 file: "a/b/c.brs",
                 start: {
@@ -31,7 +31,13 @@ describe("GetStackTrace", () => {
                     column: 2,
                 },
             },
-        ];
+        ].forEach((location) => {
+            interpreter.addToStack({
+                functionName: "(internal)",
+                functionLocation: location,
+                callLocation: location,
+            });
+        });
     });
 
     it("returns a correctly formatted stack trace", () => {
