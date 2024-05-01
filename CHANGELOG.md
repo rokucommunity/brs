@@ -6,6 +6,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+## [0.46.0](https://github.com/rokucommunity/brs/compare/v0.45.5...v0.46.0) - 2024-05-01
+### Added
+ - Implement `try...catch` and `throw` ([#72](https://github.com/rokucommunity/brs/pull/72))
+ - Implemented `Continue For/While` statements ([#70](https://github.com/rokucommunity/brs/pull/70))
+ - Implement `ifArraySizeInfo` in `roArray` ([#62](https://github.com/rokucommunity/brs/pull/62))
+ - Implemented `slice()` method in `roArray` under `ifArraySlice` ([#61](https://github.com/rokucommunity/brs/pull/61))
+ - Implemented `Box()` function and improved boxing ([#54](https://github.com/rokucommunity/brs/pull/54))
+ - Implemented `roByteArray` component ([#53](https://github.com/rokucommunity/brs/pull/53))
+ - Implemented `roPath` component and fixed Interpreter Comparisons ([#50](https://github.com/rokucommunity/brs/pull/50))
+ - Added to CLI: colorization and commans `help`, `clear` and `vars` ([#49](https://github.com/rokucommunity/brs/pull/49))
+### Fixed
+ - Added support for bitwise NOT for numeric values ([#51](https://github.com/rokucommunity/brs/pull/51))
+ - Fix `roDeviceInfo` method typo and some test cases ([#69](https://github.com/rokucommunity/brs/pull/69))
+ - Fixed Unit Tests `.todo` and `.skip` ([#71](https://github.com/rokucommunity/brs/pull/71))
+ - Fixed `print` semi-colon behavior ([#67](https://github.com/rokucommunity/brs/pull/67))
+
+
+
 ## [0.45.5](https://github.com/rokucommunity/brs/compare/v0.45.4...v0.45.5) - 2024-03-28
 ### Added
  - implemented `roString` methods `startsWith()` and `endsWith()` ([#44](https://github.com/rokucommunity/brs/pull/44))
