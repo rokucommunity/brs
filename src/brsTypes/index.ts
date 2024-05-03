@@ -68,6 +68,7 @@ export * from "./components/ContentNode";
 export * from "./components/Timer";
 export * from "./components/RoAppInfo";
 export * from "./components/RoPath";
+export * from "./Boxing";
 export * from "./coercion";
 
 /**
