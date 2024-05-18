@@ -159,6 +159,8 @@ describe("end to end standard libary", () => {
             "<Interface: ifStringOps>",
             "<Interface: ifIntOps>",
             "<Interface: ifToStr>",
+            "",
+            "true",
         ]);
     });
 });
