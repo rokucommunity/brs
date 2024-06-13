@@ -321,7 +321,11 @@ export class FileCoverage implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType
 
     visitIndexedSet(statement: Stmt.IndexedSet) {
         this.evaluate(statement.obj);
-        this.evaluate(statement.index);
+        statement.indexes.forEach((exprOrToken) => {
+            if (!isToken(exprOrToken)) {
+                this.evaluate(exprOrToken);
+            }
+        });
         this.evaluate(statement.value);
 
         return BrsInvalid.Instance;
@@ -370,7 +374,11 @@ export class FileCoverage implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType
 
     visitIndexedGet(expression: Expr.IndexedGet) {
         this.evaluate(expression.obj);
-        this.evaluate(expression.index);
+        expression.indexes.forEach((exprOrToken) => {
+            if (!isToken(exprOrToken)) {
+                this.evaluate(exprOrToken);
+            }
+        });
         return BrsInvalid.Instance;
     }
 

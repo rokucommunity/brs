@@ -40,7 +40,7 @@ describe("property getting", () => {
                     identifier("result"),
                     new Expr.IndexedGet(
                         new Expr.Variable(identifier("array")),
-                        new Expr.Literal(new Int32(1), fakeLocation),
+                        [new Expr.Literal(new Int32(1), fakeLocation)],
                         RIGHT_SQUARE
                     )
                 ),
@@ -98,10 +98,10 @@ describe("property getting", () => {
                     new Expr.IndexedGet(
                         new Expr.IndexedGet(
                             new Expr.Variable(identifier("array")),
-                            new Expr.Literal(new Int32(2), fakeLocation),
+                            [new Expr.Literal(new Int32(2), fakeLocation)],
                             RIGHT_SQUARE
                         ),
-                        new Expr.Literal(new Int32(1), fakeLocation),
+                        [new Expr.Literal(new Int32(1), fakeLocation)],
                         RIGHT_SQUARE
                     )
                 ),

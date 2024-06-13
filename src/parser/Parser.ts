@@ -1114,7 +1114,7 @@ export class Parser {
 
                     return new Stmt.IndexedSet(
                         left.obj,
-                        left.index,
+                        left.indexes,
                         operator.kind === Lexeme.Equal
                             ? right
                             : new Expr.Binary(left, operator, right),
@@ -1353,7 +1353,7 @@ export class Parser {
                 return undefined;
             }
 
-            //the block's location starts at the end of the preceeding token, and stops at the beginning of the `end` token
+            //the block's location starts at the end of the preceding token, and stops at the beginning of the `end` token
             const location: Location = {
                 file: startingToken.location.file,
                 start: startingToken.location.start,
@@ -1477,17 +1477,32 @@ export class Parser {
             let expr = primary();
 
             function indexedGet() {
-                while (match(Lexeme.Newline));
-
-                let index = expression();
+                let elements: Expression[] = [];
 
                 while (match(Lexeme.Newline));
+
+                if (!match(Lexeme.RightSquare)) {
+                    elements.push(expression());
+
+                    while (match(Lexeme.Comma, Lexeme.Newline)) {
+                        while (match(Lexeme.Newline));
+
+                        if (check(Lexeme.RightSquare)) {
+                            break;
+                        }
+
+                        elements.push(expression());
+                    }
+                }
+                if (elements.length === 0) {
+                    throw addError(peek(), "Expected expression inside brackets []");
+                }
                 let closingSquare = consume(
                     "Expected ']' after array or object index",
                     Lexeme.RightSquare
                 );
 
-                expr = new Expr.IndexedGet(expr, index, closingSquare);
+                expr = new Expr.IndexedGet(expr, elements, closingSquare);
             }
 
             function dottedGet() {}

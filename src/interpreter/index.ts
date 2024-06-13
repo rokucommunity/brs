@@ -25,6 +25,10 @@ import {
     roInvalid,
     PrimitiveKinds,
     Signature,
+    RoByteArray,
+    RoList,
+    RoXMLElement,
+    RoSGNode,
 } from "../brsTypes";
 
 import { Lexeme, Location } from "../lexer";
@@ -1309,29 +1313,72 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
             this.addError(new RuntimeError(RuntimeErrorDetail.UndimmedArray, expression.location));
         }
 
-        let index = this.evaluate(expression.index);
-        if (!isBrsNumber(index) && !isBrsString(index)) {
-            this.addError(
-                new TypeMismatch({
-                    message:
-                        "Attempting to retrieve property from iterable with illegal index type",
-                    left: {
-                        type: source,
-                        location: expression.obj.location,
-                    },
-                    right: {
-                        type: index,
-                        location: expression.index.location,
-                    },
-                })
-            );
+        if (
+            source instanceof RoAssociativeArray ||
+            source instanceof RoXMLElement ||
+            source instanceof RoSGNode
+        ) {
+            if (expression.indexes.length !== 1) {
+                this.addError(
+                    new RuntimeError(
+                        RuntimeErrorDetail.WrongNumberOfParams,
+                        expression.closingSquare.location
+                    )
+                );
+            }
+            let index = this.evaluate(expression.indexes[0]);
+            if (!isBrsString(index)) {
+                this.addError(
+                    new TypeMismatch({
+                        message: `"String" should be used as key, but received`,
+                        left: {
+                            type: index,
+                            location: expression.indexes[0].location,
+                        },
+                    })
+                );
+            }
+            try {
+                return source.get(index, true);
+            } catch (err: any) {
+                this.addError(new BrsError(err.message, expression.closingSquare.location));
+            }
         }
-
-        try {
-            return source.get(index, true);
-        } catch (err: any) {
-            this.addError(new BrsError(err.message, expression.closingSquare.location));
+        if (source instanceof RoByteArray) {
+            if (expression.indexes.length !== 1) {
+                this.addError(
+                    new RuntimeError(
+                        RuntimeErrorDetail.BadNumberOfIndexes,
+                        expression.closingSquare.location
+                    )
+                );
+            }
         }
+        let current: BrsType = source;
+        for (let index of expression.indexes) {
+            let dimIndex = this.evaluate(index);
+            if (!isBrsNumber(dimIndex)) {
+                this.addError(
+                    new RuntimeError(RuntimeErrorDetail.NonNumericArrayIndex, index.location)
+                );
+            }
+            if (
+                current instanceof RoArray ||
+                current instanceof RoByteArray ||
+                current instanceof RoList
+            ) {
+                try {
+                    current = current.get(dimIndex);
+                } catch (err: any) {
+                    this.addError(new BrsError(err.message, index.location));
+                }
+            } else {
+                this.addError(
+                    new RuntimeError(RuntimeErrorDetail.BadNumberOfIndexes, expression.location)
+                );
+            }
+        }
+        return current;
     }
 
     visitGrouping(expr: Expr.Grouping) {
@@ -1549,35 +1596,99 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
     }
 
     visitIndexedSet(statement: Stmt.IndexedSet) {
+        let value = this.evaluate(statement.value);
         let source = this.evaluate(statement.obj);
 
         if (!isIterable(source)) {
             this.addError(new RuntimeError(RuntimeErrorDetail.BadLHS, statement.obj.location));
         }
 
-        let index = this.evaluate(statement.index);
-        if (!isBrsNumber(index) && !isBrsString(index)) {
-            this.addError(
-                new TypeMismatch({
-                    message: "Attempting to set property on iterable with illegal index type",
-                    left: {
-                        type: source,
-                        location: statement.obj.location,
-                    },
-                    right: {
-                        type: index,
-                        location: statement.index.location,
-                    },
-                })
-            );
+        if (
+            source instanceof RoAssociativeArray ||
+            source instanceof RoXMLElement ||
+            source instanceof RoSGNode
+        ) {
+            if (statement.indexes.length !== 1) {
+                this.addError(
+                    new RuntimeError(
+                        RuntimeErrorDetail.WrongNumberOfParams,
+                        statement.closingSquare.location
+                    )
+                );
+            }
+            let index = this.evaluate(statement.indexes[0]);
+            if (!isBrsString(index)) {
+                this.addError(
+                    new TypeMismatch({
+                        message: `"String" should be used as key, but received`,
+                        left: {
+                            type: index,
+                            location: statement.indexes[0].location,
+                        },
+                    })
+                );
+            }
+            try {
+                source.set(index, value, true);
+            } catch (err: any) {
+                this.addError(new BrsError(err.message, statement.closingSquare.location));
+            }
+            return BrsInvalid.Instance;
+        }
+        if (source instanceof RoByteArray) {
+            if (statement.indexes.length !== 1) {
+                this.addError(
+                    new RuntimeError(
+                        RuntimeErrorDetail.BadNumberOfIndexes,
+                        statement.closingSquare.location
+                    )
+                );
+            }
         }
 
-        let value = this.evaluate(statement.value);
+        let current: BrsType = source;
+        for (let i = 0; i < statement.indexes.length; i++) {
+            let index = this.evaluate(statement.indexes[i]);
+            if (!isBrsNumber(index)) {
+                this.addError(
+                    new RuntimeError(
+                        RuntimeErrorDetail.NonNumericArrayIndex,
+                        statement.indexes[i].location
+                    )
+                );
+            }
 
-        try {
-            source.set(index, value, true);
-        } catch (err: any) {
-            this.addError(new BrsError(err.message, statement.closingSquare.location));
+            if (i < statement.indexes.length - 1) {
+                if (
+                    current instanceof RoArray ||
+                    current instanceof RoByteArray ||
+                    current instanceof RoList
+                ) {
+                    try {
+                        current = current.get(index);
+                    } catch (err: any) {
+                        this.addError(new BrsError(err.message, statement.closingSquare.location));
+                    }
+                } else {
+                    this.addError(
+                        new RuntimeError(RuntimeErrorDetail.BadNumberOfIndexes, statement.location)
+                    );
+                }
+            } else if (
+                current instanceof RoArray ||
+                current instanceof RoByteArray ||
+                current instanceof RoList
+            ) {
+                try {
+                    current.set(index, value);
+                } catch (err: any) {
+                    this.addError(new BrsError(err.message, statement.closingSquare.location));
+                }
+            } else {
+                this.addError(
+                    new RuntimeError(RuntimeErrorDetail.BadNumberOfIndexes, statement.location)
+                );
+            }
         }
 
         return BrsInvalid.Instance;
@@ -1626,7 +1737,7 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
             this.execute(
                 new Stmt.IndexedSet(
                     statement.value.obj,
-                    statement.value.index,
+                    statement.value.indexes,
                     new Expr.Literal(result, statement.location),
                     statement.value.closingSquare
                 )
