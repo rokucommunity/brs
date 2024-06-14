@@ -2,6 +2,7 @@ const { Interpreter } = require("../../lib/interpreter");
 const { FormatJson, ParseJson } = require("../../lib/stdlib/index");
 const { RoArray } = require("../../lib/brsTypes/components/RoArray");
 const { RoAssociativeArray } = require("../../lib/brsTypes/components/RoAssociativeArray");
+const { RoDateTime } = require("../../lib/brsTypes/components/RoDateTime");
 const {
     BrsBoolean,
     BrsInvalid,
@@ -49,6 +50,18 @@ describe("global JSON functions", () => {
                     new BrsString("")
                 );
             });
+        });
+
+        it("returns `null` for non-convertible types (flag 256)", () => {
+            expect(FormatJson.call(interpreter, new RoDateTime(), new Int32(256))).toEqual(
+                new BrsString("null")
+            );
+        });
+
+        it("returns the type annotation for non-convertible types (flag 512)", () => {
+            expect(FormatJson.call(interpreter, new RoDateTime(), new Int32(512))).toEqual(
+                new BrsString(`"<roDateTime>"`)
+            );
         });
 
         it("rejects nested associative array references", () => {
