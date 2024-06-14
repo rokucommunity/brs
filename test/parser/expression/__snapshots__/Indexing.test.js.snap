@@ -55,23 +55,25 @@ Array [
         },
         "text": "]",
       },
-      "index": Literal {
-        "_location": Object {
-          "end": Object {
-            "column": -9,
-            "line": -9,
+      "indexes": Array [
+        Literal {
+          "_location": Object {
+            "end": Object {
+              "column": -9,
+              "line": -9,
+            },
+            "start": Object {
+              "column": -9,
+              "line": -9,
+            },
           },
-          "start": Object {
-            "column": -9,
-            "line": -9,
+          "type": "Literal",
+          "value": Int32 {
+            "kind": 4,
+            "value": 6,
           },
         },
-        "type": "Literal",
-        "value": Int32 {
-          "kind": 4,
-          "value": 6,
-        },
-      },
+      ],
       "obj": IndexedGet {
         "closingSquare": Object {
           "isReserved": false,
@@ -89,23 +91,25 @@ Array [
           },
           "text": "]",
         },
-        "index": Literal {
-          "_location": Object {
-            "end": Object {
-              "column": -9,
-              "line": -9,
+        "indexes": Array [
+          Literal {
+            "_location": Object {
+              "end": Object {
+                "column": -9,
+                "line": -9,
+              },
+              "start": Object {
+                "column": -9,
+                "line": -9,
+              },
             },
-            "start": Object {
-              "column": -9,
-              "line": -9,
+            "type": "Literal",
+            "value": Int32 {
+              "kind": 4,
+              "value": 0,
             },
           },
-          "type": "Literal",
-          "value": Int32 {
-            "kind": 4,
-            "value": 0,
-          },
-        },
+        ],
         "obj": IndexedGet {
           "closingSquare": Object {
             "isReserved": false,
@@ -123,23 +127,25 @@ Array [
             },
             "text": "]",
           },
-          "index": Literal {
-            "_location": Object {
-              "end": Object {
-                "column": -9,
-                "line": -9,
+          "indexes": Array [
+            Literal {
+              "_location": Object {
+                "end": Object {
+                  "column": -9,
+                  "line": -9,
+                },
+                "start": Object {
+                  "column": -9,
+                  "line": -9,
+                },
               },
-              "start": Object {
-                "column": -9,
-                "line": -9,
+              "type": "Literal",
+              "value": Int32 {
+                "kind": 4,
+                "value": 2,
               },
             },
-            "type": "Literal",
-            "value": Int32 {
-              "kind": 4,
-              "value": 2,
-            },
-          },
+          ],
           "obj": Variable {
             "name": Object {
               "isReserved": false,
@@ -321,23 +327,25 @@ Array [
           },
           "text": "]",
         },
-        "index": Literal {
-          "_location": Object {
-            "end": Object {
-              "column": -9,
-              "line": -9,
+        "indexes": Array [
+          Literal {
+            "_location": Object {
+              "end": Object {
+                "column": -9,
+                "line": -9,
+              },
+              "start": Object {
+                "column": -9,
+                "line": -9,
+              },
             },
-            "start": Object {
-              "column": -9,
-              "line": -9,
+            "type": "Literal",
+            "value": Int32 {
+              "kind": 4,
+              "value": 0,
             },
           },
-          "type": "Literal",
-          "value": Int32 {
-            "kind": 4,
-            "value": 0,
-          },
-        },
+        ],
         "obj": DottedGet {
           "name": Object {
             "isReserved": false,
@@ -439,23 +447,25 @@ Array [
         },
         "text": "]",
       },
-      "index": Literal {
-        "_location": Object {
-          "end": Object {
-            "column": -9,
-            "line": -9,
+      "indexes": Array [
+        Literal {
+          "_location": Object {
+            "end": Object {
+              "column": -9,
+              "line": -9,
+            },
+            "start": Object {
+              "column": -9,
+              "line": -9,
+            },
           },
-          "start": Object {
-            "column": -9,
-            "line": -9,
+          "type": "Literal",
+          "value": Int32 {
+            "kind": 4,
+            "value": 2,
           },
         },
-        "type": "Literal",
-        "value": Int32 {
-          "kind": 4,
-          "value": 2,
-        },
-      },
+      ],
       "obj": Variable {
         "name": Object {
           "isReserved": false,
@@ -616,23 +626,25 @@ Array [
         },
         "text": "]",
       },
-      "index": Literal {
-        "_location": Object {
-          "end": Object {
-            "column": -9,
-            "line": -9,
+      "indexes": Array [
+        Literal {
+          "_location": Object {
+            "end": Object {
+              "column": -9,
+              "line": -9,
+            },
+            "start": Object {
+              "column": -9,
+              "line": -9,
+            },
           },
-          "start": Object {
-            "column": -9,
-            "line": -9,
+          "type": "Literal",
+          "value": Int32 {
+            "kind": 4,
+            "value": 2,
           },
         },
-        "type": "Literal",
-        "value": Int32 {
-          "kind": 4,
-          "value": 2,
-        },
-      },
+      ],
       "obj": Variable {
         "name": Object {
           "isReserved": false,

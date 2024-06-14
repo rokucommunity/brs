@@ -37,7 +37,7 @@ describe("property setting", () => {
                 ),
                 new Stmt.IndexedSet(
                     new Expr.Variable(identifier("array")),
-                    new Expr.Literal(new Int32(0), fakeLocation),
+                    [new Expr.Literal(new Int32(0), fakeLocation)],
                     new Expr.Literal(new BrsString("new index0"), fakeLocation),
                     RIGHT_SQUARE
                 ),
@@ -46,7 +46,7 @@ describe("property setting", () => {
                     identifier("result"),
                     new Expr.IndexedGet(
                         new Expr.Variable(identifier("array")),
-                        new Expr.Literal(new Int32(0), fakeLocation),
+                        [new Expr.Literal(new Int32(0), fakeLocation)],
                         RIGHT_SQUARE
                     )
                 ),
@@ -101,10 +101,10 @@ describe("property setting", () => {
                 new Stmt.IndexedSet(
                     new Expr.IndexedGet(
                         new Expr.Variable(identifier("array")),
-                        new Expr.Literal(new Int32(2), fakeLocation),
+                        [new Expr.Literal(new Int32(2), fakeLocation)],
                         RIGHT_SQUARE
                     ),
-                    new Expr.Literal(new Int32(1), fakeLocation),
+                    [new Expr.Literal(new Int32(1), fakeLocation)],
                     new Expr.Literal(new BrsString("new (2,1)"), fakeLocation),
                     RIGHT_SQUARE
                 ),
@@ -114,10 +114,10 @@ describe("property setting", () => {
                     new Expr.IndexedGet(
                         new Expr.IndexedGet(
                             new Expr.Variable(identifier("array")),
-                            new Expr.Literal(new Int32(2), fakeLocation),
+                            [new Expr.Literal(new Int32(2), fakeLocation)],
                             RIGHT_SQUARE
                         ),
-                        new Expr.Literal(new Int32(1), fakeLocation),
+                        [new Expr.Literal(new Int32(1), fakeLocation)],
                         RIGHT_SQUARE
                     )
                 ),
@@ -155,7 +155,7 @@ describe("property setting", () => {
                 ),
                 new Stmt.IndexedSet(
                     new Expr.Variable(identifier("aa")),
-                    new Expr.Literal(new BrsString("bar"), fakeLocation),
+                    [new Expr.Literal(new BrsString("bar"), fakeLocation)],
                     new Expr.Literal(new BrsString("added bar"), fakeLocation),
                     RIGHT_BRACE
                 ),
@@ -212,7 +212,7 @@ describe("property setting", () => {
                 new Stmt.DottedSet(
                     new Expr.IndexedGet(
                         new Expr.Variable(identifier("aa")),
-                        new Expr.Literal(new BrsString("foo"), fakeLocation),
+                        [new Expr.Literal(new BrsString("foo"), fakeLocation)],
                         RIGHT_SQUARE
                     ),
                     identifier("bar"),
@@ -220,7 +220,7 @@ describe("property setting", () => {
                 ),
                 new Stmt.IndexedSet(
                     new Expr.DottedGet(new Expr.Variable(identifier("aa")), identifier("foo")),
-                    new Expr.Literal(new BrsString("baz"), fakeLocation),
+                    [new Expr.Literal(new BrsString("baz"), fakeLocation)],
                     new Expr.Literal(new BrsString("added aa.foo.baz"), fakeLocation),
                     RIGHT_SQUARE
                 ),

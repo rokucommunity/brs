@@ -27,6 +27,12 @@ describe("end to end iterables", () => {
             " 27", // two-dimensional index
             " 16", // 2 ^ 4
             "foo bar", // oneDimensional[0] += " bar"
+            "f",
+            "f",
+            "f",
+            "f",
+            "invalid",
+            "true",
         ]);
     });
 

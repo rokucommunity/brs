@@ -389,7 +389,7 @@ describe("FileCoverage statements", () => {
         checkSimpleStatement(
             new Stmt.IndexedSet(
                 new Expr.Variable(identifier("aa")),
-                new Expr.Literal(new BrsString("bar"), generateLocation(1)),
+                [new Expr.Literal(new BrsString("bar"), generateLocation(1))],
                 new Expr.Literal(new BrsString("added bar"), generateLocation(2)),
                 token(Lexeme.RightBrace, "}")
             )

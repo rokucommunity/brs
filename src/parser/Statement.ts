@@ -575,7 +575,7 @@ export class DottedSet extends AstNode implements Statement {
 export class IndexedSet extends AstNode implements Statement {
     constructor(
         readonly obj: Expr.Expression,
-        readonly index: Expr.Expression,
+        readonly indexes: Expr.Expression[],
         readonly value: Expr.Expression,
         readonly closingSquare: Token
     ) {
