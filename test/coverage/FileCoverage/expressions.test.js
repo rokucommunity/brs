@@ -229,7 +229,7 @@ describe("FileCoverage expressions", () => {
         checkSimpleExpression(
             new Expr.IndexedGet(
                 new Expr.Variable(identifier("array")),
-                new Expr.Literal(new Int32(4), fakeLocation),
+                [new Expr.Literal(new Int32(4), fakeLocation)],
                 RIGHT_SQUARE
             ),
             /* expected number of internal statements (IndexedGet, Variable, Literal) */ 3

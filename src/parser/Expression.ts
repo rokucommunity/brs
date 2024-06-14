@@ -114,7 +114,7 @@ export class DottedGet extends AstNode implements Expression {
 export class IndexedGet extends AstNode implements Expression {
     constructor(
         readonly obj: Expression,
-        readonly index: Expression,
+        readonly indexes: Expression[],
         readonly closingSquare: Token
     ) {
         super("IndexedGet");
