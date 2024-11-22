@@ -250,7 +250,7 @@ export class Lexer {
                             break;
                         case "[":
                             advance();
-                            addToken(Lexeme.LeftBrace);
+                            addToken(Lexeme.LeftSquare);
                             break;
                         default:
                             addToken(Lexeme.Print);

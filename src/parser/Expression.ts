@@ -51,7 +51,8 @@ export class Call extends AstNode implements Expression {
     constructor(
         readonly callee: Expression,
         readonly closingParen: Token,
-        readonly args: Expression[]
+        readonly args: Expression[],
+        readonly optional: boolean = false
     ) {
         super("Call");
     }
@@ -94,7 +95,11 @@ export class Function extends AstNode implements Expression {
 }
 
 export class DottedGet extends AstNode implements Expression {
-    constructor(readonly obj: Expression, readonly name: Identifier) {
+    constructor(
+        readonly obj: Expression,
+        readonly name: Identifier,
+        readonly optional: boolean = false
+    ) {
         super("DottedGet");
     }
 
@@ -115,7 +120,8 @@ export class IndexedGet extends AstNode implements Expression {
     constructor(
         readonly obj: Expression,
         readonly indexes: Expression[],
-        readonly closingSquare: Token
+        readonly closingSquare: Token,
+        readonly optional: boolean = false
     ) {
         super("IndexedGet");
     }

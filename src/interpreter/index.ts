@@ -1178,6 +1178,9 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
         let args = expression.args.map(this.evaluate, this);
 
         if (!isBrsCallable(callee)) {
+            if (callee instanceof BrsInvalid && expression.optional) {
+                return callee;
+            }
             this.addError(
                 new RuntimeError(RuntimeErrorDetail.NotAFunction, expression.closingParen.location)
             );
@@ -1295,21 +1298,31 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
 
         let boxedSource = isBoxable(source) ? source.box() : source;
         if (boxedSource instanceof BrsComponent) {
+            // This check is supposed to be placed below the try/catch block,
+            // but it's here to mimic the behavior of Roku, if they fix, we move it.
+            if (source instanceof BrsInvalid && expression.optional) {
+                return source;
+            }
             try {
-                return boxedSource.getMethod(expression.name.text) || BrsInvalid.Instance;
+                const method = boxedSource.getMethod(expression.name.text);
+                if (method) {
+                    return method;
+                }
             } catch (err: any) {
                 this.addError(new BrsError(err.message, expression.name.location));
             }
-        } else {
-            this.addError(
-                new RuntimeError(RuntimeErrorDetail.DotOnNonObject, expression.name.location)
-            );
         }
+        this.addError(
+            new RuntimeError(RuntimeErrorDetail.DotOnNonObject, expression.name.location)
+        );
     }
 
     visitIndexedGet(expression: Expr.IndexedGet): BrsType {
         let source = this.evaluate(expression.obj);
         if (!isIterable(source)) {
+            if (source instanceof BrsInvalid && expression.optional) {
+                return source;
+            }
             this.addError(new RuntimeError(RuntimeErrorDetail.UndimmedArray, expression.location));
         }
 

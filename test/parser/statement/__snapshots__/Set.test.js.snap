@@ -114,6 +114,7 @@ Array [
           },
           "type": "Variable",
         },
+        "optional": false,
         "type": "IndexedGet",
       },
       "right": Literal {
@@ -460,6 +461,7 @@ Array [
           },
           "type": "Variable",
         },
+        "optional": false,
         "type": "DottedGet",
       },
       "right": Literal {
