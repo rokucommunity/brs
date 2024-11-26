@@ -2898,6 +2898,7 @@ Array [
         },
         "text": ")",
       },
+      "optional": false,
       "type": "Call",
     },
     "type": "Expression",

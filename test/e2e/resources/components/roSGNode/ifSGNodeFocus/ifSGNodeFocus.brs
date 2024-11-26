@@ -53,7 +53,7 @@ sub init()
 end sub
 
 function getMessage(node as object, event as object) as string
-    print "*" + node.id + "* " + node.focusedChild.id.toStr() + " " + event.getData().id.toStr() + " " + node.isInFocusChain().toStr()
+    print "*" + node.id + "* " + node.focusedChild?.id.toStr() + " " + event.getData()?.id.toStr() + " " + node.isInFocusChain().toStr()
 end function
 
 sub onFocusTop(event as object)
