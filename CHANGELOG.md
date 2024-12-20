@@ -6,6 +6,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+## [0.47.1](https://github.com/rokucommunity/brs/compare/v0.47.0...v0.47.1) - 2024-12-20
+### Changed
+ - Implemented Optional Chaining Operators ([#81](https://github.com/rokucommunity/brs/pull/81))
+
+
+
 ## [0.47.0](https://github.com/rokucommunity/brs/compare/v0.46.0...v0.47.0) - 2024-06-14
 ### Added
  - Added support for `formatJson()` undocumented flags 256 and 512 ([#79](https://github.com/rokucommunity/brs/pull/79))
