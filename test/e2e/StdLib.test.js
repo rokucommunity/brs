@@ -163,4 +163,31 @@ describe("end to end standard libary", () => {
             "true",
         ]);
     });
+
+    test("stdlib/create-object.brs", async () => {
+        await execute([resourceFile("stdlib", "create-object.brs")], outputStreams);
+
+        expect(allArgs(outputStreams.stdout.write).filter((arg) => arg !== "\n")).toEqual([
+            "false",
+            "false",
+            " 0",
+            " 0",
+            " 0",
+            " 0",
+            " 0",
+            " 0",
+            " 0",
+            " 0",
+            "invalid",
+            "",
+            "",
+            "<Component: roInvalid>",
+            "<Component: roInvalid>",
+            "false",
+            " 0",
+            " 245",
+            "invalid",
+            " 245",
+        ]);
+    });
 });
