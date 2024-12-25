@@ -1312,9 +1312,7 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
                 errorDetail = RuntimeErrorDetail.MemberFunctionNotFound;
             }
         }
-        this.addError(
-            new RuntimeError(errorDetail, expression.name.location)
-        );
+        this.addError(new RuntimeError(errorDetail, expression.name.location));
     }
 
     visitIndexedGet(expression: Expr.IndexedGet): BrsType {
