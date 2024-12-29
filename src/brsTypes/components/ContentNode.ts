@@ -1,11 +1,10 @@
 import { FieldModel, Field, RoSGNode } from "./RoSGNode";
-import { BrsType } from "..";
+import { BrsType, toAssociativeArray } from "..";
 import { ValueKind, BrsString, BrsBoolean } from "../BrsType";
 import { Interpreter } from "../../interpreter";
 import { Int32 } from "../Int32";
 import { Callable, StdlibArgument } from "../Callable";
 import { RoArray } from "./RoArray";
-import { RoAssociativeArray } from "./RoAssociativeArray";
 
 export class ContentNode extends RoSGNode {
     readonly defaultFields: FieldModel[] = [
@@ -208,16 +207,7 @@ export class ContentNode extends RoSGNode {
         impl: (interpreter: Interpreter) => {
             return new RoArray(
                 this.getElements().map((key: BrsString) => {
-                    return new RoAssociativeArray([
-                        {
-                            name: new BrsString("key"),
-                            value: key,
-                        },
-                        {
-                            name: new BrsString("value"),
-                            value: this.get(key),
-                        },
-                    ]);
+                    return toAssociativeArray({ key: key, value: this.get(key) });
                 })
             );
         },

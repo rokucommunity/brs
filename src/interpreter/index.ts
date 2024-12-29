@@ -29,6 +29,7 @@ import {
     RoList,
     RoXMLElement,
     RoSGNode,
+    toAssociativeArray,
 } from "../brsTypes";
 
 import { Lexeme, Location } from "../lexer";
@@ -1054,12 +1055,12 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
             if (err instanceof RuntimeError) {
                 errDetail = err.errorDetail;
             }
-            const errorAA = new RoAssociativeArray([
-                { name: new BrsString("backtrace"), value: btArray },
-                { name: new BrsString("message"), value: new BrsString(errMessage) },
-                { name: new BrsString("number"), value: new Int32(errDetail.errno) },
-                { name: new BrsString("rethrown"), value: BrsBoolean.False },
-            ]);
+            const errorAA = toAssociativeArray({
+                backtrace: btArray,
+                message: errMessage,
+                number: errDetail.errno,
+                rethrown: false,
+            });
             if (err instanceof RuntimeError && err.extraFields?.size) {
                 for (const [key, value] of err.extraFields) {
                     errorAA.set(new BrsString(key), value);
@@ -1847,27 +1848,20 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
         const btArray: BrsType[] = [];
         for (let index = backTrace.length - 1; index >= 0; index--) {
             const func = backTrace[index];
-            if (func.signature) {
-                const kind = ValueKind.toString(func.signature.returns);
-                let args = "";
-                func.signature.args.forEach((arg) => {
-                    args += args !== "" ? "," : "";
-                    args += `${arg.name.text} As ${ValueKind.toString(arg.type.kind)}`;
-                });
-                const funcSignature = `${func.functionName}(${args}) As ${kind}`;
-                const line = loc.start.line;
-                btArray.unshift(
-                    new RoAssociativeArray([
-                        {
-                            name: new BrsString("filename"),
-                            value: new BrsString(loc?.file ?? "()"),
-                        },
-                        { name: new BrsString("function"), value: new BrsString(funcSignature) },
-                        { name: new BrsString("line_number"), value: new Int32(line) },
-                    ])
-                );
-                loc = func.callLocation;
+            if (!func.signature) {
+                continue;
             }
+            const kind = ValueKind.toString(func.signature.returns);
+            let args = "";
+            func.signature.args.forEach((arg) => {
+                args += args !== "" ? "," : "";
+                args += `${arg.name.text} As ${ValueKind.toString(arg.type.kind)}`;
+            });
+            const funcSig = `${func.functionName}(${args}) As ${kind}`;
+            const line = loc.start.line;
+            const info = { filename: loc?.file ?? "()", function: funcSig, line_number: line };
+            btArray.unshift(toAssociativeArray(info));
+            loc = func.callLocation;
         }
         return new RoArray(btArray);
     }
@@ -1939,6 +1933,11 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
         throw err;
     }
 
+    /**
+     * Method to evaluate if a number is positive
+     * @param value number to evaluate
+     * @returns boolean indicating if the number is positive
+     */
     private isPositive(value: number | Long): boolean {
         if (value instanceof Long) {
             return value.isPositive();
@@ -1946,6 +1945,12 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
         return value >= 0;
     }
 
+    /**
+     * Method to evaluate if a number is lees than the other
+     * @param value Number to evaluate
+     * @param compare Number to compare
+     * @returns Boolean indicating if the number is less than the other
+     */
     private lessThan(value: number | Long, compare: number): boolean {
         if (value instanceof Long) {
             return value.lessThan(compare);

@@ -1,5 +1,5 @@
 import { BrsValue, ValueKind, BrsString, BrsBoolean, BrsInvalid } from "../BrsType";
-import { BrsType, Int32, RoArray } from "..";
+import { BrsType, Int32, RoArray, toAssociativeArray } from "..";
 import { BrsComponent } from "./BrsComponent";
 import { Callable, StdlibArgument } from "../Callable";
 import { RoAssociativeArray, AAMember } from "./RoAssociativeArray";
@@ -535,12 +535,7 @@ export class RoDeviceInfo extends BrsComponent implements BrsValue {
             returns: ValueKind.Object,
         },
         impl: (_interpreter, videoFormat: ValueKind.Object) => {
-            let result = new Array<AAMember>();
-
-            result.push({ name: new BrsString("result"), value: BrsBoolean.True });
-            result.push({ name: new BrsString("codec"), value: new BrsString("mpeg4 avc") });
-
-            return new RoAssociativeArray(result);
+            return toAssociativeArray({ result: true, codec: "mpeg4 avc" });
         },
     });
 
@@ -601,11 +596,7 @@ export class RoDeviceInfo extends BrsComponent implements BrsValue {
             returns: ValueKind.Object,
         },
         impl: (_interpreter, audioFormat: ValueKind.Object) => {
-            let result = new Array<AAMember>();
-
-            result.push({ name: new BrsString("result"), value: BrsBoolean.True });
-
-            return new RoAssociativeArray(result);
+            return toAssociativeArray({ result: true });
         },
     });
 

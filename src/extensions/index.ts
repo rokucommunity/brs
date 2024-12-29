@@ -1,4 +1,4 @@
-import { RoAssociativeArray, BrsString, mGlobal } from "../brsTypes";
+import { RoAssociativeArray, BrsString, mGlobal, toAssociativeArray } from "../brsTypes";
 import { mockComponent } from "./mockComponent";
 import { mockFunction } from "./mockFunction";
 import { mockComponentPartial } from "./mockComponentPartial";
@@ -14,22 +14,22 @@ import {
 import { triggerKeyEvent } from "./triggerKeyEvent";
 import { GetStackTrace } from "./GetStackTrace";
 
-export const _brs_ = new RoAssociativeArray([
-    { name: new BrsString("mockComponent"), value: mockComponent },
-    { name: new BrsString("mockFunction"), value: mockFunction },
-    { name: new BrsString("mockComponentPartial"), value: mockComponentPartial },
-    { name: new BrsString("resetMocks"), value: resetMocks },
-    { name: new BrsString("resetMockComponents"), value: resetMockComponents },
-    { name: new BrsString("resetMockComponent"), value: resetMockComponent },
-    { name: new BrsString("resetMockFunctions"), value: resetMockFunctions },
-    { name: new BrsString("resetMockFunction"), value: resetMockFunction },
-    { name: new BrsString("runInScope"), value: RunInScope },
-    { name: new BrsString("process"), value: Process },
-    { name: new BrsString("global"), value: mGlobal },
-    { name: new BrsString("testData"), value: new RoAssociativeArray([]) },
-    { name: new BrsString("triggerKeyEvent"), value: triggerKeyEvent },
-    { name: new BrsString("getStackTrace"), value: GetStackTrace },
-]);
+export const _brs_ = toAssociativeArray({
+    mockComponent: mockComponent,
+    mockFunction: mockFunction,
+    mockComponentPartial: mockComponentPartial,
+    resetMocks: resetMocks,
+    resetMockComponents: resetMockComponents,
+    resetMockComponent: resetMockComponent,
+    resetMockFunctions: resetMockFunctions,
+    resetMockFunction: resetMockFunction,
+    runInScope: RunInScope,
+    process: Process,
+    global: mGlobal,
+    testData: new RoAssociativeArray([]),
+    triggerKeyEvent: triggerKeyEvent,
+    getStackTrace: GetStackTrace,
+});
 
 /** resets _brs_.testData values to `{}` in brightscript representation */
 export function resetTestData() {
