@@ -1,6 +1,6 @@
 const brs = require("../../lib");
-const { RoAssociativeArray, BrsString, BrsInvalid, BrsInterface, RoSGNode } = brs.types;
-const { GetInterface, FindMemberFunction } = require("../../lib/stdlib");
+const { RoAssociativeArray, BrsString, BrsInvalid, BrsInterface, RoSGNode, Int32 } = brs.types;
+const { GetInterface, FindMemberFunction, ObjFun } = require("../../lib/stdlib");
 const { Interpreter } = require("../../lib/interpreter");
 
 describe("global utility functions", () => {
@@ -56,6 +56,45 @@ describe("global utility functions", () => {
 
             expect(memberFunction).toBeInstanceOf(BrsInterface);
             expect(memberFunction.name).toBe("ifSGNodeDict");
+        });
+    });
+    describe("ObjFun", () => {
+        it("successfully call a method of a function with no arguments", () => {
+            let assocarray = new RoAssociativeArray([
+                { name: new BrsString("letter1"), value: new BrsString("a") },
+                { name: new BrsString("letter2"), value: new BrsString("b") },
+            ]);
+            let iface = GetInterface.call(
+                interpreter,
+                assocarray,
+                new BrsString("ifAssociativeArray")
+            );
+            expect(iface).toBeInstanceOf(BrsInterface);
+            expect(iface.name).toBe("ifAssociativeArray");
+            let result = ObjFun.call(interpreter, assocarray, iface, new BrsString("Count"));
+            expect(result).toEqual(new Int32(2));
+        });
+
+        it("successfully call a method of a function with arguments", () => {
+            let assocarray = new RoAssociativeArray([
+                { name: new BrsString("letter1"), value: new BrsString("a") },
+                { name: new BrsString("letter2"), value: new BrsString("b") },
+            ]);
+            let iface = GetInterface.call(
+                interpreter,
+                assocarray,
+                new BrsString("ifAssociativeArray")
+            );
+            expect(iface).toBeInstanceOf(BrsInterface);
+            expect(iface.name).toBe("ifAssociativeArray");
+            let result = ObjFun.call(
+                interpreter,
+                assocarray,
+                iface,
+                new BrsString("lookup"),
+                new BrsString("letter1")
+            );
+            expect(result).toEqual(new BrsString("a"));
         });
     });
 });
