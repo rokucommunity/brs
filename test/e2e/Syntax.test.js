@@ -135,13 +135,15 @@ describe("end to end syntax", () => {
         await execute([resourceFile("optional-chaining-operators.brs")], outputStreams);
 
         expect(allArgs(outputStreams.stdout.write).filter((arg) => arg !== "\n")).toEqual([
+            " 236",
             "invalid",
             "invalid",
             "invalid",
             "invalid",
             "invalid",
             "invalid",
-            "invalid",
+            "invalid as string",
+            " 244",
         ]);
     });
 
