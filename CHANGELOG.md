@@ -6,6 +6,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+## [0.47.2](https://github.com/rokucommunity/brs/compare/v0.47.1...v0.47.2) - 2025-01-03
+### Added
+ - Implemented `ObjFun()` and aligned behavior of `CreateObject()` with Roku ([#84](https://github.com/rokucommunity/brs/pull/84))
+### Changed
+ - Implemented function `toAssociativeArray()` to simplify creation of AA in TypeScript code ([#85](https://github.com/rokucommunity/brs/pull/85))
+### Fixed
+ - Fixed dot chaining error scenarios ([#83](https://github.com/rokucommunity/brs/pull/83))
+
+
+
 ## [0.47.1](https://github.com/rokucommunity/brs/compare/v0.47.0...v0.47.1) - 2024-12-20
 ### Changed
  - Implemented Optional Chaining Operators ([#81](https://github.com/rokucommunity/brs/pull/81))
