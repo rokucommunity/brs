@@ -10,7 +10,7 @@ import {
 } from "../BrsType";
 import { RoSGNodeEvent } from "./RoSGNodeEvent";
 import { BrsComponent, BrsIterable } from "./BrsComponent";
-import { BrsType, isBrsNumber } from "..";
+import { BrsType, isBrsNumber, toAssociativeArray } from "..";
 import { Callable, StdlibArgument } from "../Callable";
 import { Interpreter } from "../../interpreter";
 import { Int32 } from "../Int32";
@@ -807,16 +807,7 @@ export class RoSGNode extends BrsComponent implements BrsValue, BrsIterable {
         impl: (interpreter: Interpreter) => {
             return new RoArray(
                 this.getElements().map((key: BrsString) => {
-                    return new RoAssociativeArray([
-                        {
-                            name: new BrsString("key"),
-                            value: key,
-                        },
-                        {
-                            name: new BrsString("value"),
-                            value: this.get(key),
-                        },
-                    ]);
+                    return toAssociativeArray({ key: key, value: this.get(key) });
                 })
             );
         },
@@ -1532,13 +1523,7 @@ export class RoSGNode extends BrsComponent implements BrsValue, BrsIterable {
             returns: ValueKind.Dynamic,
         },
         impl: (interpreter: Interpreter) => {
-            const zeroValue = new Int32(0);
-            return new RoAssociativeArray([
-                { name: new BrsString("x"), value: zeroValue },
-                { name: new BrsString("y"), value: zeroValue },
-                { name: new BrsString("height"), value: zeroValue },
-                { name: new BrsString("width"), value: zeroValue },
-            ]);
+            return toAssociativeArray({ x: 0, y: 0, width: 0, height: 0 });
         },
     });
 
