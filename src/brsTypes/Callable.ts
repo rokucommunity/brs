@@ -64,7 +64,9 @@ export class StdlibArgument implements Argument {
 /** A BrightScript `function` or `sub`'s signature. */
 export interface Signature {
     /** The set of arguments a function accepts. */
-    readonly args: ReadonlyArray<Argument>;
+    readonly args: Argument[];
+    /** Whether the function accepts a variable number of arguments. */
+    readonly variadic?: boolean;
     /** The type of BrightScript value the function will return. `sub`s must use `ValueKind.Void`. */
     readonly returns: Brs.ValueKind;
 }
@@ -280,7 +282,7 @@ export class Callable implements Brs.BrsValue {
                 expected: signature.args.length.toString(),
                 received: args.length.toString(),
             });
-        } else if (args.length > signature.args.length) {
+        } else if (!signature.variadic && args.length > signature.args.length) {
             reasons.push({
                 reason: MismatchReason.TooManyArguments,
                 expected: signature.args.length.toString(),

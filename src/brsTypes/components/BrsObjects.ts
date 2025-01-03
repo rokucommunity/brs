@@ -25,37 +25,94 @@ import { BrsComponent } from "./BrsComponent";
 import { RoAppInfo } from "./RoAppInfo";
 import { RoPath } from "./RoPath";
 
+// Class to define a case-insensitive map of BrightScript objects.
+class BrsObjectsMap {
+    private readonly map = new Map<
+        string,
+        { originalKey: string; value: Function; params: number }
+    >();
+
+    constructor(entries: [string, Function, number?][]) {
+        entries.forEach(([key, value, params]) => this.set(key, value, params));
+    }
+
+    get(key: string) {
+        const entry = this.map.get(key.toLowerCase());
+        return entry ? entry.value : undefined;
+    }
+
+    set(key: string, value: Function, params?: number) {
+        return this.map.set(key.toLowerCase(), {
+            originalKey: key,
+            value: value,
+            params: params ?? 0,
+        });
+    }
+
+    has(key: string) {
+        return this.map.has(key.toLowerCase());
+    }
+
+    delete(key: string) {
+        return this.map.delete(key.toLowerCase());
+    }
+
+    clear() {
+        return this.map.clear();
+    }
+
+    values() {
+        return Array.from(this.map.values()).map((entry) => entry.value);
+    }
+
+    keys() {
+        return Array.from(this.map.values()).map((entry) => entry.originalKey);
+    }
+
+    // Returns the number of parameters required by the object constructor.
+    // >=0 = exact number of parameters required
+    // -1  = ignore parameters, create object with no parameters
+    // -2  = do not check for minimum number of parameters
+    params(key: string) {
+        const entry = this.map.get(key.toLowerCase());
+        return entry ? entry.params : -1;
+    }
+}
+
 /** Map containing a list of BrightScript components that can be created. */
-export const BrsObjects = new Map<string, Function>([
-    ["roassociativearray", (_: Interpreter) => new RoAssociativeArray([])],
+export const BrsObjects = new BrsObjectsMap([
+    ["roAssociativeArray", (_: Interpreter) => new RoAssociativeArray([])],
     [
-        "roarray",
+        "roArray",
         (interpreter: Interpreter, capacity: Int32 | Float, resizable: BrsBoolean) =>
             new RoArray(capacity, resizable),
+        2,
     ],
-    ["rolist", (_: Interpreter) => new RoList([])],
-    ["robytearray", (_: Interpreter) => new RoByteArray()],
-    ["rodatetime", (_: Interpreter) => new RoDateTime()],
-    ["rotimespan", (_: Interpreter) => new Timespan()],
-    ["rodeviceinfo", (_: Interpreter) => new RoDeviceInfo()],
+    ["roList", (_: Interpreter) => new RoList([])],
+    ["roByteArray", (_: Interpreter) => new RoByteArray()],
+    ["roDateTime", (_: Interpreter) => new RoDateTime()],
+    ["roTimespan", (_: Interpreter) => new Timespan()],
+    ["roDeviceInfo", (_: Interpreter) => new RoDeviceInfo()],
     [
-        "rosgnode",
+        "roSGNode",
         (interpreter: Interpreter, nodeType: BrsString) => createNodeByType(interpreter, nodeType),
+        1,
     ],
     [
-        "roregex",
+        "roRegex",
         (_: Interpreter, expression: BrsString, flags: BrsString) => new RoRegex(expression, flags),
+        2,
     ],
-    ["roxmlelement", (_: Interpreter) => new RoXMLElement()],
-    ["rostring", (_: Interpreter) => new RoString()],
-    ["roboolean", (_: Interpreter, literal: BrsBoolean) => new roBoolean(literal)],
-    ["rodouble", (_: Interpreter, literal: Double) => new roDouble(literal)],
-    ["rofloat", (_: Interpreter, literal: Float) => new roFloat(literal)],
-    ["roint", (_: Interpreter, literal: Int32) => new roInt(literal)],
-    ["rolonginteger", (_: Interpreter, literal: Int64) => new roLongInteger(literal)],
-    ["roappinfo", (_: Interpreter) => new RoAppInfo()],
-    ["ropath", (interpreter: Interpreter, path: BrsString) => new RoPath(path)],
-    ["roinvalid", (_: Interpreter) => new roInvalid()],
+    ["roXMLElement", (_: Interpreter) => new RoXMLElement()],
+    ["roString", (_: Interpreter) => new RoString(), -1],
+    ["roBoolean", (_: Interpreter, literal: BrsBoolean) => new roBoolean(literal), -1],
+    ["roDouble", (_: Interpreter, literal: Double) => new roDouble(literal), -1],
+    ["roFloat", (_: Interpreter, literal: Float) => new roFloat(literal), -1],
+    ["roInt", (_: Interpreter, literal: Int32) => new roInt(literal), -1],
+    ["roLongInteger", (_: Interpreter, literal: Int64) => new roLongInteger(literal), -1],
+    ["roAppInfo", (_: Interpreter) => new RoAppInfo()],
+    ["roPath", (_: Interpreter, path: BrsString) => new RoPath(path), 1],
+    ["roInvalid", (_: Interpreter) => new roInvalid(), -1],
 ]);
 
 /**
