@@ -1,18 +1,18 @@
 const brs = require("../../../lib");
-const { ComponentFactory, RoSGNode, Callable, ValueKind } = brs.types;
+const { NodeFactory, RoSGNode, Callable, ValueKind } = brs.types;
 
-describe("ComponentFactory", () => {
+describe("NodeFactory", () => {
     describe("createComponent", () => {
         it("returns a properly constructed built in Node with default name", () => {
-            const component = ComponentFactory.createComponent("Rectangle");
-            expect(component.nodeSubtype).toBe("Rectangle");
-            expect(component.name).toBe("Rectangle");
-            expect(component.constructor.name).toBe("Rectangle");
+            const node = NodeFactory.createComponent("Rectangle");
+            expect(node.nodeSubtype).toBe("Rectangle");
+            expect(node.name).toBe("Rectangle");
+            expect(node.constructor.name).toBe("Rectangle");
         });
         it("returns a properly constructed built in Node with custom name", () => {
-            const component = ComponentFactory.createComponent("Poster", "Foo");
-            expect(component.nodeSubtype).toBe("Foo");
-            expect(component.constructor.name).toBe("Poster");
+            const node = NodeFactory.createComponent("Poster", "Foo");
+            expect(node.nodeSubtype).toBe("Foo");
+            expect(node.constructor.name).toBe("Poster");
         });
     });
 
@@ -42,7 +42,7 @@ describe("ComponentFactory", () => {
         }
 
         it("adds a new Component to be constructed", () => {
-            ComponentFactory.addComponentTypes([
+            NodeFactory.addNodeTypes([
                 [
                     "Foo",
                     (name) => {
@@ -50,10 +50,10 @@ describe("ComponentFactory", () => {
                     },
                 ],
             ]);
-            const component = ComponentFactory.createComponent("Foo");
-            expect(component.nodeSubtype).toBe("Foo");
-            expect(component.name).toBe("Foo");
-            expect(component.constructor.name).toBe("Foo");
+            const node = NodeFactory.createComponent("Foo");
+            expect(node.nodeSubtype).toBe("Foo");
+            expect(node.name).toBe("Foo");
+            expect(node.constructor.name).toBe("Foo");
         });
     });
 });

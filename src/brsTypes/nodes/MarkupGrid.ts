@@ -1,5 +1,5 @@
-import { FieldModel } from "./RoSGNode";
-import { AAMember } from "./RoAssociativeArray";
+import { FieldModel } from "../components/RoSGNode";
+import { AAMember } from "../components/RoAssociativeArray";
 import { ArrayGrid } from "./ArrayGrid";
 
 export class MarkupGrid extends ArrayGrid {

@@ -21,7 +21,7 @@ import { RoAssociativeArray } from "./RoAssociativeArray";
 import { RoArray } from "./RoArray";
 import { AAMember } from "./RoAssociativeArray";
 import { ComponentDefinition, ComponentNode } from "../../componentprocessor";
-import { ComponentFactory, BrsComponentName } from "./ComponentFactory";
+import { NodeFactory, BrsNodeType } from "../nodes/NodeFactory";
 import { Environment } from "../../interpreter/Environment";
 import { roInvalid } from "./RoInvalid";
 import type * as MockNodeModule from "../../extensions/MockNode";
@@ -1757,10 +1757,10 @@ export function createNodeByType(interpreter: Interpreter, type: BrsString): RoS
         return new mock.MockNode(maybeMock, type.value);
     }
 
-    // If this is a built-in component, then return it.
-    let component = ComponentFactory.createComponent(type.value as BrsComponentName);
-    if (component) {
-        return component;
+    // If this is a built-in node component, then return it.
+    let node = NodeFactory.createComponent(type.value as BrsNodeType);
+    if (node) {
+        return node;
     }
 
     let typeDef = interpreter.environment.nodeDefMap.get(type.value.toLowerCase());
@@ -1783,11 +1783,8 @@ export function createNodeByType(interpreter: Interpreter, type: BrsString): RoS
         // Start from the "basemost" component of the tree.
         typeDef = typeDefStack.pop();
 
-        // If this extends a built-in component, create it.
-        let node = ComponentFactory.createComponent(
-            typeDef!.extends as BrsComponentName,
-            type.value
-        );
+        // If this extends a built-in node component, create it.
+        let node = NodeFactory.createComponent(typeDef!.extends as BrsNodeType, type.value);
 
         // Default to Node as parent.
         if (!node) {

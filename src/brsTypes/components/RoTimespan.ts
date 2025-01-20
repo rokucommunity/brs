@@ -8,7 +8,7 @@ import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import customParseFormat from "dayjs/plugin/customParseFormat";
 
-export class Timespan extends BrsComponent implements BrsValue {
+export class RoTimespan extends BrsComponent implements BrsValue {
     readonly kind = ValueKind.Object;
     private markTime = Date.now();
 

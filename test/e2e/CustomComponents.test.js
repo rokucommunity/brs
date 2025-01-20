@@ -33,7 +33,7 @@ describe("Extending custom components", () => {
     let outputStreams;
 
     beforeAll(() => {
-        brs.types.ComponentFactory.addComponentTypes([["Foo", (name) => new Foo([], name)]]);
+        brs.types.NodeFactory.addNodeTypes([["Foo", (name) => new Foo([], name)]]);
         brs.types.extendBrsObjects([["Foo", (_interpreter) => new Foo()]]);
 
         outputStreams = createMockStreams();
