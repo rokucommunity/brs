@@ -76,7 +76,7 @@ export class ComponentScopeResolver {
 
         let currentComponent: ComponentDefinition | undefined = component;
         while (currentComponent.extends) {
-            // If this is a built-in component, then no work is needed and we can return.
+            // If this is a built-in node component, then no work is needed and we can return.
             if (NodeFactory.canResolveComponentType(currentComponent.extends)) {
                 return Promise.resolve();
             }

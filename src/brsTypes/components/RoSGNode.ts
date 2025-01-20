@@ -1783,7 +1783,7 @@ export function createNodeByType(interpreter: Interpreter, type: BrsString): RoS
         // Start from the "basemost" component of the tree.
         typeDef = typeDefStack.pop();
 
-        // If this extends a built-in component, create it.
+        // If this extends a built-in node component, create it.
         let node = NodeFactory.createComponent(typeDef!.extends as BrsNodeType, type.value);
 
         // Default to Node as parent.
