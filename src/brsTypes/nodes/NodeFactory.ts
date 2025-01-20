@@ -13,10 +13,9 @@ import {
     Scene,
     MiniKeyboard,
     TextEditBox,
-    BrsComponent,
 } from "..";
 
-export enum BrsComponentName {
+export enum BrsNodeType {
     Node = "Node",
     Group = "Group",
     LayoutGroup = "LayoutGroup",
@@ -34,61 +33,61 @@ export enum BrsComponentName {
 }
 
 // TODO: update with more components as they're implemented.
-export class ComponentFactory {
-    private static additionalComponents = new Map<string, (name: string) => RoSGNode>();
+export class NodeFactory {
+    private static additionalNodes = new Map<string, (name: string) => RoSGNode>();
 
     /**
-     * Adds additional components types to the factory, so other software can extend brs if necessary.
+     * Adds additional node/component types to the factory, so other software can extend brs if necessary.
      * This would allow other software using this to add other node/component types at runtime
      * For example, adding custom implementations of the built-in types, or
      * adding additional types (PinPad, BusySpinner, etc) that aren't here yet
      *
      * @static
-     * @param types Array of pairs of [componentTypeName, construction function], such that when a given componentType is requested, the construction function is called and returns one of those components
+     * @param types Array of pairs of [nodeTypeName, construction function], such that when a given nodeType is requested, the construction function is called and returns one of those components
      */
-    public static addComponentTypes(types: [string, (name: string) => RoSGNode][]) {
-        types.forEach(([componentType, ctor]) => {
-            this.additionalComponents.set(componentType.toLowerCase(), ctor);
+    public static addNodeTypes(types: [string, (name: string) => RoSGNode][]) {
+        types.forEach(([nodeType, ctor]) => {
+            this.additionalNodes.set(nodeType.toLowerCase(), ctor);
         });
     }
 
     public static createComponent(
-        componentType: BrsComponentName | string,
-        componentName?: string
+        nodeType: BrsNodeType | string,
+        nodeName?: string
     ): RoSGNode | undefined {
-        let name = componentName || componentType;
-        const additionalCtor = this.additionalComponents.get(componentType?.toLowerCase());
+        let name = nodeName || nodeType;
+        const additionalCtor = this.additionalNodes.get(nodeType?.toLowerCase());
         if (additionalCtor) {
             return additionalCtor(name);
         }
-        switch (componentType) {
-            case BrsComponentName.Group:
+        switch (nodeType) {
+            case BrsNodeType.Group:
                 return new Group([], name);
-            case BrsComponentName.LayoutGroup:
+            case BrsNodeType.LayoutGroup:
                 return new LayoutGroup([], name);
-            case BrsComponentName.Node:
+            case BrsNodeType.Node:
                 return new RoSGNode([], name);
-            case BrsComponentName.Rectangle:
+            case BrsNodeType.Rectangle:
                 return new Rectangle([], name);
-            case BrsComponentName.Label:
+            case BrsNodeType.Label:
                 return new Label([], name);
-            case BrsComponentName.Font:
+            case BrsNodeType.Font:
                 return new Font([], name);
-            case BrsComponentName.Poster:
+            case BrsNodeType.Poster:
                 return new Poster([], name);
-            case BrsComponentName.ArrayGrid:
+            case BrsNodeType.ArrayGrid:
                 return new ArrayGrid([], name);
-            case BrsComponentName.MarkupGrid:
+            case BrsNodeType.MarkupGrid:
                 return new MarkupGrid([], name);
-            case BrsComponentName.ContentNode:
+            case BrsNodeType.ContentNode:
                 return new ContentNode(name);
-            case BrsComponentName.Timer:
+            case BrsNodeType.Timer:
                 return new Timer([], name);
-            case BrsComponentName.Scene:
+            case BrsNodeType.Scene:
                 return new Scene([], name);
-            case BrsComponentName.MiniKeyboard:
+            case BrsNodeType.MiniKeyboard:
                 return new MiniKeyboard([], name);
-            case BrsComponentName.TextEditBox:
+            case BrsNodeType.TextEditBox:
                 return new TextEditBox([], name);
             default:
                 return;
@@ -96,17 +95,17 @@ export class ComponentFactory {
     }
 
     /**
-     * Checks to see if the given component type can be resolved by the Factory
+     * Checks to see if the given node type can be resolved by the Factory
      * That is, if it is a built in type or has been added at run time.
      *
      * @static
-     * @param componentType The name of component to resolve
+     * @param nodeType The name of node to resolve
      * @returns {boolean} true if that type is resolvable/constructable, false otherwise
      */
-    public static canResolveComponentType(componentType: BrsComponentName | string): boolean {
+    public static canResolveComponentType(nodeType: BrsNodeType | string): boolean {
         return (
-            this.additionalComponents.has(componentType?.toLowerCase()) ||
-            componentType in BrsComponentName
+            this.additionalNodes.has(nodeType?.toLowerCase()) ||
+            nodeType in BrsNodeType
         );
     }
 }

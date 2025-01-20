@@ -21,7 +21,7 @@ import { RoAssociativeArray } from "./RoAssociativeArray";
 import { RoArray } from "./RoArray";
 import { AAMember } from "./RoAssociativeArray";
 import { ComponentDefinition, ComponentNode } from "../../componentprocessor";
-import { ComponentFactory, BrsComponentName } from "./ComponentFactory";
+import { NodeFactory, BrsNodeType } from "../nodes/NodeFactory";
 import { Environment } from "../../interpreter/Environment";
 import { roInvalid } from "./RoInvalid";
 import type * as MockNodeModule from "../../extensions/MockNode";
@@ -1758,9 +1758,9 @@ export function createNodeByType(interpreter: Interpreter, type: BrsString): RoS
     }
 
     // If this is a built-in component, then return it.
-    let component = ComponentFactory.createComponent(type.value as BrsComponentName);
-    if (component) {
-        return component;
+    let node = NodeFactory.createComponent(type.value as BrsNodeType);
+    if (node) {
+        return node;
     }
 
     let typeDef = interpreter.environment.nodeDefMap.get(type.value.toLowerCase());
@@ -1784,8 +1784,8 @@ export function createNodeByType(interpreter: Interpreter, type: BrsString): RoS
         typeDef = typeDefStack.pop();
 
         // If this extends a built-in component, create it.
-        let node = ComponentFactory.createComponent(
-            typeDef!.extends as BrsComponentName,
+        let node = NodeFactory.createComponent(
+            typeDef!.extends as BrsNodeType,
             type.value
         );
 
