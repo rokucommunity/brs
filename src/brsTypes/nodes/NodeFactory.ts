@@ -103,9 +103,6 @@ export class NodeFactory {
      * @returns {boolean} true if that type is resolvable/constructable, false otherwise
      */
     public static canResolveComponentType(nodeType: BrsNodeType | string): boolean {
-        return (
-            this.additionalNodes.has(nodeType?.toLowerCase()) ||
-            nodeType in BrsNodeType
-        );
+        return this.additionalNodes.has(nodeType?.toLowerCase()) || nodeType in BrsNodeType;
     }
 }
