@@ -45,9 +45,9 @@ Regardless of whether you're fixing bugs or implementing new features, there's a
 1. Create a fork of this repo if you haven't already
 1. Send us a [pull request](https://github.com/rokucommunity/brs/pulls)!
 
-### Adding a component
+### Adding a Node component
 
-For guidelines on adding a component to `brs`, see [this doc](docs/AddingComponents.md).
+For guidelines on adding a Node component to `brs`, see [this doc](docs/AddingComponents.md).
 
 ## What We Look For in a Pull Request
 
