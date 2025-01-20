@@ -1,10 +1,10 @@
-import { FieldModel, Field, RoSGNode } from "./RoSGNode";
+import { FieldModel, Field, RoSGNode } from "../components/RoSGNode";
 import { BrsType, toAssociativeArray } from "..";
 import { ValueKind, BrsString, BrsBoolean } from "../BrsType";
 import { Interpreter } from "../../interpreter";
 import { Int32 } from "../Int32";
 import { Callable, StdlibArgument } from "../Callable";
-import { RoArray } from "./RoArray";
+import { RoArray } from "../components/RoArray";
 
 export class ContentNode extends RoSGNode {
     readonly defaultFields: FieldModel[] = [

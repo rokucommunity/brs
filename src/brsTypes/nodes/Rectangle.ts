@@ -1,5 +1,5 @@
-import { FieldModel } from "./RoSGNode";
-import { AAMember } from "./RoAssociativeArray";
+import { FieldModel } from "../components/RoSGNode";
+import { AAMember } from "../components/RoAssociativeArray";
 import { Group } from "./Group";
 
 export class Rectangle extends Group {

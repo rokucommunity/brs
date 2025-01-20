@@ -4,7 +4,7 @@ import { RoArray } from "./RoArray";
 import { RoList } from "./RoList";
 import { RoByteArray } from "./RoByteArray";
 import { RoDateTime } from "./RoDateTime";
-import { Timespan } from "./Timespan";
+import { RoTimespan } from "./RoTimespan";
 import { createNodeByType } from "./RoSGNode";
 import { RoRegex } from "./RoRegex";
 import { RoXMLElement } from "./RoXMLElement";
@@ -91,7 +91,7 @@ export const BrsObjects = new BrsObjectsMap([
     ["roList", (_: Interpreter) => new RoList([])],
     ["roByteArray", (_: Interpreter) => new RoByteArray()],
     ["roDateTime", (_: Interpreter) => new RoDateTime()],
-    ["roTimespan", (_: Interpreter) => new Timespan()],
+    ["roTimespan", (_: Interpreter) => new RoTimespan()],
     ["roDeviceInfo", (_: Interpreter) => new RoDeviceInfo()],
     [
         "roSGNode",

@@ -1,5 +1,5 @@
-import { RoSGNode, FieldModel } from "./RoSGNode";
-import { AAMember } from "./RoAssociativeArray";
+import { RoSGNode, FieldModel } from "../components/RoSGNode";
+import { AAMember } from "../components/RoAssociativeArray";
 
 export class Timer extends RoSGNode {
     readonly defaultFields: FieldModel[] = [
