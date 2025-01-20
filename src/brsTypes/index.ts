@@ -69,7 +69,7 @@ export * from "./nodes/Timer";
 export * from "./components/RoAppInfo";
 export * from "./components/RoPath";
 export * from "./Boxing";
-export * from "./Coercions";
+export * from "./Coercion";
 
 /**
  * Determines whether or not the given value is a number.
