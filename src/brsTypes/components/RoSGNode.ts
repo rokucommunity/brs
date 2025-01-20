@@ -1757,7 +1757,7 @@ export function createNodeByType(interpreter: Interpreter, type: BrsString): RoS
         return new mock.MockNode(maybeMock, type.value);
     }
 
-    // If this is a built-in component, then return it.
+    // If this is a built-in node component, then return it.
     let node = NodeFactory.createComponent(type.value as BrsNodeType);
     if (node) {
         return node;
