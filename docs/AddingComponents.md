@@ -30,5 +30,5 @@ This is aimed to be a quick guide for adding a node component to `brs`. Note tha
 1. Add a test case for your Typescript class in [the nodes test directory](https://github.com/rokucommunity/brs/tree/master/test/brsTypes/nodes). Use the existing component test files in that directory as a model for what your test should look like.
 1. Add an end-to-end test case.
     - Create a file in [the end-to-end directory](https://github.com/rokucommunity/brs/tree/master/test/e2e) called `<insert node name>.brs`. In the file, write BrightScript code that exercises your node functionality.
-    - Add an XML file to the [the components test directory](https://github.com/rokucommunity/brs/tree/master/test/brsTypes/nodes) that uses your node.
+    - Add an XML file to the [the components test directory](https://github.com/rokucommunity/brs/tree/master/test/brsTypes/components) that uses your node.
     - Add a test block to [BrsComponents.test.js](https://github.com/rokucommunity/brs/blob/main/test/e2e/BrsComponents.test.js). In this block, verify that the code from your XML and Brightscript files is behaving as expected.
