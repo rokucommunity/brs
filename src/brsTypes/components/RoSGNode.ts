@@ -20,10 +20,10 @@ import { Double } from "../Double";
 import { RoAssociativeArray } from "./RoAssociativeArray";
 import { RoArray } from "./RoArray";
 import { AAMember } from "./RoAssociativeArray";
-import { ComponentDefinition, ComponentNode } from "../../componentprocessor";
+import { ComponentDefinition, ComponentNode } from "../../scenegraph";
 import { NodeFactory, BrsNodeType } from "../nodes/NodeFactory";
 import { Environment } from "../../interpreter/Environment";
-import { roInvalid } from "./RoInvalid";
+import { RoInvalid } from "./RoInvalid";
 import type * as MockNodeModule from "../../extensions/MockNode";
 import { BlockEnd } from "../../parser/Statement";
 import { Stmt } from "../../parser";
@@ -192,7 +192,7 @@ export class Field {
     canAcceptValue(value: BrsType) {
         // Objects are allowed to be set to invalid.
         let fieldIsObject = getValueKindFromFieldType(this.type) === ValueKind.Object;
-        if (fieldIsObject && (value === BrsInvalid.Instance || value instanceof roInvalid)) {
+        if (fieldIsObject && (value === BrsInvalid.Instance || value instanceof RoInvalid)) {
             return true;
         } else if (isBrsNumber(this.value) && isBrsNumber(value)) {
             // can convert between number types
@@ -300,10 +300,10 @@ export class RoSGNode extends BrsComponent implements BrsValue, BrsIterable {
     private parent: RoSGNode | BrsInvalid = BrsInvalid.Instance;
 
     readonly defaultFields: FieldModel[] = [
-        { name: "change", type: "roAssociativeArray" },
-        { name: "focusable", type: "boolean" },
-        { name: "focusedchild", type: "node", alwaysNotify: true },
         { name: "id", type: "string" },
+        { name: "focusedchild", type: "node", alwaysNotify: true },
+        { name: "focusable", type: "boolean" },
+        { name: "change", type: "roAssociativeArray" },
     ];
     m: RoAssociativeArray = new RoAssociativeArray([]);
 
@@ -337,7 +337,7 @@ export class RoSGNode extends BrsComponent implements BrsValue, BrsIterable {
                 this.getfields,
                 this.hasfield,
                 this.observefield,
-                this.unobservefield,
+                this.unobserveField,
                 this.observeFieldScoped,
                 this.unobserveFieldScoped,
                 this.removefield,
@@ -387,7 +387,7 @@ export class RoSGNode extends BrsComponent implements BrsValue, BrsIterable {
         return [
             `<Component: ${componentName}> =`,
             "{",
-            ...Array.from(this.fields.entries()).map(
+            ...Array.from(this.fields.entries()).reverse().map(
                 ([key, value]) => `    ${key}: ${value.toString(this)}`
             ),
             "}",
@@ -630,7 +630,7 @@ export class RoSGNode extends BrsComponent implements BrsValue, BrsIterable {
 
                     return interpreter.inSubEnv((subInterpreter) => {
                         let functionToCall = subInterpreter.getCallableFunction(functionName.value);
-                        if (!functionToCall) {
+                        if (!(functionToCall instanceof Callable)) {
                             interpreter.stderr.write(
                                 `Ignoring attempt to call non-implemented function ${functionName}`
                             );
@@ -947,7 +947,7 @@ export class RoSGNode extends BrsComponent implements BrsValue, BrsIterable {
                     return BrsBoolean.False;
                 }
 
-                if (callableFunction && subscriber) {
+                if (callableFunction instanceof Callable && subscriber) {
                     field.addObserver(
                         "unscoped",
                         interpreter,
@@ -967,7 +967,7 @@ export class RoSGNode extends BrsComponent implements BrsValue, BrsIterable {
     /**
      * Removes all observers of a given field, regardless of whether or not the host node is the subscriber.
      */
-    private unobservefield = new Callable("unobservefield", {
+    private unobserveField = new Callable("unobservefield", {
         signature: {
             args: [new StdlibArgument("fieldname", ValueKind.String)],
             returns: ValueKind.Boolean,
@@ -1011,7 +1011,7 @@ export class RoSGNode extends BrsComponent implements BrsValue, BrsIterable {
                     return BrsBoolean.False;
                 }
 
-                if (callableFunction && subscriber) {
+                if (callableFunction instanceof Callable && subscriber) {
                     field.addObserver(
                         "scoped",
                         interpreter,
@@ -1716,8 +1716,18 @@ export class RoSGNode extends BrsComponent implements BrsValue, BrsIterable {
     /* Takes a list of models and creates fields with default values, and adds them to this.fields. */
     protected registerDefaultFields(fields: FieldModel[]) {
         fields.forEach((field) => {
-            let value = getBrsValueFromFieldType(field.type, field.value);
-            let fieldType = FieldKind.fromString(field.type);
+            let fieldType: FieldKind | undefined;
+            let value: BrsType | undefined;
+            if (field.name === "change") {
+                value = new RoAssociativeArray([]);
+                fieldType = FieldKind.AssocArray;
+            } else if (field.name === "font") {
+                value = NodeFactory.createNode(BrsNodeType.Font) ?? BrsInvalid.Instance;
+                fieldType = FieldKind.Node;
+            } else {
+                value = getBrsValueFromFieldType(field.type, field.value);
+                fieldType = FieldKind.fromString(field.type);
+            }
             if (fieldType) {
                 this.fields.set(
                     field.name.toLowerCase(),
@@ -1758,7 +1768,7 @@ export function createNodeByType(interpreter: Interpreter, type: BrsString): RoS
     }
 
     // If this is a built-in node component, then return it.
-    let node = NodeFactory.createComponent(type.value as BrsNodeType);
+    let node = NodeFactory.createNode(type.value as BrsNodeType);
     if (node) {
         return node;
     }
@@ -1784,7 +1794,7 @@ export function createNodeByType(interpreter: Interpreter, type: BrsString): RoS
         typeDef = typeDefStack.pop();
 
         // If this extends a built-in node component, create it.
-        let node = NodeFactory.createComponent(typeDef!.extends as BrsNodeType, type.value);
+        let node = NodeFactory.createNode(typeDef!.extends as BrsNodeType, type.value);
 
         // Default to Node as parent.
         if (!node) {
@@ -1864,7 +1874,7 @@ function addFields(interpreter: Interpreter, node: RoSGNode, typeDef: ComponentD
             if (value.onChange) {
                 let field = node.getFields().get(fieldName.value.toLowerCase());
                 let callableFunction = interpreter.getCallableFunction(value.onChange);
-                if (callableFunction && field) {
+                if (callableFunction instanceof Callable && field) {
                     // observers set via `onChange` can never be removed, despite RBI's documentation claiming
                     // that "[i]t is equivalent to calling the ifSGNodeField observeField() method".
                     field.addObserver(

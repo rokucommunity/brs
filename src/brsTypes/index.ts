@@ -24,6 +24,9 @@ import { roDouble } from "./components/RoDouble";
 import { roFloat } from "./components/RoFloat";
 import { roInt } from "./components/RoInt";
 import { roLongInteger } from "./components/RoLongInteger";
+import { RoDeviceInfoEvent } from "./components/RoDeviceInfoEvent";
+import { RoSGNodeEvent } from "./components/RoSGNodeEvent";
+import { RoSGScreenEvent } from "./components/RoSGScreenEvent";
 
 export * from "./BrsType";
 export * from "./Int32";
@@ -52,6 +55,7 @@ export * from "./components/RoLongInteger";
 export * from "./components/RoInvalid";
 export * from "./components/RoSGNodeEvent";
 export * from "./components/RoSGNode";
+export * from "./components/RoMessagePort";
 export * from "./components/RoAppInfo";
 export * from "./components/RoPath";
 export * from "./nodes/NodeFactory";
@@ -162,6 +166,26 @@ export type BrsNumber = Int32 | Int64 | Float | Double;
 
 /** The set of BrightScript boxed numeric types. */
 export type BoxedNumber = roInt | roFloat | roDouble | roLongInteger;
+
+/**
+ * Determines whether or not the given value is a BrightScript event component.
+ * @param value the BrightScript value in question.
+ * @returns `true` if `value` is a BrightScript event component, otherwise `false`.
+ */
+export function isBrsEvent(value: BrsType): value is BrsEvent {
+    return (
+        value instanceof RoDeviceInfoEvent ||
+        value instanceof RoSGNodeEvent ||
+        value instanceof RoSGScreenEvent
+    );
+}
+
+// The set of BrightScript Event components
+export type BrsEvent =
+    | RoDeviceInfoEvent
+    | RoSGNodeEvent
+    | RoSGScreenEvent;
+
 
 /**
  * The set of all comparable BrightScript types. Only primitive (i.e. intrinsic * and unboxed)

@@ -1,6 +1,6 @@
 import { Identifier } from "../lexer";
 import { BrsType, RoAssociativeArray, Int32, BrsInvalid, RoSGNode, Callable } from "../brsTypes";
-import { ComponentDefinition } from "../componentprocessor";
+import { ComponentDefinition } from "../scenegraph";
 
 /** The logical region from a particular variable or function that defines where it may be accessed from. */
 export enum Scope {
@@ -72,6 +72,7 @@ export class Environment {
     /** The node in which field-change observers are registered. */
     public hostNode: RoSGNode | undefined;
 
+    public nodeName: string = "";
     /**
      * Stores a `value` for the `name`d variable in the provided `scope`.
      * @param scope The logical region from a particular variable or function that defines where it may be accessed from

@@ -51,7 +51,7 @@ export class NodeFactory {
         });
     }
 
-    public static createComponent(
+    public static createNode(
         nodeType: BrsNodeType | string,
         nodeName?: string
     ): RoSGNode | undefined {

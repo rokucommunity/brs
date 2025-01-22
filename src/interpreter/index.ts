@@ -22,7 +22,7 @@ import {
     isComparable,
     isStringComp,
     isBoxedNumber,
-    roInvalid,
+    RoInvalid,
     PrimitiveKinds,
     Signature,
     RoByteArray,
@@ -56,7 +56,7 @@ import MemoryFileSystem from "memory-fs";
 import { BrsComponent } from "../brsTypes/components/BrsComponent";
 import { isBoxable, isUnboxable } from "../brsTypes/Boxing";
 
-import { ComponentDefinition } from "../componentprocessor";
+import { ComponentDefinition } from "../scenegraph";
 import pSettle from "p-settle";
 import { CoverageCollector } from "../coverage";
 import { ManifestValue } from "../preprocessor/Manifest";
@@ -65,6 +65,7 @@ import Long from "long";
 
 import chalk from "chalk";
 import stripAnsi from "strip-ansi";
+import { getLexerParserFn } from "../LexerParser";
 
 /** The set of options used to configure an interpreter's execution. */
 export interface ExecutionOptions {
@@ -182,15 +183,16 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
      */
     public static async withSubEnvsFromComponents(
         componentMap: Map<string, ComponentDefinition>,
-        parseFn: (filenames: string[]) => Promise<Stmt.Statement[]>,
+        manifest: Map<string, ManifestValue>,
         options: ExecutionOptions = defaultExecutionOptions
     ) {
-        let interpreter = new Interpreter(options);
+        const interpreter = new Interpreter(options);
         interpreter.onError(getLoggerUsing(options.stderr));
+        const lexerParserFn = getLexerParserFn(manifest, options);
 
         interpreter.environment.nodeDefMap = componentMap;
 
-        let componentScopeResolver = new ComponentScopeResolver(componentMap, parseFn);
+        const componentScopeResolver = new ComponentScopeResolver(componentMap, lexerParserFn);
         await pSettle(
             Array.from(componentMap).map(async (componentKV) => {
                 let [_, component] = componentKV;
@@ -574,10 +576,10 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
         }
 
         // Unbox Numeric or Invalid components to intrinsic types
-        if (isBoxedNumber(left) || left instanceof roInvalid) {
+        if (isBoxedNumber(left) || left instanceof RoInvalid) {
             left = left.unbox();
         }
-        if (isBoxedNumber(right) || right instanceof roInvalid) {
+        if (isBoxedNumber(right) || right instanceof RoInvalid) {
             right = right.unbox();
         }
 
@@ -1865,15 +1867,18 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
     }
 
     /**
-     * Method to return the current scope of the interpreter for the REPL and Micro Debugger
-     * @returns a string representation of the local variables in the current scope
+     * Method to return the selected scope of the interpreter for the REPL and Micro Debugger
+     * @returns a string representation of the variables in the selected scope
      */
-    formatLocalVariables(): string {
-        let debugMsg = `${"global".padEnd(16)} Interface:ifGlobal\r\n`;
-        debugMsg += `${"m".padEnd(16)} roAssociativeArray count:${
-            this.environment.getM().getElements().length
-        }\r\n`;
-        let fnc = this.environment.getList(Scope.Function);
+    formatVariables(scope: Scope = Scope.Function): string {
+        let vars = "";
+        if (scope === Scope.Function) {
+            vars += `${"global".padEnd(16)} Interface:ifGlobal\r\n`;
+            vars += `${"m".padEnd(16)} roAssociativeArray count:${
+                this.environment.getM().getElements().length
+            }\r\n`;
+        }
+        let fnc = this.environment.getList(scope);
         fnc.forEach((value, key) => {
             const varName = key.padEnd(17);
             if (PrimitiveKinds.has(value.kind)) {
@@ -1882,24 +1887,22 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
                 if (value.kind === ValueKind.String) {
                     text = `"${text.substring(0, 94)}"`;
                 }
-                debugMsg += `${varName}${ValueKind.toString(value.kind)} val:${text}${lf}`;
+                vars += `${varName}${ValueKind.toString(value.kind)} val:${text}${lf}`;
             } else if (isIterable(value)) {
                 const count = value.getElements().length;
-                debugMsg += `${varName}${value.getComponentName()} count:${count}\r\n`;
+                vars += `${varName}${value.getComponentName()} count:${count}\r\n`;
             } else if (value instanceof BrsComponent && isUnboxable(value)) {
                 const unboxed = value.unbox();
-                debugMsg += `${varName}${value.getComponentName()} val:${unboxed.toString()}\r\n`;
+                vars += `${varName}${value.getComponentName()} val:${unboxed.toString()}\r\n`;
             } else if (value.kind === ValueKind.Object) {
-                debugMsg += `${varName}${value.getComponentName()}\r\n`;
+                vars += `${varName}${value.getComponentName()}\r\n`;
             } else if (value.kind === ValueKind.Callable) {
-                debugMsg += `${varName}${ValueKind.toString(
-                    value.kind
-                )} val:${value.getName()}\r\n`;
+                vars += `${varName}${ValueKind.toString(value.kind)} val:${value.getName()}\r\n`;
             } else {
-                debugMsg += `${varName}${value.toString().substring(0, 94)}\r\n`;
+                vars += `${varName}${value.toString().substring(0, 94)}\r\n`;
             }
         });
-        return debugMsg;
+        return vars;
     }
 
     /** Method to return a string with the current source code location
