@@ -1718,10 +1718,8 @@ export class RoSGNode extends BrsComponent implements BrsValue, BrsIterable {
         fields.forEach((field) => {
             let fieldType: FieldKind | undefined;
             let value: BrsType | undefined;
-            if (field.name === "change") {
-                value = new RoAssociativeArray([]);
-                fieldType = FieldKind.AssocArray;
-            } else if (field.name === "font") {
+            if (field.name === "font") {
+                // TODO: Special case for Scene, should be handle in a more generic way
                 value = NodeFactory.createNode(BrsNodeType.Font) ?? BrsInvalid.Instance;
                 fieldType = FieldKind.Node;
             } else {
