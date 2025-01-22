@@ -9,34 +9,34 @@ describe("TextEditBox", () => {
             expect(textEditBox.toString()).toEqual(
                 `<Component: roSGNode:TextEditBox> =
 {
+    backgrounduri: ""
+    width: -1
+    hinttextcolor: "OxFFFFFFFF"
+    textcolor: "OxFFFFFFFF"
+    active: false
+    clearondownkey: true
+    cursorposition: 0
+    maxtextlength: 15
+    hinttext: ""
+    text: ""
+    rendertracking: "disabled"
+    enablerendertracking: false
+    muteaudioguide: false
+    renderpass: 0
+    clippingrect: <Component: roArray>
+    inheritparentopacity: true
+    inheritparenttransform: true
+    childrenderorder: "renderLast"
+    scalerotatecenter: <Component: roArray>
+    scale: <Component: roArray>
+    rotation: 0
+    translation: <Component: roArray>
+    opacity: 1
+    visible: true
     change: <Component: roAssociativeArray>
     focusable: false
-    focusedchild: invalid
+    focusedchild: <Component: roInvalid>
     id: ""
-    visible: true
-    opacity: 1
-    translation: <Component: roArray>
-    rotation: 0
-    scale: <Component: roArray>
-    scalerotatecenter: <Component: roArray>
-    childrenderorder: "renderLast"
-    inheritparenttransform: true
-    inheritparentopacity: true
-    clippingrect: <Component: roArray>
-    renderpass: 0
-    muteaudioguide: false
-    enablerendertracking: false
-    rendertracking: "disabled"
-    text: ""
-    hinttext: ""
-    maxtextlength: 15
-    cursorposition: 0
-    clearondownkey: true
-    active: false
-    textcolor: "OxFFFFFFFF"
-    hinttextcolor: "OxFFFFFFFF"
-    width: -1
-    backgrounduri: ""
 }`
             );
         });

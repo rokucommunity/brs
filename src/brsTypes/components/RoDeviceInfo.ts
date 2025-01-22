@@ -641,7 +641,8 @@ export class RoDeviceInfo extends BrsComponent implements BrsValue {
             returns: ValueKind.Void,
         },
         impl: (_, port: RoMessagePort) => {
-            return this.port = port;
+            this.port = port;
+            return BrsInvalid.Instance;
         },
     });
 

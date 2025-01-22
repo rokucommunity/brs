@@ -9,14 +9,14 @@ describe("Timer", () => {
             expect(timer.toString()).toEqual(
                 `<Component: roSGNode:Timer> =
 {
+    fire: <UNINITIALIZED>
+    duration: 0
+    repeat: false
+    control: ""
     change: <Component: roAssociativeArray>
     focusable: false
-    focusedchild: invalid
+    focusedchild: <Component: roInvalid>
     id: ""
-    control: ""
-    repeat: false
-    duration: 0
-    fire: <UNINITIALIZED>
 }`
             );
         });

@@ -387,9 +387,9 @@ export class RoSGNode extends BrsComponent implements BrsValue, BrsIterable {
         return [
             `<Component: ${componentName}> =`,
             "{",
-            ...Array.from(this.fields.entries()).reverse().map(
-                ([key, value]) => `    ${key}: ${value.toString(this)}`
-            ),
+            ...Array.from(this.fields.entries())
+                .reverse()
+                .map(([key, value]) => `    ${key}: ${value.toString(this)}`),
             "}",
         ].join("\n");
     }

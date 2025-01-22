@@ -44,7 +44,8 @@ describe("integration tests", () => {
         });
         let interpreter = await Interpreter.withSubEnvsFromComponents(
             componentMap,
-            LexerParser.getLexerParserFn(new Map(), defaultExecutionOptions)
+            new Map(),
+            defaultExecutionOptions
         );
 
         let baseComp = interpreter.environment.nodeDefMap.get("basecomponent");

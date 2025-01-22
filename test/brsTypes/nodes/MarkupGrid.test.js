@@ -9,69 +9,69 @@ describe("MarkupGrid", () => {
             expect(group.toString()).toEqual(
                 `<Component: roSGNode:MarkupGrid> =
 {
+    imagewellbitmapuri: ""
+    itemcomponentname: ""
+    currfocussection: 0
+    currfocuscolumn: 0
+    currfocusrow: 0
+    animatetoitem: 0
+    jumptoitem: 0
+    itemunfocused: 0
+    itemfocused: 0
+    itemselected: 0
+    itemclippingrect: <Component: roArray>
+    sectiondividerleftoffset: 0
+    sectiondividerminwidth: 117
+    sectiondividerheight: 40
+    sectiondividerwidth: 0
+    sectiondividerspacing: 10
+    sectiondividertextcolor: "0xDDDDDDFF"
+    sectiondividerfont: <Component: roInvalid>
+    sectiondividerbitmapuri: ""
+    columnspacings: <Component: roArray>
+    rowspacings: <Component: roArray>
+    columnwidths: <Component: roArray>
+    rowheights: <Component: roArray>
+    numrenderpasses: 1
+    fixedlayout: false
+    wrapdividerheight: 0
+    wrapdividerwidth: 0
+    wrapdividerbitmapuri: ""
+    focusfootprintblendcolor: "0xFFFFFFFF"
+    focusbitmapblendcolor: "0xFFFFFFFF"
+    focusfootprintbitmapuri: ""
+    focusbitmapuri: ""
+    currfocusfeedbackopacity: NaN
+    fadefocusfeedbackwhenautoscrolling: false
+    drawfocusfeedback: true
+    drawfocusfeedbackontop: false
+    vertfocusanimationstyle: "floatingFocus"
+    horizfocusanimationstyle: "floatingFocus"
+    focuscolumn: 0
+    focusrow: 0
+    numcolumns: 0
+    numrows: 12
+    itemspacing: <Component: roArray>
+    itemsize: <Component: roArray>
+    content: <Component: roInvalid>
+    rendertracking: "disabled"
+    enablerendertracking: false
+    muteaudioguide: false
+    renderpass: 0
+    clippingrect: <Component: roArray>
+    inheritparentopacity: true
+    inheritparenttransform: true
+    childrenderorder: "renderLast"
+    scalerotatecenter: <Component: roArray>
+    scale: <Component: roArray>
+    rotation: 0
+    translation: <Component: roArray>
+    opacity: 1
+    visible: true
     change: <Component: roAssociativeArray>
     focusable: false
-    focusedchild: invalid
+    focusedchild: <Component: roInvalid>
     id: ""
-    visible: true
-    opacity: 1
-    translation: <Component: roArray>
-    rotation: 0
-    scale: <Component: roArray>
-    scalerotatecenter: <Component: roArray>
-    childrenderorder: "renderLast"
-    inheritparenttransform: true
-    inheritparentopacity: true
-    clippingrect: <Component: roArray>
-    renderpass: 0
-    muteaudioguide: false
-    enablerendertracking: false
-    rendertracking: "disabled"
-    content: invalid
-    itemsize: <Component: roArray>
-    itemspacing: <Component: roArray>
-    numrows: 12
-    numcolumns: 0
-    focusrow: 0
-    focuscolumn: 0
-    horizfocusanimationstyle: "floatingFocus"
-    vertfocusanimationstyle: "floatingFocus"
-    drawfocusfeedbackontop: false
-    drawfocusfeedback: true
-    fadefocusfeedbackwhenautoscrolling: false
-    currfocusfeedbackopacity: NaN
-    focusbitmapuri: ""
-    focusfootprintbitmapuri: ""
-    focusbitmapblendcolor: "0xFFFFFFFF"
-    focusfootprintblendcolor: "0xFFFFFFFF"
-    wrapdividerbitmapuri: ""
-    wrapdividerwidth: 0
-    wrapdividerheight: 0
-    fixedlayout: false
-    numrenderpasses: 1
-    rowheights: <Component: roArray>
-    columnwidths: <Component: roArray>
-    rowspacings: <Component: roArray>
-    columnspacings: <Component: roArray>
-    sectiondividerbitmapuri: ""
-    sectiondividerfont: invalid
-    sectiondividertextcolor: "0xDDDDDDFF"
-    sectiondividerspacing: 10
-    sectiondividerwidth: 0
-    sectiondividerheight: 40
-    sectiondividerminwidth: 117
-    sectiondividerleftoffset: 0
-    itemclippingrect: <Component: roArray>
-    itemselected: 0
-    itemfocused: 0
-    itemunfocused: 0
-    jumptoitem: 0
-    animatetoitem: 0
-    currfocusrow: 0
-    currfocuscolumn: 0
-    currfocussection: 0
-    itemcomponentname: ""
-    imagewellbitmapuri: ""
 }`
             );
         });

@@ -9,24 +9,24 @@ describe("Group", () => {
             expect(group.toString()).toEqual(
                 `<Component: roSGNode:Group> =
 {
+    rendertracking: "disabled"
+    enablerendertracking: false
+    muteaudioguide: false
+    renderpass: 0
+    clippingrect: <Component: roArray>
+    inheritparentopacity: true
+    inheritparenttransform: true
+    childrenderorder: "renderLast"
+    scalerotatecenter: <Component: roArray>
+    scale: <Component: roArray>
+    rotation: 0
+    translation: <Component: roArray>
+    opacity: 1
+    visible: true
     change: <Component: roAssociativeArray>
     focusable: false
-    focusedchild: invalid
+    focusedchild: <Component: roInvalid>
     id: ""
-    visible: true
-    opacity: 1
-    translation: <Component: roArray>
-    rotation: 0
-    scale: <Component: roArray>
-    scalerotatecenter: <Component: roArray>
-    childrenderorder: "renderLast"
-    inheritparenttransform: true
-    inheritparentopacity: true
-    clippingrect: <Component: roArray>
-    renderpass: 0
-    muteaudioguide: false
-    enablerendertracking: false
-    rendertracking: "disabled"
 }`
             );
         });

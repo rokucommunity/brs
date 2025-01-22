@@ -181,11 +181,7 @@ export function isBrsEvent(value: BrsType): value is BrsEvent {
 }
 
 // The set of BrightScript Event components
-export type BrsEvent =
-    | RoDeviceInfoEvent
-    | RoSGNodeEvent
-    | RoSGScreenEvent;
-
+export type BrsEvent = RoDeviceInfoEvent | RoSGNodeEvent | RoSGScreenEvent;
 
 /**
  * The set of all comparable BrightScript types. Only primitive (i.e. intrinsic * and unboxed)

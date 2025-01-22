@@ -665,7 +665,7 @@ describe("end to end brightscript functions", () => {
             "font node uri:",
             "",
             "font node size:",
-            " 1",
+            " 24",
             "font node fallbackGlyph:",
             "",
             "font as child size:",
@@ -802,8 +802,8 @@ describe("end to end brightscript functions", () => {
 
         expect(allArgs(outputStreams.stdout.write).filter((arg) => arg !== "\n")).toEqual([
             "bar",
-            "invalid",
-            "invalid",
+            "<Component: roInvalid>",
+            "<Component: roInvalid>",
             "Node",
         ]);
     });

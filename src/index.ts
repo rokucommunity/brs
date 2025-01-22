@@ -134,13 +134,6 @@ async function loadFiles(options: Partial<ExecutionOptions>) {
     }
 
     componentDefinitions.forEach((component: ComponentDefinition) => {
-        console.log(
-            `Component: ${component.name?.padEnd(16)} fields: ${
-                Object.keys(component.fields).length
-            } scripts: ${component.scripts.length} functions: ${
-                Object.keys(component.functions).length
-            } children: ${component.children.length}`
-        );
         if (component.scripts.length < 1) return;
         try {
             component.scripts = component.scripts.map((script: ComponentScript) => {
