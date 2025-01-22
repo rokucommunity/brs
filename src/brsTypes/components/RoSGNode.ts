@@ -630,7 +630,7 @@ export class RoSGNode extends BrsComponent implements BrsValue, BrsIterable {
 
                     return interpreter.inSubEnv((subInterpreter) => {
                         let functionToCall = subInterpreter.getCallableFunction(functionName.value);
-                        if (!(functionToCall instanceof Callable)) {
+                        if (!functionToCall) {
                             interpreter.stderr.write(
                                 `Ignoring attempt to call non-implemented function ${functionName}`
                             );
@@ -947,7 +947,7 @@ export class RoSGNode extends BrsComponent implements BrsValue, BrsIterable {
                     return BrsBoolean.False;
                 }
 
-                if (callableFunction instanceof Callable && subscriber) {
+                if (callableFunction && subscriber) {
                     field.addObserver(
                         "unscoped",
                         interpreter,
@@ -1011,7 +1011,7 @@ export class RoSGNode extends BrsComponent implements BrsValue, BrsIterable {
                     return BrsBoolean.False;
                 }
 
-                if (callableFunction instanceof Callable && subscriber) {
+                if (callableFunction && subscriber) {
                     field.addObserver(
                         "scoped",
                         interpreter,
@@ -1836,6 +1836,11 @@ export function createNodeByType(interpreter: Interpreter, type: BrsString): RoS
 
         return node;
     } else {
+        interpreter.stderr.write(
+            `BRIGHTSCRIPT: ERROR: roSGNode: Failed to create roSGNode with type ${
+                type.value
+            }: ${interpreter.formatLocation()}\n`
+        );
         return BrsInvalid.Instance;
     }
 }
@@ -1872,7 +1877,7 @@ function addFields(interpreter: Interpreter, node: RoSGNode, typeDef: ComponentD
             if (value.onChange) {
                 let field = node.getFields().get(fieldName.value.toLowerCase());
                 let callableFunction = interpreter.getCallableFunction(value.onChange);
-                if (callableFunction instanceof Callable && field) {
+                if (callableFunction && field) {
                     // observers set via `onChange` can never be removed, despite RBI's documentation claiming
                     // that "[i]t is equivalent to calling the ifSGNodeField observeField() method".
                     field.addObserver(
