@@ -1,4 +1,4 @@
-const { getComponentDefinitionMap } = require("../../lib/componentprocessor");
+const { getComponentDefinitionMap } = require("../../lib/scenegraph");
 const { Interpreter, defaultExecutionOptions } = require("../../lib/interpreter");
 const path = require("path");
 const LexerParser = require("../../lib/LexerParser");

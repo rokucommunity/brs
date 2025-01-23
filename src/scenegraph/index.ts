@@ -5,7 +5,9 @@ import pSettle from "p-settle";
 import * as fg from "fast-glob";
 import { Environment } from "../interpreter/Environment";
 import { BrsError } from "../Error";
+import { promisify } from "util";
 
+const readFile = promisify(fs.readFile);
 interface FieldAttributes {
     id: string;
     type: string;
@@ -61,7 +63,7 @@ export class ComponentDefinition {
 
     async parse(): Promise<ComponentDefinition> {
         try {
-            this.contents = fs.readFileSync(this.xmlPath, "utf-8");
+            this.contents = await readFile(this.xmlPath, "utf-8");
             this.xmlNode = new XmlDocument(this.contents);
             this.name = this.xmlNode.attr.name;
 
