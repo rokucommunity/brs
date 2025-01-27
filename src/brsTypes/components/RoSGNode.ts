@@ -10,7 +10,7 @@ import {
 } from "../BrsType";
 import { RoSGNodeEvent } from "./RoSGNodeEvent";
 import { BrsComponent, BrsIterable } from "./BrsComponent";
-import { BrsType, isBrsNumber, toAssociativeArray } from "..";
+import { BrsType, isBrsNumber, isBrsString, toAssociativeArray } from "..";
 import { Callable, StdlibArgument } from "../Callable";
 import { Interpreter } from "../../interpreter";
 import { Int32 } from "../Int32";
@@ -37,6 +37,7 @@ interface BrsCallback {
     eventParams: {
         fieldName: BrsString;
         node: RoSGNode;
+        infoFields?: RoArray;
     };
 }
 
@@ -208,7 +209,8 @@ export class Field {
         callable: Callable,
         subscriber: RoSGNode,
         target: RoSGNode,
-        fieldName: BrsString
+        fieldName: BrsString,
+        infoFields?: RoArray
     ) {
         // Once a field is accessed, it is no longer hidden.
         this.hidden = false;
@@ -221,6 +223,7 @@ export class Field {
             eventParams: {
                 node: target,
                 fieldName,
+                infoFields,
             },
         };
         if (mode === "scoped") {
@@ -243,10 +246,28 @@ export class Field {
     }
 
     private executeCallbacks(callback: BrsCallback) {
-        let { interpreter, callable, hostNode, environment, eventParams } = callback;
+        const { interpreter, callable, hostNode, environment, eventParams } = callback;
+
+        // Get info fields current value, if exists.
+        let infoFields: RoAssociativeArray | undefined;
+        if (eventParams.infoFields) {
+            const fieldsMap = new Map();
+            eventParams.infoFields.elements?.forEach((element) => {
+                if (isBrsString(element)) {
+                    // TODO: Check how to handle object values (by reference or by value)
+                    fieldsMap.set(element.value, hostNode.get(element));
+                }
+            });
+            infoFields = toAssociativeArray(fieldsMap);
+        }
 
         // Every time a callback happens, a new event is created.
-        let event = new RoSGNodeEvent(eventParams.node, eventParams.fieldName, this.value);
+        let event = new RoSGNodeEvent(
+            eventParams.node,
+            eventParams.fieldName,
+            this.value,
+            infoFields
+        );
 
         interpreter.inSubEnv((subInterpreter) => {
             subInterpreter.environment.hostNode = hostNode;
@@ -931,10 +952,16 @@ export class RoSGNode extends BrsComponent implements BrsValue, BrsIterable {
             args: [
                 new StdlibArgument("fieldname", ValueKind.String),
                 new StdlibArgument("functionname", ValueKind.String),
+                new StdlibArgument("infoFields", ValueKind.Object, BrsInvalid.Instance),
             ],
             returns: ValueKind.Boolean,
         },
-        impl: (interpreter: Interpreter, fieldname: BrsString, functionname: BrsString) => {
+        impl: (
+            interpreter: Interpreter,
+            fieldname: BrsString,
+            functionname: BrsString,
+            infoFields: RoArray
+        ) => {
             let field = this.fields.get(fieldname.value.toLowerCase());
             if (field instanceof Field) {
                 let callableFunction = interpreter.getCallableFunction(functionname.value);
@@ -954,7 +981,8 @@ export class RoSGNode extends BrsComponent implements BrsValue, BrsIterable {
                         callableFunction,
                         subscriber,
                         this,
-                        fieldname
+                        fieldname,
+                        infoFields
                     );
                 } else {
                     return BrsBoolean.False;
