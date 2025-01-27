@@ -266,6 +266,8 @@ async function getScripts(
     for (let script of scripts) {
         if (script.attr.uri && script.val) {
             return Promise.reject({
+                // SceneGraph does not allow XML to contain script tag referencing
+                // a URI and inline script at the same time
                 message: BrsError.format(
                     `<script> element cannot contain both internal and external source`,
                     getScriptTagLocation(nodeDef, script)
