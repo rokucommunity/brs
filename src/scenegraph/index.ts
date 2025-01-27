@@ -1,13 +1,13 @@
 import * as fs from "fs";
 import * as path from "path";
-import { promisify } from "util";
 import { XmlDocument, XmlElement } from "xmldoc";
-import pSettle = require("p-settle");
-const readFile = promisify(fs.readFile);
+import pSettle from "p-settle";
 import * as fg from "fast-glob";
 import { Environment } from "../interpreter/Environment";
 import { BrsError } from "../Error";
+import { promisify } from "util";
 
+const readFile = promisify(fs.readFile);
 interface FieldAttributes {
     id: string;
     type: string;
@@ -41,7 +41,9 @@ export interface ComponentNode {
 
 export interface ComponentScript {
     type: string;
-    uri: string;
+    uri?: string;
+    xmlPath?: string;
+    content?: string;
 }
 
 export class ComponentDefinition {
@@ -60,11 +62,9 @@ export class ComponentDefinition {
     constructor(readonly xmlPath: string) {}
 
     async parse(): Promise<ComponentDefinition> {
-        let contents;
         try {
-            contents = await readFile(this.xmlPath, "utf-8");
-            let xmlStr = contents.toString().replace(/\r?\n|\r/g, "");
-            this.xmlNode = new XmlDocument(xmlStr);
+            this.contents = await readFile(this.xmlPath, "utf-8");
+            this.xmlNode = new XmlDocument(this.contents);
             this.name = this.xmlNode.attr.name;
 
             return Promise.resolve(this);
@@ -85,7 +85,7 @@ export class ComponentDefinition {
 export async function getComponentDefinitionMap(
     rootDir: string = "",
     additionalDirs: string[] = [],
-    libraryName: string | undefined
+    libraryName?: string
 ) {
     let searchString = "{components, }";
     if (additionalDirs.length) {
@@ -105,7 +105,7 @@ export async function getComponentDefinitionMap(
 async function processXmlTree(
     settledPromises: Promise<pSettle.SettledResult<ComponentDefinition>[]>,
     rootDir: string,
-    libraryName: string | undefined
+    libraryName?: string
 ) {
     let nodeDefs = await settledPromises;
     let nodeDefMap = new Map<string, ComponentDefinition>();
@@ -168,7 +168,7 @@ async function processXmlTree(
         let xmlNode = nodeDef.xmlNode;
         if (xmlNode) {
             nodeDef.children = getChildren(xmlNode);
-            nodeDef.scripts = await getScripts(xmlNode, nodeDef.xmlPath, rootDir);
+            nodeDef.scripts = await getScripts(xmlNode, nodeDef, rootDir);
         }
     }
 
@@ -257,61 +257,81 @@ function parseChildren(element: XmlElement, children: ComponentNode[]): void {
 
 async function getScripts(
     node: XmlDocument,
-    xmlPath: string,
+    nodeDef: ComponentDefinition,
     rootDir: string
 ): Promise<ComponentScript[]> {
     let scripts = node.childrenNamed("script");
     let componentScripts: ComponentScript[] = [];
 
     for (let script of scripts) {
-        let absoluteUri: URL;
-        let posixRoot = rootDir.replace(/[\/\\]+/g, path.posix.sep);
-        let posixPath = xmlPath.replace(/[\/\\]+/g, path.posix.sep);
-
-        try {
-            if (process.platform === "win32") {
-                posixRoot = posixRoot.replace(/^[a-zA-Z]:/, "");
-                posixPath = posixPath.replace(/^[a-zA-Z]:/, "");
-            }
-            absoluteUri = new URL(
-                script.attr.uri,
-                `pkg:/${path.posix.relative(posixRoot, posixPath)}`
-            );
-        } catch (err) {
-            let file = await readFile(xmlPath, "utf-8");
-
-            let tag = file.substring(script.startTagPosition, script.position);
-            let tagLines = tag.split("\n");
-            let leadingLines = file.substring(0, script.startTagPosition).split("\n");
-            let start = {
-                line: leadingLines.length,
-                column: columnsInLastLine(leadingLines),
-            };
-
+        if (script.attr.uri && script.val) {
             return Promise.reject({
+                // SceneGraph does not allow XML to contain script tag referencing
+                // a URI and inline script at the same time
                 message: BrsError.format(
-                    `Invalid path '${script.attr.uri}' found in <script/> tag`,
-                    {
-                        file: xmlPath,
-                        start: start,
-                        end: {
-                            line: start.line + tagLines.length - 1,
-                            column: start.column + columnsInLastLine(tagLines),
-                        },
-                    }
+                    `<script> element cannot contain both internal and external source`,
+                    getScriptTagLocation(nodeDef, script)
                 ).trim(),
             });
-        }
-
-        if (script.attr) {
+        } else if (script.attr?.uri) {
+            let absoluteUri = await getScriptUri(script, nodeDef, rootDir);
             componentScripts.push({
                 type: script.attr.type,
                 uri: absoluteUri.href,
             });
+        } else if (typeof script.val === "string") {
+            componentScripts.push({
+                type: script.attr.type,
+                xmlPath: nodeDef.xmlPath,
+                content: script.val,
+            });
         }
     }
-
     return componentScripts;
+}
+
+async function getScriptUri(
+    script: XmlElement,
+    nodeDef: ComponentDefinition,
+    rootDir: string
+): Promise<URL> {
+    let absoluteUri: URL;
+    let posixRoot = rootDir.replace(/[\/\\]+/g, path.posix.sep);
+    let posixPath = nodeDef.xmlPath.replace(/[\/\\]+/g, path.posix.sep);
+
+    try {
+        if (process.platform === "win32") {
+            posixRoot = posixRoot.replace(/^[a-zA-Z]:/, "");
+            posixPath = posixPath.replace(/^[a-zA-Z]:/, "");
+        }
+        absoluteUri = new URL(script.attr.uri, `pkg:/${path.posix.relative(posixRoot, posixPath)}`);
+    } catch (err) {
+        return Promise.reject({
+            message: BrsError.format(
+                `Invalid path '${script.attr.uri}' found in <script/> tag`,
+                getScriptTagLocation(nodeDef, script)
+            ).trim(),
+        });
+    }
+    return absoluteUri;
+}
+
+function getScriptTagLocation(nodeDef: ComponentDefinition, script: XmlElement) {
+    const tag = nodeDef.contents?.substring(script.startTagPosition, script.position) ?? "";
+    const tagLines = tag.split("\n");
+    const leadingLines = nodeDef.contents?.substring(0, script.startTagPosition).split("\n") ?? [];
+    const start = {
+        line: leadingLines.length,
+        column: columnsInLastLine(leadingLines),
+    };
+    return {
+        file: nodeDef.xmlPath,
+        start: start,
+        end: {
+            line: start.line + tagLines.length - 1,
+            column: start.column + columnsInLastLine(tagLines),
+        },
+    };
 }
 
 /**

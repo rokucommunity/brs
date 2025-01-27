@@ -10,7 +10,7 @@ import {
 } from "../BrsType";
 import { RoSGNodeEvent } from "./RoSGNodeEvent";
 import { BrsComponent, BrsIterable } from "./BrsComponent";
-import { BrsType, isBrsNumber, toAssociativeArray } from "..";
+import { BrsType, isBrsNumber, isBrsString, toAssociativeArray } from "..";
 import { Callable, StdlibArgument } from "../Callable";
 import { Interpreter } from "../../interpreter";
 import { Int32 } from "../Int32";
@@ -20,10 +20,10 @@ import { Double } from "../Double";
 import { RoAssociativeArray } from "./RoAssociativeArray";
 import { RoArray } from "./RoArray";
 import { AAMember } from "./RoAssociativeArray";
-import { ComponentDefinition, ComponentNode } from "../../componentprocessor";
+import { ComponentDefinition, ComponentNode } from "../../scenegraph";
 import { NodeFactory, BrsNodeType } from "../nodes/NodeFactory";
-import { Environment } from "../../interpreter/Environment";
-import { roInvalid } from "./RoInvalid";
+import { Environment, Scope } from "../../interpreter/Environment";
+import { RoInvalid } from "./RoInvalid";
 import type * as MockNodeModule from "../../extensions/MockNode";
 import { BlockEnd } from "../../parser/Statement";
 import { Stmt } from "../../parser";
@@ -37,6 +37,7 @@ interface BrsCallback {
     eventParams: {
         fieldName: BrsString;
         node: RoSGNode;
+        infoFields?: RoArray;
     };
 }
 
@@ -192,7 +193,7 @@ export class Field {
     canAcceptValue(value: BrsType) {
         // Objects are allowed to be set to invalid.
         let fieldIsObject = getValueKindFromFieldType(this.type) === ValueKind.Object;
-        if (fieldIsObject && (value === BrsInvalid.Instance || value instanceof roInvalid)) {
+        if (fieldIsObject && (value === BrsInvalid.Instance || value instanceof RoInvalid)) {
             return true;
         } else if (isBrsNumber(this.value) && isBrsNumber(value)) {
             // can convert between number types
@@ -208,7 +209,8 @@ export class Field {
         callable: Callable,
         subscriber: RoSGNode,
         target: RoSGNode,
-        fieldName: BrsString
+        fieldName: BrsString,
+        infoFields?: RoArray
     ) {
         // Once a field is accessed, it is no longer hidden.
         this.hidden = false;
@@ -221,6 +223,7 @@ export class Field {
             eventParams: {
                 node: target,
                 fieldName,
+                infoFields,
             },
         };
         if (mode === "scoped") {
@@ -243,22 +246,48 @@ export class Field {
     }
 
     private executeCallbacks(callback: BrsCallback) {
-        let { interpreter, callable, hostNode, environment, eventParams } = callback;
+        const { interpreter, callable, hostNode, environment, eventParams } = callback;
+
+        // Get info fields current value, if exists.
+        let infoFields: RoAssociativeArray | undefined;
+        if (eventParams.infoFields) {
+            const fieldsMap = new Map();
+            eventParams.infoFields.elements?.forEach((element) => {
+                if (isBrsString(element)) {
+                    // TODO: Check how to handle object values (by reference or by value)
+                    fieldsMap.set(element.value, hostNode.get(element));
+                }
+            });
+            infoFields = toAssociativeArray(fieldsMap);
+        }
 
         // Every time a callback happens, a new event is created.
-        let event = new RoSGNodeEvent(eventParams.node, eventParams.fieldName, this.value);
+        let event = new RoSGNodeEvent(
+            eventParams.node,
+            eventParams.fieldName,
+            this.value,
+            infoFields
+        );
 
         interpreter.inSubEnv((subInterpreter) => {
             subInterpreter.environment.hostNode = hostNode;
             subInterpreter.environment.setRootM(hostNode.m);
 
-            // Check whether the callback is expecting an event parameter.
             try {
-                if (callable.getFirstSatisfiedSignature([event])) {
-                    // m gets lost inside the subinterpreter block in callable.call ?
-                    callable.call(subInterpreter, event);
+                // Check whether the callback is expecting an event parameter.
+                const satisfiedSignature = callable.getFirstSatisfiedSignature([event]);
+                if (satisfiedSignature) {
+                    let { signature, impl } = satisfiedSignature;
+                    subInterpreter.environment.define(
+                        Scope.Function,
+                        signature.args[0].name.text,
+                        event
+                    );
+                    impl(subInterpreter, event);
                 } else {
-                    callable.call(subInterpreter);
+                    // Check whether the callback has a signature without parameters.
+                    // Silently ignore if the callback has no signature that matches.
+                    callable.getFirstSatisfiedSignature([])?.impl(subInterpreter);
                 }
             } catch (err) {
                 if (!(err instanceof BlockEnd)) {
@@ -300,10 +329,10 @@ export class RoSGNode extends BrsComponent implements BrsValue, BrsIterable {
     private parent: RoSGNode | BrsInvalid = BrsInvalid.Instance;
 
     readonly defaultFields: FieldModel[] = [
-        { name: "change", type: "roAssociativeArray" },
-        { name: "focusable", type: "boolean" },
-        { name: "focusedchild", type: "node", alwaysNotify: true },
         { name: "id", type: "string" },
+        { name: "focusedchild", type: "node", alwaysNotify: true },
+        { name: "focusable", type: "boolean" },
+        { name: "change", type: "roAssociativeArray" },
     ];
     m: RoAssociativeArray = new RoAssociativeArray([]);
 
@@ -337,7 +366,7 @@ export class RoSGNode extends BrsComponent implements BrsValue, BrsIterable {
                 this.getfields,
                 this.hasfield,
                 this.observefield,
-                this.unobservefield,
+                this.unobserveField,
                 this.observeFieldScoped,
                 this.unobserveFieldScoped,
                 this.removefield,
@@ -387,9 +416,9 @@ export class RoSGNode extends BrsComponent implements BrsValue, BrsIterable {
         return [
             `<Component: ${componentName}> =`,
             "{",
-            ...Array.from(this.fields.entries()).map(
-                ([key, value]) => `    ${key}: ${value.toString(this)}`
-            ),
+            ...Array.from(this.fields.entries())
+                .reverse()
+                .map(([key, value]) => `    ${key}: ${value.toString(this)}`),
             "}",
         ].join("\n");
     }
@@ -931,10 +960,16 @@ export class RoSGNode extends BrsComponent implements BrsValue, BrsIterable {
             args: [
                 new StdlibArgument("fieldname", ValueKind.String),
                 new StdlibArgument("functionname", ValueKind.String),
+                new StdlibArgument("infoFields", ValueKind.Object, BrsInvalid.Instance),
             ],
             returns: ValueKind.Boolean,
         },
-        impl: (interpreter: Interpreter, fieldname: BrsString, functionname: BrsString) => {
+        impl: (
+            interpreter: Interpreter,
+            fieldname: BrsString,
+            functionname: BrsString,
+            infoFields: RoArray
+        ) => {
             let field = this.fields.get(fieldname.value.toLowerCase());
             if (field instanceof Field) {
                 let callableFunction = interpreter.getCallableFunction(functionname.value);
@@ -954,7 +989,8 @@ export class RoSGNode extends BrsComponent implements BrsValue, BrsIterable {
                         callableFunction,
                         subscriber,
                         this,
-                        fieldname
+                        fieldname,
+                        infoFields
                     );
                 } else {
                     return BrsBoolean.False;
@@ -967,7 +1003,7 @@ export class RoSGNode extends BrsComponent implements BrsValue, BrsIterable {
     /**
      * Removes all observers of a given field, regardless of whether or not the host node is the subscriber.
      */
-    private unobservefield = new Callable("unobservefield", {
+    private unobserveField = new Callable("unobservefield", {
         signature: {
             args: [new StdlibArgument("fieldname", ValueKind.String)],
             returns: ValueKind.Boolean,
@@ -1716,8 +1752,16 @@ export class RoSGNode extends BrsComponent implements BrsValue, BrsIterable {
     /* Takes a list of models and creates fields with default values, and adds them to this.fields. */
     protected registerDefaultFields(fields: FieldModel[]) {
         fields.forEach((field) => {
-            let value = getBrsValueFromFieldType(field.type, field.value);
-            let fieldType = FieldKind.fromString(field.type);
+            let fieldType: FieldKind | undefined;
+            let value: BrsType | undefined;
+            if (field.name === "font") {
+                // TODO: Special case for Scene, should be handled in a more generic way
+                value = NodeFactory.createNode(BrsNodeType.Font) ?? BrsInvalid.Instance;
+                fieldType = FieldKind.Node;
+            } else {
+                value = getBrsValueFromFieldType(field.type, field.value);
+                fieldType = FieldKind.fromString(field.type);
+            }
             if (fieldType) {
                 this.fields.set(
                     field.name.toLowerCase(),
@@ -1758,7 +1802,7 @@ export function createNodeByType(interpreter: Interpreter, type: BrsString): RoS
     }
 
     // If this is a built-in node component, then return it.
-    let node = NodeFactory.createComponent(type.value as BrsNodeType);
+    let node = NodeFactory.createNode(type.value as BrsNodeType);
     if (node) {
         return node;
     }
@@ -1784,7 +1828,7 @@ export function createNodeByType(interpreter: Interpreter, type: BrsString): RoS
         typeDef = typeDefStack.pop();
 
         // If this extends a built-in node component, create it.
-        let node = NodeFactory.createComponent(typeDef!.extends as BrsNodeType, type.value);
+        let node = NodeFactory.createNode(typeDef!.extends as BrsNodeType, type.value);
 
         // Default to Node as parent.
         if (!node) {
@@ -1828,6 +1872,11 @@ export function createNodeByType(interpreter: Interpreter, type: BrsString): RoS
 
         return node;
     } else {
+        interpreter.stderr.write(
+            `BRIGHTSCRIPT: ERROR: roSGNode: Failed to create roSGNode with type ${
+                type.value
+            }: ${interpreter.formatLocation()}\n`
+        );
         return BrsInvalid.Instance;
     }
 }

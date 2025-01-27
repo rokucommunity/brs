@@ -6,6 +6,8 @@ import { RoByteArray } from "./RoByteArray";
 import { RoDateTime } from "./RoDateTime";
 import { RoTimespan } from "./RoTimespan";
 import { createNodeByType } from "./RoSGNode";
+import { roSGScreen } from "./RoSGScreen";
+import { RoMessagePort } from "./RoMessagePort";
 import { RoRegex } from "./RoRegex";
 import { RoXMLElement } from "./RoXMLElement";
 import { BrsString, BrsBoolean } from "../BrsType";
@@ -20,7 +22,7 @@ import { Float } from "../Float";
 import { Int32 } from "../Int32";
 import { Int64 } from "../Int64";
 import { Interpreter } from "../../interpreter";
-import { roInvalid } from "./RoInvalid";
+import { RoInvalid } from "./RoInvalid";
 import { BrsComponent } from "./BrsComponent";
 import { RoAppInfo } from "./RoAppInfo";
 import { RoPath } from "./RoPath";
@@ -98,6 +100,8 @@ export const BrsObjects = new BrsObjectsMap([
         (interpreter: Interpreter, nodeType: BrsString) => createNodeByType(interpreter, nodeType),
         1,
     ],
+    ["roSGScreen", (interpreter: Interpreter) => new roSGScreen(interpreter)],
+    ["roMessagePort", (_: Interpreter) => new RoMessagePort()],
     [
         "roRegex",
         (_: Interpreter, expression: BrsString, flags: BrsString) => new RoRegex(expression, flags),
@@ -112,7 +116,7 @@ export const BrsObjects = new BrsObjectsMap([
     ["roLongInteger", (_: Interpreter, literal: Int64) => new roLongInteger(literal), -1],
     ["roAppInfo", (_: Interpreter) => new RoAppInfo()],
     ["roPath", (_: Interpreter, path: BrsString) => new RoPath(path), 1],
-    ["roInvalid", (_: Interpreter) => new roInvalid(), -1],
+    ["roInvalid", (_: Interpreter) => new RoInvalid(), -1],
 ]);
 
 /**

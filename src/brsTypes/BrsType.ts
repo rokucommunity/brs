@@ -4,7 +4,7 @@ import { RoString } from "./components/RoString";
 import { Int32 } from "./Int32";
 import { Float } from "./Float";
 import { roBoolean } from "./components/RoBoolean";
-import { roInvalid } from "./components/RoInvalid";
+import { RoInvalid } from "./components/RoInvalid";
 import { RoAssociativeArray } from "./components/RoAssociativeArray";
 import { RoArray } from "./components/RoArray";
 
@@ -150,7 +150,7 @@ export function getBrsValueFromFieldType(type: string, value?: string): BrsType 
             returnValue = value ? BrsBoolean.from(value === "true") : BrsBoolean.False;
             break;
         case "node":
-            returnValue = BrsInvalid.Instance;
+            returnValue = new RoInvalid();
             break;
         case "int":
         case "integer":
@@ -394,7 +394,7 @@ export class BrsInvalid implements BrsValue, Comparable, Boxable {
     }
 
     box() {
-        return new roInvalid();
+        return new RoInvalid();
     }
 }
 

@@ -1,6 +1,6 @@
 const brs = require("../../lib");
 const path = require("path");
-const { getComponentDefinitionMap } = require("../../lib/componentprocessor");
+const { getComponentDefinitionMap } = require("../../lib/scenegraph");
 const { defaultExecutionOptions } = require("../../lib/interpreter");
 const LexerParser = require("../../lib/LexerParser");
 

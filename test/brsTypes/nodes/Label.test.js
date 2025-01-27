@@ -9,41 +9,41 @@ describe("Label", () => {
             expect(group.toString()).toEqual(
                 `<Component: roSGNode:Label> =
 {
+    istextellipsized: false
+    ellipsistext: ""
+    wordbreakchars: ""
+    truncateondelimiter: ""
+    ellipsizeonboundary: false
+    displaypartiallines: false
+    linespacing: 0
+    wrap: false
+    maxlines: 0
+    numlines: 0
+    height: 0
+    width: 0
+    vertalign: "top"
+    horizalign: "left"
+    font: <Component: roSGNode:Font>
+    color: "0xddddddff"
+    text: ""
+    rendertracking: "disabled"
+    enablerendertracking: false
+    muteaudioguide: false
+    renderpass: 0
+    clippingrect: <Component: roArray>
+    inheritparentopacity: true
+    inheritparenttransform: true
+    childrenderorder: "renderLast"
+    scalerotatecenter: <Component: roArray>
+    scale: <Component: roArray>
+    rotation: 0
+    translation: <Component: roArray>
+    opacity: 1
+    visible: true
     change: <Component: roAssociativeArray>
     focusable: false
-    focusedchild: invalid
+    focusedchild: <Component: roInvalid>
     id: ""
-    visible: true
-    opacity: 1
-    translation: <Component: roArray>
-    rotation: 0
-    scale: <Component: roArray>
-    scalerotatecenter: <Component: roArray>
-    childrenderorder: "renderLast"
-    inheritparenttransform: true
-    inheritparentopacity: true
-    clippingrect: <Component: roArray>
-    renderpass: 0
-    muteaudioguide: false
-    enablerendertracking: false
-    rendertracking: "disabled"
-    text: ""
-    color: "0xddddddff"
-    font: invalid
-    horizalign: "left"
-    vertalign: "top"
-    width: 0
-    height: 0
-    numlines: 0
-    maxlines: 0
-    wrap: false
-    linespacing: 0
-    displaypartiallines: false
-    ellipsizeonboundary: false
-    truncateondelimiter: ""
-    wordbreakchars: ""
-    ellipsistext: ""
-    istextellipsized: false
 }`
             );
         });

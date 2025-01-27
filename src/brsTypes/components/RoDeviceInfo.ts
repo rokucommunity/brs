@@ -2,12 +2,14 @@ import { BrsValue, ValueKind, BrsString, BrsBoolean, BrsInvalid } from "../BrsTy
 import { BrsType, Int32, RoArray, toAssociativeArray } from "..";
 import { BrsComponent } from "./BrsComponent";
 import { Callable, StdlibArgument } from "../Callable";
-import { RoAssociativeArray, AAMember } from "./RoAssociativeArray";
+import { RoMessagePort } from "./RoMessagePort";
+import { RoAssociativeArray } from "./RoAssociativeArray";
 import { v4 as uuidv4 } from "uuid";
 
 export class RoDeviceInfo extends BrsComponent implements BrsValue {
     readonly kind = ValueKind.Object;
 
+    private port?: RoMessagePort;
     private captionsMode = new BrsString("");
     private captionsOption = new BrsString("");
     private enableAppFocus = BrsBoolean.True;
@@ -76,6 +78,8 @@ export class RoDeviceInfo extends BrsComponent implements BrsValue {
                 this.getSoundEffectsVolume,
                 this.isAudioGuideEnabled,
                 this.enableAudioGuideChangedEvent,
+                this.setMessagePort,
+                this.getMessagePort,
             ],
         });
     }
@@ -628,6 +632,27 @@ export class RoDeviceInfo extends BrsComponent implements BrsValue {
         impl: (_interpreter, enable: BrsBoolean) => {
             this.enableAudioGuideChanged = enable;
             return this.enableAudioGuideChanged;
+        },
+    });
+
+    private setMessagePort = new Callable("setMessagePort", {
+        signature: {
+            args: [new StdlibArgument("port", ValueKind.Dynamic)],
+            returns: ValueKind.Void,
+        },
+        impl: (_, port: RoMessagePort) => {
+            this.port = port;
+            return BrsInvalid.Instance;
+        },
+    });
+
+    private getMessagePort = new Callable("getMessagePort", {
+        signature: {
+            args: [],
+            returns: ValueKind.Object,
+        },
+        impl: (_) => {
+            return this.port ?? BrsInvalid.Instance;
         },
     });
 }

@@ -1,4 +1,5 @@
 const brs = require("../../../lib");
+const { RoInvalid } = require("../../../lib/brsTypes/components/RoInvalid");
 const {
     RoAssociativeArray,
     RoSGNode,
@@ -35,16 +36,16 @@ describe("RoSGNode", () => {
             expect(node.toString()).toEqual(
                 `<Component: roSGNode:Node> =
 {
+    number: -1
+    string: "a string"
+    boolean: true
+    node: <Component: roSGNode:Node>
+    associative-array: <Component: roAssociativeArray>
+    array: <Component: roArray>
     change: <Component: roAssociativeArray>
     focusable: false
-    focusedchild: invalid
+    focusedchild: <Component: roInvalid>
     id: ""
-    array: <Component: roArray>
-    associative-array: <Component: roAssociativeArray>
-    node: <Component: roSGNode:Node>
-    boolean: true
-    string: "a string"
-    number: -1
 }`
             );
         });
@@ -364,6 +365,9 @@ describe("RoSGNode", () => {
                 expect(keyValPairs.length).toEqual(expectedValues.length);
                 expectedValues.forEach((expectedValue, index) => {
                     let actualValue = keyValPairs[index].get(new BrsString("value"));
+                    if ("unbox" in actualValue) {
+                        actualValue = actualValue.unbox();
+                    }
                     expect(actualValue).toEqual(expectedValue);
                 });
             });
@@ -386,6 +390,9 @@ describe("RoSGNode", () => {
                 expect(keyValPairs.length).toEqual(expectedValues.length);
                 expectedValues.forEach((expectedValue, index) => {
                     let actualValue = keyValPairs[index].get(new BrsString("value"));
+                    if ("unbox" in actualValue) {
+                        actualValue = actualValue.unbox();
+                    }
                     expect(actualValue).toEqual(expectedValue);
                 });
             });
@@ -536,6 +543,9 @@ describe("RoSGNode", () => {
                         expect(value.elements).toBeInstanceOf(Map);
                         expect(value.elements).toEqual(expected.elements.get(name).elements);
                     } else {
+                        if ("unbox" in value) {
+                            value = value.unbox();
+                        }
                         expect(value).toEqual(expected.elements.get(name));
                     }
                 });
@@ -2189,8 +2199,8 @@ describe("RoSGNode", () => {
                 expect(result).toEqual(BrsBoolean.False);
 
                 // by default their focusedChild fields should be invalid
-                expect(child1.get(focusedChildString)).toEqual(BrsInvalid.Instance);
-                expect(child2.get(focusedChildString)).toEqual(BrsInvalid.Instance);
+                expect(child1.get(focusedChildString).unbox()).toEqual(BrsInvalid.Instance);
+                expect(child2.get(focusedChildString).unbox()).toEqual(BrsInvalid.Instance);
 
                 //focus on child 1
                 child1SetFocus.call(interpreter, BrsBoolean.True);
@@ -2199,7 +2209,7 @@ describe("RoSGNode", () => {
                 result = child2HasFocus.call(interpreter);
                 expect(result).toEqual(BrsBoolean.False);
                 expect(child1.get(focusedChildString)).toEqual(child1);
-                expect(child2.get(focusedChildString)).toEqual(BrsInvalid.Instance);
+                expect(child2.get(focusedChildString).unbox()).toEqual(BrsInvalid.Instance);
 
                 //focus on child 2 should remove focus from child 1
                 child2SetFocus.call(interpreter, BrsBoolean.True);
@@ -2224,7 +2234,7 @@ describe("RoSGNode", () => {
                 result = child2HasFocus.call(interpreter);
                 expect(result).toEqual(BrsBoolean.False);
                 expect(child1.get(focusedChildString)).toEqual(child1);
-                expect(child2.get(focusedChildString)).toEqual(BrsInvalid.Instance);
+                expect(child2.get(focusedChildString).unbox()).toEqual(BrsInvalid.Instance);
 
                 //set focus to false on child 1
                 child1SetFocus.call(interpreter, BrsBoolean.False);
@@ -2233,7 +2243,7 @@ describe("RoSGNode", () => {
                 result = child2HasFocus.call(interpreter);
                 expect(result).toEqual(BrsBoolean.False);
                 expect(child1.get(focusedChildString)).toEqual(BrsInvalid.Instance);
-                expect(child2.get(focusedChildString)).toEqual(BrsInvalid.Instance);
+                expect(child2.get(focusedChildString).unbox()).toEqual(BrsInvalid.Instance);
             });
         });
 

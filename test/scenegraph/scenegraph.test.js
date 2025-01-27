@@ -1,4 +1,4 @@
-const { getComponentDefinitionMap, ComponentDefinition } = require("../../lib/componentprocessor");
+const { getComponentDefinitionMap, ComponentDefinition } = require("../../lib/scenegraph");
 const path = require("path");
 
 jest.mock("fast-glob");
@@ -113,7 +113,7 @@ describe("component parsing support", () => {
                 expect(parsedExtendedComp.scripts).not.toBeUndefined();
                 expect(parsedExtendedComp.scripts.length).toBeGreaterThan(0);
 
-                const expectedPrefix = "pkg:/test/componentprocessor/resources/scripts/";
+                const expectedPrefix = "pkg:/test/scenegraph/resources/scripts/";
                 let expectedScripts = ["extendedComponent.brs", "utility.brs"].map((scriptName) =>
                     path.posix.join(expectedPrefix, scriptName)
                 );

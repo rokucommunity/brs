@@ -1,7 +1,7 @@
 const brs = require("../../lib");
 const { ValueKind, Callable, BrsString, RoAssociativeArray } = brs.types;
 
-const { ComponentDefinition } = require("../../lib/componentprocessor");
+const { ComponentDefinition } = require("../../lib/scenegraph");
 
 const { Interpreter } = require("../../lib/interpreter");
 const { mockComponentPartial } = require("../../lib/extensions/mockComponentPartial");

@@ -3,7 +3,7 @@ const Stmt = require("../../lib/parser/Statement");
 const { Interpreter } = require("../../lib/interpreter");
 const brs = require("../../lib");
 const { Lexeme } = brs.lexer;
-const { BrsString, Int32, roInt, ValueKind, BrsInvalid, roInvalid } = brs.types;
+const { BrsString, Int32, roInt, ValueKind, BrsInvalid, RoInvalid } = brs.types;
 
 const { token, identifier, fakeLocation } = require("../parser/ParserTests");
 
@@ -235,7 +235,7 @@ describe("interpreter calls", () => {
         interpreter.exec(ast);
         let result = interpreter.environment.get(identifier("result"));
         expect(result.kind).toEqual(ValueKind.Object);
-        expect(result.value).toEqual(new roInvalid().value);
+        expect(result.value).toEqual(new RoInvalid().value);
     });
 
     it("errors when returning from a void return", () => {

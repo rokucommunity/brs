@@ -9,11 +9,7 @@ import sanitizeFilename from "sanitize-filename";
 
 import { Lexer } from "./lexer";
 import * as PP from "./preprocessor";
-import {
-    getComponentDefinitionMap,
-    ComponentDefinition,
-    ComponentScript,
-} from "./componentprocessor";
+import { getComponentDefinitionMap, ComponentDefinition, ComponentScript } from "./scenegraph";
 import { Parser } from "./parser";
 import { Interpreter, ExecutionOptions, defaultExecutionOptions, colorize } from "./interpreter";
 import { resetTestData } from "./extensions";
@@ -33,6 +29,7 @@ import { URL } from "url";
 import * as path from "path";
 import pSettle from "p-settle";
 import os from "os";
+import { Scope } from "./interpreter/Environment";
 
 let coverageCollector: CoverageCollector | null = null;
 
@@ -49,7 +46,11 @@ let coverageCollector: CoverageCollector | null = null;
  */
 export async function execute(filenames: string[], options: Partial<ExecutionOptions>) {
     let { lexerParserFn, interpreter } = await loadFiles(options);
-    let mainStatements = await lexerParserFn(filenames);
+    let scripts = new Array<ComponentScript>();
+    filenames.forEach((file) => {
+        scripts.push({ type: "text/brightscript", uri: file });
+    });
+    let mainStatements = await lexerParserFn(scripts);
     return interpreter.exec(mainStatements);
 }
 
@@ -136,7 +137,9 @@ async function loadFiles(options: Partial<ExecutionOptions>) {
         if (component.scripts.length < 1) return;
         try {
             component.scripts = component.scripts.map((script: ComponentScript) => {
-                script.uri = path.join(executionOptions.root, new URL(script.uri).pathname);
+                if (script.uri) {
+                    script.uri = path.join(executionOptions.root, new URL(script.uri).pathname);
+                }
                 return script;
             });
         } catch (error) {
@@ -146,10 +149,9 @@ async function loadFiles(options: Partial<ExecutionOptions>) {
         }
     });
 
-    let lexerParserFn = LexerParser.getLexerParserFn(manifest, options);
     const interpreter = await Interpreter.withSubEnvsFromComponents(
         componentDefinitions,
-        lexerParserFn,
+        manifest,
         executionOptions
     );
     if (!interpreter) {
@@ -165,7 +167,7 @@ async function loadFiles(options: Partial<ExecutionOptions>) {
     interpreter.mergeNodeDefinitionsWith(componentLibraryInterpreters);
 
     await loadTranslationFiles(interpreter, executionOptions.root);
-
+    let lexerParserFn = LexerParser.getLexerParserFn(manifest, options);
     if (executionOptions.generateCoverage) {
         coverageCollector = new CoverageCollector(executionOptions.root, lexerParserFn);
         await coverageCollector.crawlBrsFiles();
@@ -233,7 +235,11 @@ export async function createExecuteWithScope(
     options: Partial<ExecutionOptions>
 ): Promise<ExecuteWithScope> {
     let { lexerParserFn, interpreter } = await loadFiles(options);
-    let mainStatements = await lexerParserFn(filenamesForScope);
+    let scripts = new Array<ComponentScript>();
+    filenamesForScope.forEach((file) => {
+        scripts.push({ type: "text/brightscript", uri: file });
+    });
+    let mainStatements = await lexerParserFn(scripts);
     interpreter.exec(mainStatements);
     // Clear any errors that accumulated, so that we can isolate errors from future calls to the execute function.
     interpreter.errors = [];
@@ -289,9 +295,19 @@ export function repl() {
             printHelp();
             rl.prompt();
             return;
-        } else if (["vars", "var"].includes(cmd)) {
-            console.log(chalk.cyanBright(`\r\nLocal variables:\r\n`));
-            console.log(chalk.cyanBright(replInterpreter.formatLocalVariables()));
+        } else if (["var", "vars"].includes(line.split(" ")[0]?.toLowerCase().trim())) {
+            const scopeName = line.split(" ")[1]?.toLowerCase().trim() ?? "function";
+            let scope = Scope.Function;
+            if (scopeName === "global") {
+                scope = Scope.Global;
+                console.log(chalk.cyanBright(`\r\nGlobal variables:\r\n`));
+            } else if (scopeName === "module") {
+                scope = Scope.Module;
+                console.log(chalk.cyanBright(`\r\nModule variables:\r\n`));
+            } else {
+                console.log(chalk.cyanBright(`\r\nLocal variables:\r\n`));
+            }
+            console.log(chalk.cyanBright(replInterpreter.formatVariables(scope)));
             rl.prompt();
             return;
         }
@@ -361,11 +377,11 @@ function run(
 function printHelp() {
     let helpMsg = "\r\n";
     helpMsg += "REPL Command List:\r\n";
-    helpMsg += "   print|?         Print variable value or expression\r\n";
-    helpMsg += "   var|vars        Display variables and their types/values\r\n";
-    helpMsg += "   help|hint       Show this REPL command list\r\n";
-    helpMsg += "   clear|cls       Clear terminal screen\r\n";
-    helpMsg += "   exit|quit|q     Terminate REPL session\r\n\r\n";
+    helpMsg += "   print|?           Print variable value or expression\r\n";
+    helpMsg += "   var|vars [scope]  Display variables and their types/values\r\n";
+    helpMsg += "   help|hint         Show this REPL command list\r\n";
+    helpMsg += "   clear|cls         Clear terminal screen\r\n";
+    helpMsg += "   exit|quit|q       Terminate REPL session\r\n\r\n";
     helpMsg += "   Type any valid BrightScript expression for a live compile and run.\r\n";
     console.log(chalk.cyanBright(helpMsg));
 }

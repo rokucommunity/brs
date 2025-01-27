@@ -9,13 +9,13 @@ describe("Font", () => {
             expect(group.toString()).toEqual(
                 `<Component: roSGNode:Font> =
 {
+    fallbackglyph: ""
+    size: 24
+    uri: ""
     change: <Component: roAssociativeArray>
     focusable: false
-    focusedchild: invalid
+    focusedchild: <Component: roInvalid>
     id: ""
-    uri: ""
-    size: 1
-    fallbackglyph: ""
 }`
             );
         });

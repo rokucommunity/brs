@@ -9,32 +9,32 @@ describe("MiniKeyboard", () => {
             expect(miniKeyboard.toString()).toEqual(
                 `<Component: roSGNode:MiniKeyboard> =
 {
+    lowercase: true
+    showtexteditbox: true
+    texteditbox: <Component: roSGNode:TextEditBox>
+    focusbitmapuri: ""
+    keyboardbitmapuri: ""
+    focusedkeycolor: "0x000000FF"
+    keycolor: "0x000000FF"
+    text: ""
+    rendertracking: "disabled"
+    enablerendertracking: false
+    muteaudioguide: false
+    renderpass: 0
+    clippingrect: <Component: roArray>
+    inheritparentopacity: true
+    inheritparenttransform: true
+    childrenderorder: "renderLast"
+    scalerotatecenter: <Component: roArray>
+    scale: <Component: roArray>
+    rotation: 0
+    translation: <Component: roArray>
+    opacity: 1
+    visible: true
     change: <Component: roAssociativeArray>
     focusable: false
-    focusedchild: invalid
+    focusedchild: <Component: roInvalid>
     id: ""
-    visible: true
-    opacity: 1
-    translation: <Component: roArray>
-    rotation: 0
-    scale: <Component: roArray>
-    scalerotatecenter: <Component: roArray>
-    childrenderorder: "renderLast"
-    inheritparenttransform: true
-    inheritparentopacity: true
-    clippingrect: <Component: roArray>
-    renderpass: 0
-    muteaudioguide: false
-    enablerendertracking: false
-    rendertracking: "disabled"
-    text: ""
-    keycolor: "0x000000FF"
-    focusedkeycolor: "0x000000FF"
-    keyboardbitmapuri: ""
-    focusbitmapuri: ""
-    texteditbox: <Component: roSGNode:TextEditBox>
-    showtexteditbox: true
-    lowercase: true
 }`
             );
         });

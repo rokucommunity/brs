@@ -10,10 +10,10 @@ describe("ContentNode.js", () => {
             expect(node.toString()).toEqual(
                 `<Component: roSGNode:ContentNode> =
 {
-    change: <Component: roAssociativeArray>
-    focusable: false
-    focusedchild: invalid
     id: ""
+    focusedchild: <Component: roInvalid>
+    focusable: false
+    change: <Component: roAssociativeArray>
 }`
             );
         });
@@ -142,10 +142,10 @@ describe("ContentNode.js", () => {
                 expect(node.toString()).toEqual(
                     `<Component: roSGNode:ContentNode> =
 {
-    change: <Component: roAssociativeArray>
-    focusable: false
-    focusedchild: invalid
     id: ""
+    focusedchild: <Component: roInvalid>
+    focusable: false
+    change: <Component: roAssociativeArray>
     DESCRIPTION: ""
 }`
                 );
@@ -160,10 +160,10 @@ describe("ContentNode.js", () => {
                 expect(node.toString()).toEqual(
                     `<Component: roSGNode:ContentNode> =
 {
-    change: <Component: roAssociativeArray>
-    focusable: false
-    focusedchild: invalid
     id: ""
+    focusedchild: <Component: roInvalid>
+    focusable: false
+    change: <Component: roAssociativeArray>
     DESCRIPTION: ""
 }`
                 );
@@ -182,10 +182,10 @@ describe("ContentNode.js", () => {
                 expect(node.toString()).toEqual(
                     `<Component: roSGNode:ContentNode> =
 {
-    change: <Component: roAssociativeArray>
-    focusable: false
-    focusedchild: invalid
     id: ""
+    focusedchild: <Component: roInvalid>
+    focusable: false
+    change: <Component: roAssociativeArray>
     DESCRIPTION: "new value"
 }`
                 );
@@ -205,10 +205,10 @@ describe("ContentNode.js", () => {
                 expect(node.toString()).toEqual(
                     `<Component: roSGNode:ContentNode> =
 {
-    change: <Component: roAssociativeArray>
-    focusable: false
-    focusedchild: invalid
     id: ""
+    focusedchild: <Component: roInvalid>
+    focusable: false
+    change: <Component: roAssociativeArray>
     DESCRIPTION: "new value"
 }`
                 );
@@ -223,10 +223,10 @@ describe("ContentNode.js", () => {
                 expect(node.toString()).toEqual(
                     `<Component: roSGNode:ContentNode> =
 {
-    change: <Component: roAssociativeArray>
-    focusable: false
-    focusedchild: invalid
     id: ""
+    focusedchild: <Component: roInvalid>
+    focusable: false
+    change: <Component: roAssociativeArray>
     DESCRIPTION: ""
 }`
                 );
@@ -241,10 +241,10 @@ describe("ContentNode.js", () => {
                 expect(node.toString()).toEqual(
                     `<Component: roSGNode:ContentNode> =
 {
-    change: <Component: roAssociativeArray>
-    focusable: false
-    focusedchild: invalid
     id: ""
+    focusedchild: <Component: roInvalid>
+    focusable: false
+    change: <Component: roAssociativeArray>
     DESCRIPTION: ""
 }`
                 );

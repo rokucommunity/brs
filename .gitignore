@@ -4,4 +4,5 @@ lib/
 types/
 node_modules/
 coverage/
+out/
 .DS_Store
