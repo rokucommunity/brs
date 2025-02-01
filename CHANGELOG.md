@@ -6,6 +6,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+## [0.47.3](https://github.com/rokucommunity/brs/compare/v0.47.2...v0.47.3) - 2025-01-31
+### Changed
+ - SceneGraph Node files reorganization ([#86](https://github.com/rokucommunity/brs/pull/86))
+### Fixed
+ - Implemented several improvements to SceneGraph ([#87](https://github.com/rokucommunity/brs/pull/87))
+
+
+
 ## [0.47.2](https://github.com/rokucommunity/brs/compare/v0.47.1...v0.47.2) - 2025-01-03
 ### Added
  - Implemented `ObjFun()` and aligned behavior of `CreateObject()` with Roku ([#84](https://github.com/rokucommunity/brs/pull/84))
