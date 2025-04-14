@@ -21,7 +21,7 @@
     "lint": "tslint --project .",
     "prettier:write": "prettier --write \"{bin,src,test}/**/*.{js,ts}\"",
     "prettier": "prettier --check \"{bin,src,test}/**/*.{js,ts}\"",
-    "package": "npm ci && npm run build && npm pack"
+    "package": "npm run build && npm pack"
   },
   "files": [
     "bin/",

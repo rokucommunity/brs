@@ -27,4 +27,3 @@ jobs:
       - run: npm run prettier
       - run: npm run test
       - run: npm run publish-coverage
-      - run: npm publish
