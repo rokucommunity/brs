@@ -20,7 +20,8 @@
     "test:debug": "node --inspect-brk ./node_modules/.bin/jest --runInBand -- ",
     "lint": "tslint --project .",
     "prettier:write": "prettier --write \"{bin,src,test}/**/*.{js,ts}\"",
-    "prettier": "prettier --check \"{bin,src,test}/**/*.{js,ts}\""
+    "prettier": "prettier --check \"{bin,src,test}/**/*.{js,ts}\"",
+    "package": "npm run build && npm pack"
   },
   "files": [
     "bin/",
