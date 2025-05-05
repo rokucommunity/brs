@@ -1,6 +1,6 @@
 import { ValueKind, Comparable, BrsBoolean } from "./BrsType";
 import { BrsNumber, Numeric } from "./BrsNumber";
-import { BrsType, isBrsNumber } from "./";
+import { BrsType, isNumberComp } from ".";
 import { Boxable } from "./Boxing";
 import { Float } from "./Float";
 import { Double } from "./Double";
@@ -25,12 +25,16 @@ export class Int32 implements Numeric, Comparable, Boxable {
      * @param value the value to store in the BrightScript number, truncated to a 32-bit
      *              integer.
      */
-    constructor(value: number | Long) {
+    constructor(value: number | Long, public inArray: boolean = false) {
+        const maxInt = 0x80000000;
         if (value instanceof Long) {
             // RBI ignores the 32 most significant bits when converting a 64-bit int to a 32-bit int, effectively
             // performing a bitwise AND with `0x00000000FFFFFFFF`.  Since Long already tracks the lower and upper
             // portions as separate 32-bit values, we can simply extract the least-significant portion.
             value = value.low;
+        } else if (value > maxInt - 1 || value < -maxInt) {
+            // RBI truncates the value to a 32-bit integer, if not identified as LongInt, so we'll do the same here
+            value = value < -maxInt ? -maxInt : maxInt - 1;
         }
         this.value = Math.trunc(value);
     }
@@ -45,7 +49,8 @@ export class Int32 implements Numeric, Comparable, Boxable {
     static fromString(asString: string): Int32 {
         if (asString.toLowerCase().startsWith("&h")) {
             asString = asString.slice(2); // remove "&h" from the string representation
-            return new Int32(Number.parseInt(asString, 16));
+            const signedInt32 = Number.parseInt(asString, 16) | 0; // RBI coerces to 32-bit signed int when parsing hex
+            return new Int32(signedInt32);
         }
         return new Int32(Number.parseFloat(asString));
     }
@@ -199,7 +204,7 @@ export class Int32 implements Numeric, Comparable, Boxable {
     lessThan(other: BrsType): BrsBoolean {
         if (other.kind === ValueKind.Int64) {
             return BrsBoolean.from(this.getValue() < other.getValue().toNumber());
-        } else if (isBrsNumber(other)) {
+        } else if (isNumberComp(other)) {
             return BrsBoolean.from(this.getValue() < other.getValue());
         }
         return BrsBoolean.False;
@@ -208,7 +213,7 @@ export class Int32 implements Numeric, Comparable, Boxable {
     greaterThan(other: BrsType): BrsBoolean {
         if (other.kind === ValueKind.Int64) {
             return BrsBoolean.from(this.getValue() > other.getValue().toNumber());
-        } else if (isBrsNumber(other)) {
+        } else if (isNumberComp(other)) {
             return BrsBoolean.from(this.getValue() > other.getValue());
         }
         return BrsBoolean.False;
@@ -217,16 +222,16 @@ export class Int32 implements Numeric, Comparable, Boxable {
     equalTo(other: BrsType): BrsBoolean {
         if (other.kind === ValueKind.Int64) {
             return BrsBoolean.from(this.getValue() === other.getValue().toNumber());
-        } else if (isBrsNumber(other)) {
-            return BrsBoolean.from(this.getValue() === other.getValue());
         } else if (other.kind === ValueKind.Boolean) {
             return other.equalTo(BrsBoolean.from(this.toBoolean()));
+        } else if (isNumberComp(other)) {
+            return BrsBoolean.from(this.getValue() === other.getValue());
         }
         return BrsBoolean.False;
     }
 
     toString(parent?: BrsType): string {
-        return this.value.toString();
+        return Number.isNaN(this.value) ? "nan" : this.value.toString();
     }
 
     box() {

@@ -148,6 +148,15 @@ export function isStringComp(value: BrsType): value is BrsString & Comparable {
     return isBrsString(value) || value instanceof RoPath;
 }
 
+/**
+ * Determines whether or not the given value can be compared as a number.
+ * @param value the BrightScript value in question.
+ * @returns `true` if `value` can be compared as a number, otherwise `false`.
+ */
+export function isNumberComp(value: BrsType): value is BrsType & Comparable {
+    return isBrsNumber(value) || isBoxedNumber(value);
+}
+
 /** Determines whether or not the given value is a BrightScript boxed number.
  * @param value the BrightScript value in question.
  * @returns `true` if `value` is a boxed number, otherwise `false`.

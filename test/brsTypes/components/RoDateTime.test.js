@@ -1,5 +1,6 @@
 const brs = require("../../../lib");
-const { RoDateTime, Int32, BrsString, BrsInvalid } = brs.types;
+const { Uninitialized } = require("../../../lib/brsTypes/BrsType");
+const { RoDateTime, Int32, Int64, BrsString, BrsInvalid } = brs.types;
 const { Interpreter } = require("../../../lib/interpreter");
 const lolex = require("lolex");
 
@@ -43,7 +44,7 @@ describe("RoDateTime", () => {
                 let result = mark.call(interpreter);
                 expect(mark).toBeTruthy();
                 expect(dt.markTime).toEqual(clock.now);
-                expect(result).toBe(BrsInvalid.Instance);
+                expect(result).toBe(Uninitialized.Instance);
             });
         });
 
@@ -146,6 +147,15 @@ describe("RoDateTime", () => {
             });
         });
 
+        describe("asSecondsLong", () => {
+            it("returns the date/time as the number of seconds from the Unix epoch as Long Integer", () => {
+                let asSeconds = dt.getMethod("asSecondsLong");
+                let result = asSeconds.call(interpreter);
+                expect(asSeconds).toBeTruthy();
+                expect(result).toEqual(new Int64(1230768000));
+            });
+        });
+
         describe("fromISO8601String", () => {
             it("set the date/time using a string in the ISO 8601 format", () => {
                 let fromISO8601String = dt.getMethod("fromISO8601String");
@@ -155,7 +165,7 @@ describe("RoDateTime", () => {
                     new BrsString("2019-07-27T17:08:41")
                 );
                 expect(new Int32(dt.markTime)).toEqual(new Int32(1564247321000));
-                expect(result).toBe(BrsInvalid.Instance);
+                expect(result).toBe(Uninitialized.Instance);
             });
 
             it("set the date/time using an invalid string", () => {
@@ -163,7 +173,7 @@ describe("RoDateTime", () => {
                 expect(fromISO8601String).toBeTruthy();
                 let result = fromISO8601String.call(interpreter, new BrsString("garbage"));
                 expect(new Int32(dt.markTime)).toEqual(new Int32(0));
-                expect(result).toBe(BrsInvalid.Instance);
+                expect(result).toBe(Uninitialized.Instance);
             });
         });
 
@@ -172,6 +182,16 @@ describe("RoDateTime", () => {
                 let fromSeconds = dt.getMethod("fromSeconds");
                 expect(fromSeconds).toBeTruthy();
                 let result = fromSeconds.call(interpreter, new Int32(1564247321));
+                expect(new Int32(dt.markTime)).toEqual(new Int32(1564247321000));
+                expect(result).toBe(Uninitialized.Instance);
+            });
+        });
+
+        describe("fromSecondsLong", () => {
+            it("set the date/time value using the number of seconds from the Unix epoch as Long Integer", () => {
+                let fromSeconds = dt.getMethod("fromSecondsLong");
+                expect(fromSeconds).toBeTruthy();
+                let result = fromSeconds.call(interpreter, new Int64(2550877200));
                 expect(new Int32(dt.markTime)).toEqual(new Int32(1564247321000));
                 expect(result).toBe(BrsInvalid.Instance);
             });
@@ -292,7 +312,7 @@ describe("RoDateTime", () => {
                 let local = 1230768000123 - new Date(1230768000123).getTimezoneOffset() * 60 * 1000;
                 expect(toLocalTime).toBeTruthy();
                 expect(new Int32(dt.markTime)).toEqual(new Int32(local));
-                expect(result).toBe(BrsInvalid.Instance);
+                expect(result).toBe(Uninitialized.Instance);
             });
         });
     });
