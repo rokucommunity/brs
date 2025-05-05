@@ -526,7 +526,7 @@ export class RoDateTime extends BrsComponent implements BrsValue {
  */
 function wrapTokens(input: string, tokens: string[]): string {
     const tokenRegex = new RegExp(`(${tokens.join("|")})`, "g");
-    return input.replace(tokenRegex, (match, token, offset, string) => {
+    return input.replace(tokenRegex, (_, token: string, offset: number, string) => {
         const before = string[offset - 1];
         const after = string[offset + token.length];
         if (before && /[a-zA-Z0-9]/.test(before) && after && /[a-zA-Z0-9]/.test(after)) {
