@@ -1,5 +1,5 @@
 import Long from "long";
-import { BrsType, BrsBoolean } from "./";
+import { BrsType, BrsBoolean, isNumberComp } from ".";
 import { BrsNumber, Numeric } from "./BrsNumber";
 import { ValueKind, Comparable } from "./BrsType";
 import { Float } from "./Float";
@@ -23,7 +23,7 @@ export class Int64 implements Numeric, Comparable, Boxable {
      * Creates a new BrightScript 64-bit integer value representing the provided `value`.
      * @param value the value to store in the BrightScript integer.
      */
-    constructor(value: number | Long) {
+    constructor(value: number | Long, public inArray: boolean = false) {
         if (value instanceof Long) {
             this.value = value;
         } else {
@@ -43,7 +43,7 @@ export class Int64 implements Numeric, Comparable, Boxable {
 
         if (asString.toLowerCase().startsWith("&h")) {
             radix = 16; // it's a hex literal!
-            asString = asString.slice(2); // remove "&h" from the string representation
+            asString = asString.slice(2).replace("&", ""); // remove "&h" from the start and tailing "&" if exists
         }
 
         let i64 = new Int64(Long.fromString(asString, undefined, radix));
@@ -185,9 +185,11 @@ export class Int64 implements Numeric, Comparable, Boxable {
                 return new Float(this.getValue().toNumber()).lessThan(other);
             case ValueKind.Double:
                 return new Double(this.getValue().toNumber()).lessThan(other);
-            default:
-                return BrsBoolean.False;
         }
+        if (isNumberComp(other)) {
+            return BrsBoolean.from(this.getValue().lessThan(other.getValue()));
+        }
+        return BrsBoolean.False;
     }
 
     greaterThan(other: BrsType): BrsBoolean {
@@ -199,9 +201,11 @@ export class Int64 implements Numeric, Comparable, Boxable {
                 return new Float(this.getValue().toNumber()).greaterThan(other);
             case ValueKind.Double:
                 return new Double(this.getValue().toNumber()).greaterThan(other);
-            default:
-                return BrsBoolean.False;
         }
+        if (isNumberComp(other)) {
+            return BrsBoolean.from(this.getValue().greaterThan(other.getValue()));
+        }
+        return BrsBoolean.False;
     }
 
     equalTo(other: BrsType): BrsBoolean {
@@ -215,13 +219,15 @@ export class Int64 implements Numeric, Comparable, Boxable {
                 return new Double(this.getValue().toNumber()).equalTo(other);
             case ValueKind.Boolean:
                 return other.equalTo(BrsBoolean.from(this.toBoolean()));
-            default:
-                return BrsBoolean.False;
         }
+        if (isNumberComp(other)) {
+            return BrsBoolean.from(this.getValue().equals(other.getValue()));
+        }
+        return BrsBoolean.False;
     }
 
     toString(parent?: BrsType): string {
-        return this.value.toString();
+        return Number.isNaN(this.value.toNumber()) ? "nan" : this.value.toString();
     }
 
     box() {
