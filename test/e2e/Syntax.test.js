@@ -312,9 +312,9 @@ describe("end to end syntax", () => {
             "[backtrace] =",
             " 8",
             "[backtrace] =",
-            " 25",
+            " 27",
             "[backtrace] =",
-            " 41",
+            " 43",
             "[post_try] a =",
             " 10",
             "[subFunc] a =",
@@ -323,6 +323,8 @@ describe("end to end syntax", () => {
             " 24",
             "Error message = ",
             `Type Mismatch. Operator "*" can't be applied to "Integer" and "String".`,
+            "[return in try] = ",
+            "success",
         ]);
     });
 });
