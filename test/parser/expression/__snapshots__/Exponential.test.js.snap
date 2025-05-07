@@ -52,6 +52,7 @@ Array [
         },
         "type": "Literal",
         "value": Int32 {
+          "inArray": false,
           "kind": 4,
           "value": 2,
         },
@@ -69,6 +70,7 @@ Array [
         },
         "type": "Literal",
         "value": Int32 {
+          "inArray": false,
           "kind": 4,
           "value": 3,
         },
@@ -148,6 +150,7 @@ Array [
           },
           "type": "Literal",
           "value": Int32 {
+            "inArray": false,
             "kind": 4,
             "value": 2,
           },
@@ -165,6 +168,7 @@ Array [
           },
           "type": "Literal",
           "value": Int32 {
+            "inArray": false,
             "kind": 4,
             "value": 3,
           },
@@ -200,6 +204,7 @@ Array [
         },
         "type": "Literal",
         "value": Int32 {
+          "inArray": false,
           "kind": 4,
           "value": 4,
         },

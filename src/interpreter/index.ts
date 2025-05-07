@@ -1055,7 +1055,7 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
             this._tryMode = tryMode;
         } catch (err: any) {
             this._tryMode = tryMode;
-            if (!(err instanceof BrsError)) {
+            if (!(err instanceof BrsError) || err instanceof Stmt.ReturnValue) {
                 throw err;
             }
             const btArray = this.formatBacktrace(err.location, err.backTrace);
