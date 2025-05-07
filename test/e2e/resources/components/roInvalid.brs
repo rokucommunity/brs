@@ -3,6 +3,7 @@ sub main()
     print type(r)
     print r
     print r.toStr()
+    print r?.bar
 
     result = (r = invalid)
     print result
