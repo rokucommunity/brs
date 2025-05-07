@@ -506,6 +506,7 @@ describe("end to end brightscript functions", () => {
             "roInvalid",
             "<Component: roInvalid>",
             "invalid",
+            "<Component: roInvalid>",
             "true",
         ]);
     });
