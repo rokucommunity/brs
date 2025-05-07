@@ -81,6 +81,8 @@ export interface ExecutionOptions {
     componentDirs: string[];
     /** Whether or not a component library is being processed. */
     isComponentLibrary: boolean;
+    /** Suppress console colors */
+    noColor: boolean;
 }
 
 /** The default set of execution options.  Includes the `stdout`/`stderr` pair from the process that invoked `brs`. */
@@ -91,6 +93,7 @@ export const defaultExecutionOptions: ExecutionOptions = {
     generateCoverage: false,
     componentDirs: [],
     isComponentLibrary: false,
+    noColor: false,
 };
 Object.freeze(defaultExecutionOptions);
 
@@ -454,7 +457,11 @@ export class Interpreter implements Expr.Visitor<BrsType>, Stmt.Visitor<BrsType>
                 const toPrint = this.evaluate(printable);
                 const isNumber = isBrsNumber(toPrint) || isBoxedNumber(toPrint);
                 const str = isNumber && this.isPositive(toPrint.getValue()) ? " " : "";
-                this.stdout.write(colorize(str + toPrint.toString()));
+                if (this.options.noColor) {
+                    this.stdout.write(str + toPrint.toString());
+                } else {
+                    this.stdout.write(colorize(str + toPrint.toString()));
+                }
             }
         });
 
