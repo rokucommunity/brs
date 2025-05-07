@@ -93,7 +93,7 @@ export const defaultExecutionOptions: ExecutionOptions = {
     generateCoverage: false,
     componentDirs: [],
     isComponentLibrary: false,
-    noColor: false
+    noColor: false,
 };
 Object.freeze(defaultExecutionOptions);
 
