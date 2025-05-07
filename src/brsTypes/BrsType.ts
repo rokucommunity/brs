@@ -379,7 +379,7 @@ export class BrsInvalid implements BrsValue, Comparable, Boxable {
     }
 
     equalTo(other: BrsType): BrsBoolean {
-        if (other.kind === ValueKind.Invalid) {
+        if (other.kind === ValueKind.Invalid || other instanceof RoInvalid) {
             return BrsBoolean.True;
         }
         return BrsBoolean.False;
