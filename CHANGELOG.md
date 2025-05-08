@@ -7,13 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 ## [0.47.4](https://github.com/rokucommunity/brs/compare/0.47.3...v0.47.4) - 2025-05-08
-### Changed
+### Added
  - Option to suppress color from the console log ([#89](https://github.com/rokucommunity/brs/pull/89))
- - Add .vscode files ([#99](https://github.com/rokucommunity/brs/pull/99))
+### Changed
+ - Implemented missing methods on `roDateTime` ([#96](https://github.com/rokucommunity/brs/pull/96))
+### Fixed
  - Fixed optional chaining with `roInvalid` ([#98](https://github.com/rokucommunity/brs/pull/98))
  - Fixed `return` in `try` block ([#97](https://github.com/rokucommunity/brs/pull/97))
- - Implemented missing methods on `roDateTime` ([#96](https://github.com/rokucommunity/brs/pull/96))
- - Migrate to shared ci ([#95](https://github.com/rokucommunity/brs/pull/95))
 
 
 
