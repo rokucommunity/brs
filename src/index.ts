@@ -4,8 +4,8 @@ import chalk from "chalk";
 
 import { promisify } from "util";
 const mkdtemp = promisify(fs.mkdtemp);
-import decompress from "decompress";
 import sanitizeFilename from "sanitize-filename";
+import { extractZip } from "./extractZip";
 
 import { Lexer } from "./lexer";
 import * as PP from "./preprocessor";
@@ -121,7 +121,7 @@ async function loadFiles(options: Partial<ExecutionOptions>) {
             let zipFileOnDisk = path.join(executionOptions.root, new URL(uri).pathname);
 
             componentLibrariesToLoad.push(
-                decompress(zipFileOnDisk, tempdir).then(() =>
+                extractZip(zipFileOnDisk, tempdir).then(() =>
                     loadFiles({
                         ...options,
                         root: tempdir,
