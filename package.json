@@ -13,7 +13,7 @@
     "preversion": "npm run clean && npm run build && npm run lint && npm run prettier && npm run test",
     "build": "tsc",
     "watch": "tsc -w",
-    "clean": "rimraf ./lib ./types",
+    "clean": "node -e \"const fs=require('fs');for(const dir of ['lib','types'])fs.rmSync(dir,{recursive:true,force:true})\"",
     "test": "jest",
     "test:nocover": "jest --collectCoverage=false",
     "test:debug": "node --inspect-brk ./node_modules/.bin/jest --runInBand -- ",
@@ -62,19 +62,21 @@
     "@types/xmldoc": "^1.1.4",
     "@types/yauzl": "^3.4.0",
     "audit-ci": "^7.1.0",
-    "doctoc": "^2.5.0",
     "jest": "^29.7.0",
-    "jest-junit": "^6.1.0",
-    "lint-staged": ">=8",
     "lolex": "^3.0.0",
-    "npm-run-all": "^4.1.2",
     "prettier": "2",
-    "rimraf": "^2.6.2",
     "tslint": "^5.11.0",
     "tslint-config-prettier": "^1.18.0",
     "typescript": "^5.7.3"
   },
-  "repository": "https://github.com/rokucommunity/brs",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rokucommunity/brs"
+  },
+  "bugs": {
+    "url": "https://github.com/rokucommunity/brs/issues"
+  },
+  "homepage": "https://github.com/rokucommunity/brs#readme",
   "jest": {
     "testEnvironment": "node",
     "collectCoverage": true,
