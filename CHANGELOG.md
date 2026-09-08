@@ -8,8 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.47.5](https://github.com/rokucommunity/brs/compare/0.47.4...v0.47.5) - 2026-09-08
 ### Added
- - Add security audit workflow ([#105](https://github.com/rokucommunity/brs/pull/105))
 ### Changed
+ - chore: Add security audit workflow ([#105](https://github.com/rokucommunity/brs/pull/105))
  - Security enhancements ([#107](https://github.com/rokucommunity/brs/pull/107))
 
 
