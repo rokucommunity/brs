@@ -17,14 +17,17 @@
       - [Testing](#testing)
       - [Cleaning](#cleaning)
   - [Documentation](#documentation)
+  - [Accepted security advisories](#accepted-security-advisories)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 
 # BRS: Off-Roku BrightScript
 
 An interpreter for the BrightScript language that runs on non-Roku platforms.
 
 [![build status](https://img.shields.io/github/actions/workflow/status/rokucommunity/brs/build.yml?branch=master&logo=github)](https://github.com/rokucommunity/brs/actions?query=branch%3Amaster+workflow%3Abuild)
+[![security](https://img.shields.io/github/actions/workflow/status/rokucommunity/brs/security-audit.yml?branch=master&label=security&logo=data:image/svg%2Bxml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxNiAxNiI+PHJlY3QgeD0iMyIgeT0iOCIgd2lkdGg9IjEwIiBoZWlnaHQ9IjciIHJ4PSIxIiBmaWxsPSJ3aGl0ZSIvPjxwYXRoIGQ9Ik01IDhWNWEzIDMgMCAwIDEgNiAwdjMiIGZpbGw9Im5vbmUiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMiIvPjwvc3ZnPg==)](https://github.com/rokucommunity/brs/actions/workflows/security-audit.yml)
 [![coverage status](https://img.shields.io/coveralls/github/rokucommunity/brs?logo=coveralls)](https://coveralls.io/github/rokucommunity/brs?branch=master)
 [![monthly downloads](https://img.shields.io/npm/dm/@rokucommunity/brs.svg?sanitize=true&logo=npm&logoColor=)](https://npmcharts.com/compare/@rokucommunity/brs?minimal=true)
 [![npm version](https://img.shields.io/npm/v/@rokucommunity/brs.svg?logo=npm)](https://www.npmjs.com/package/@rokucommunity/brs)
@@ -158,3 +161,7 @@ ls: cannot access 'types': No such file or directory
 ## Documentation
 
 For the most part, `brs` attempts to emulate BrightScript as closely as possible. However, as a work in progress, there are certain implementation gaps, please refer to the [BrightScript language reference](https://developer.roku.com/docs/references/brightscript/language/brightscript-language-reference.md) and report an issue for any gaps found. Also, in the spirit of unit testing, there are a few extensions that will help with testing. All of the roca documentation for APIs, extensions, gaps, and more is hosted on the docs site, [hulu.github.io/roca](https://hulu.github.io/roca).
+
+## Accepted security advisories
+
+Dependencies flagged by `npm audit` that we have reviewed and chosen not to upgrade are tracked in [audit-ci.jsonc](https://github.com/RokuCommunity/brs/blob/master/audit-ci.jsonc). Each entry includes the advisory ID, the date it was added, and the reason it does not apply to this project.
