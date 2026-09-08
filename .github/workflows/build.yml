@@ -24,21 +24,11 @@ jobs:
       - run: npm run lint
       - run: npm run prettier
       - run: npm run test
-      - name: Publish coverage
+      - name: Upload coverage to Coveralls
+        if: matrix.os == 'ubuntu-latest'
         uses: coverallsapp/github-action@v2
+        env:
+          #hardcode the coveralls token...it's not overly important to protect, and github actions won't allow forks to work with coveralls otherwise
+          COVERALLS_REPO_TOKEN: 83xyW4IxLCtIw0LxM8NoMeRDGWj8bYYq5
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          file: coverage/lcov.info
-          flag-name: ${{ matrix.os }}
-          parallel: true
-
-  finish-coverage:
-    needs: ci
-    if: always()
-    runs-on: ubuntu-latest
-    steps:
-      - name: Close parallel coverage build
-        uses: coverallsapp/github-action@v2
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          parallel-finished: true
+          path-to-lcov: ./coverage/lcov.info
