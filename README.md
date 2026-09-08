@@ -1,27 +1,3 @@
-<!-- START doctoc generated TOC please keep comment here to allow auto update -->
-<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
-**Table of Contents**  *generated with [DocToc](https://github.com/thlorenz/doctoc)*
-
-- [BRS: Off-Roku BrightScript](#brs-off-roku-brightscript)
-  - [Installation](#installation)
-  - [Usage](#usage)
-    - [REPL](#repl)
-    - [Executing a file](#executing-a-file)
-  - [Sure, but why?](#sure-but-why)
-  - [So can I use this to watch TV without a Roku?](#so-can-i-use-this-to-watch-tv-without-a-roku)
-  - [Building from source](#building-from-source)
-    - [Prerequisites](#prerequisites)
-    - [Setup](#setup)
-    - [The build-test-clean dance](#the-build-test-clean-dance)
-      - [Build](#build)
-      - [Testing](#testing)
-      - [Cleaning](#cleaning)
-  - [Documentation](#documentation)
-  - [Accepted security advisories](#accepted-security-advisories)
-
-<!-- END doctoc generated TOC please keep comment here to allow auto update -->
-
-
 # BRS: Off-Roku BrightScript
 
 An interpreter for the BrightScript language that runs on non-Roku platforms.
@@ -34,7 +10,22 @@ An interpreter for the BrightScript language that runs on non-Roku platforms.
 [![license](https://img.shields.io/github/license/rokucommunity/brs.svg)](LICENSE)
 [![Slack](https://img.shields.io/badge/Slack-RokuCommunity-4A154B?logo=slack)](https://join.slack.com/t/rokudevelopers/shared_invite/zt-4vw7rg6v-NH46oY7hTktpRIBM_zGvwA)
 
-**NOTE:** Development on the original [brs](https://github.com/sjbarag/brs) project stalled in September of 2021. We at RokuCommunity believe in the vision of [brs](https://github.com/sjbarag/brs), so after [some discussions with the original author](https://github.com/sjbarag/brs/issues/681), we decided to fork the project in order to ensure its continued development. 
+**NOTE:** Development on the original [brs](https://github.com/sjbarag/brs) project stalled in September of 2021. We at RokuCommunity believe in the vision of [brs](https://github.com/sjbarag/brs), so after [some discussions with the original author](https://github.com/sjbarag/brs/issues/681), we decided to fork the project in order to ensure its continued development.
+
+### Table of Contents
+- [Installation](#installation)
+- [Usage](#usage)
+  - [REPL](#repl)
+  - [Executing a file](#executing-a-file)
+- [Sure, but why?](#sure-but-why)
+- [So can I use this to watch TV without a Roku?](#so-can-i-use-this-to-watch-tv-without-a-roku)
+- [Building from source](#building-from-source)
+  - [Prerequisites](#prerequisites)
+  - [Setup](#setup)
+  - [The build-test-clean dance](#the-build-test-clean-dance)
+- [Documentation](#documentation)
+- [Accepted security advisories](#accepted-security-advisories)
+- [Changelog](#changelog)
 
 ## Installation
 
@@ -165,3 +156,6 @@ For the most part, `brs` attempts to emulate BrightScript as closely as possible
 ## Accepted security advisories
 
 Dependencies flagged by `npm audit` that we have reviewed and chosen not to upgrade are tracked in [audit-ci.jsonc](https://github.com/RokuCommunity/brs/blob/master/audit-ci.jsonc). Each entry includes the advisory ID, the date it was added, and the reason it does not apply to this project.
+
+## Changelog
+[Click here](CHANGELOG.md) to view the changelog.
