@@ -1,35 +1,35 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`parser prefix unary expressions parses consecutive mixed unary operators 1`] = `
-Array [
+[
   Assignment {
-    "name": Object {
+    "name": {
       "isReserved": false,
       "kind": "Identifier",
       "literal": undefined,
-      "location": Object {
-        "end": Object {
+      "location": {
+        "end": {
           "column": -9,
           "line": -9,
         },
-        "start": Object {
+        "start": {
           "column": -9,
           "line": -9,
         },
       },
       "text": "_",
     },
-    "tokens": Object {
-      "equals": Object {
+    "tokens": {
+      "equals": {
         "isReserved": false,
         "kind": "Equal",
         "literal": undefined,
-        "location": Object {
-          "end": Object {
+        "location": {
+          "end": {
             "column": -9,
             "line": -9,
           },
-          "start": Object {
+          "start": {
             "column": -9,
             "line": -9,
           },
@@ -39,16 +39,16 @@ Array [
     },
     "type": "Assignment",
     "value": Unary {
-      "operator": Object {
+      "operator": {
         "isReserved": false,
         "kind": "Plus",
         "literal": undefined,
-        "location": Object {
-          "end": Object {
+        "location": {
+          "end": {
             "column": -9,
             "line": -9,
           },
-          "start": Object {
+          "start": {
             "column": -9,
             "line": -9,
           },
@@ -56,16 +56,16 @@ Array [
         "text": "-",
       },
       "right": Unary {
-        "operator": Object {
+        "operator": {
           "isReserved": false,
           "kind": "Plus",
           "literal": undefined,
-          "location": Object {
-            "end": Object {
+          "location": {
+            "end": {
               "column": -9,
               "line": -9,
             },
-            "start": Object {
+            "start": {
               "column": -9,
               "line": -9,
             },
@@ -73,16 +73,16 @@ Array [
           "text": "+",
         },
         "right": Unary {
-          "operator": Object {
+          "operator": {
             "isReserved": false,
             "kind": "Plus",
             "literal": undefined,
-            "location": Object {
-              "end": Object {
+            "location": {
+              "end": {
                 "column": -9,
                 "line": -9,
               },
-              "start": Object {
+              "start": {
                 "column": -9,
                 "line": -9,
               },
@@ -90,16 +90,16 @@ Array [
             "text": "-",
           },
           "right": Unary {
-            "operator": Object {
+            "operator": {
               "isReserved": false,
               "kind": "Plus",
               "literal": undefined,
-              "location": Object {
-                "end": Object {
+              "location": {
+                "end": {
                   "column": -9,
                   "line": -9,
                 },
-                "start": Object {
+                "start": {
                   "column": -9,
                   "line": -9,
                 },
@@ -107,16 +107,16 @@ Array [
               "text": "+",
             },
             "right": Unary {
-              "operator": Object {
+              "operator": {
                 "isReserved": false,
                 "kind": "Plus",
                 "literal": undefined,
-                "location": Object {
-                  "end": Object {
+                "location": {
+                  "end": {
                     "column": -9,
                     "line": -9,
                   },
-                  "start": Object {
+                  "start": {
                     "column": -9,
                     "line": -9,
                   },
@@ -124,16 +124,16 @@ Array [
                 "text": "-",
               },
               "right": Unary {
-                "operator": Object {
+                "operator": {
                   "isReserved": false,
                   "kind": "Plus",
                   "literal": undefined,
-                  "location": Object {
-                    "end": Object {
+                  "location": {
+                    "end": {
                       "column": -9,
                       "line": -9,
                     },
-                    "start": Object {
+                    "start": {
                       "column": -9,
                       "line": -9,
                     },
@@ -141,12 +141,12 @@ Array [
                   "text": "+",
                 },
                 "right": Literal {
-                  "_location": Object {
-                    "end": Object {
+                  "_location": {
+                    "end": {
                       "column": -9,
                       "line": -9,
                     },
-                    "start": Object {
+                    "start": {
                       "column": -9,
                       "line": -9,
                     },
@@ -175,35 +175,35 @@ Array [
 `;
 
 exports[`parser prefix unary expressions parses consecutive unary '+' 1`] = `
-Array [
+[
   Assignment {
-    "name": Object {
+    "name": {
       "isReserved": false,
       "kind": "Identifier",
       "literal": undefined,
-      "location": Object {
-        "end": Object {
+      "location": {
+        "end": {
           "column": -9,
           "line": -9,
         },
-        "start": Object {
+        "start": {
           "column": -9,
           "line": -9,
         },
       },
       "text": "_",
     },
-    "tokens": Object {
-      "equals": Object {
+    "tokens": {
+      "equals": {
         "isReserved": false,
         "kind": "Equal",
         "literal": undefined,
-        "location": Object {
-          "end": Object {
+        "location": {
+          "end": {
             "column": -9,
             "line": -9,
           },
-          "start": Object {
+          "start": {
             "column": -9,
             "line": -9,
           },
@@ -213,16 +213,16 @@ Array [
     },
     "type": "Assignment",
     "value": Unary {
-      "operator": Object {
+      "operator": {
         "isReserved": false,
         "kind": "Plus",
         "literal": undefined,
-        "location": Object {
-          "end": Object {
+        "location": {
+          "end": {
             "column": -9,
             "line": -9,
           },
-          "start": Object {
+          "start": {
             "column": -9,
             "line": -9,
           },
@@ -230,16 +230,16 @@ Array [
         "text": "+",
       },
       "right": Unary {
-        "operator": Object {
+        "operator": {
           "isReserved": false,
           "kind": "Plus",
           "literal": undefined,
-          "location": Object {
-            "end": Object {
+          "location": {
+            "end": {
               "column": -9,
               "line": -9,
             },
-            "start": Object {
+            "start": {
               "column": -9,
               "line": -9,
             },
@@ -247,16 +247,16 @@ Array [
           "text": "+",
         },
         "right": Unary {
-          "operator": Object {
+          "operator": {
             "isReserved": false,
             "kind": "Plus",
             "literal": undefined,
-            "location": Object {
-              "end": Object {
+            "location": {
+              "end": {
                 "column": -9,
                 "line": -9,
               },
-              "start": Object {
+              "start": {
                 "column": -9,
                 "line": -9,
               },
@@ -264,16 +264,16 @@ Array [
             "text": "+",
           },
           "right": Unary {
-            "operator": Object {
+            "operator": {
               "isReserved": false,
               "kind": "Plus",
               "literal": undefined,
-              "location": Object {
-                "end": Object {
+              "location": {
+                "end": {
                   "column": -9,
                   "line": -9,
                 },
-                "start": Object {
+                "start": {
                   "column": -9,
                   "line": -9,
                 },
@@ -281,16 +281,16 @@ Array [
               "text": "+",
             },
             "right": Unary {
-              "operator": Object {
+              "operator": {
                 "isReserved": false,
                 "kind": "Plus",
                 "literal": undefined,
-                "location": Object {
-                  "end": Object {
+                "location": {
+                  "end": {
                     "column": -9,
                     "line": -9,
                   },
-                  "start": Object {
+                  "start": {
                     "column": -9,
                     "line": -9,
                   },
@@ -298,12 +298,12 @@ Array [
                 "text": "+",
               },
               "right": Literal {
-                "_location": Object {
-                  "end": Object {
+                "_location": {
+                  "end": {
                     "column": -9,
                     "line": -9,
                   },
-                  "start": Object {
+                  "start": {
                     "column": -9,
                     "line": -9,
                   },
@@ -330,35 +330,35 @@ Array [
 `;
 
 exports[`parser prefix unary expressions parses consecutive unary '-' 1`] = `
-Array [
+[
   Assignment {
-    "name": Object {
+    "name": {
       "isReserved": false,
       "kind": "Identifier",
       "literal": undefined,
-      "location": Object {
-        "end": Object {
+      "location": {
+        "end": {
           "column": -9,
           "line": -9,
         },
-        "start": Object {
+        "start": {
           "column": -9,
           "line": -9,
         },
       },
       "text": "_",
     },
-    "tokens": Object {
-      "equals": Object {
+    "tokens": {
+      "equals": {
         "isReserved": false,
         "kind": "Equal",
         "literal": undefined,
-        "location": Object {
-          "end": Object {
+        "location": {
+          "end": {
             "column": -9,
             "line": -9,
           },
-          "start": Object {
+          "start": {
             "column": -9,
             "line": -9,
           },
@@ -368,16 +368,16 @@ Array [
     },
     "type": "Assignment",
     "value": Unary {
-      "operator": Object {
+      "operator": {
         "isReserved": false,
         "kind": "Minus",
         "literal": undefined,
-        "location": Object {
-          "end": Object {
+        "location": {
+          "end": {
             "column": -9,
             "line": -9,
           },
-          "start": Object {
+          "start": {
             "column": -9,
             "line": -9,
           },
@@ -385,16 +385,16 @@ Array [
         "text": "-",
       },
       "right": Unary {
-        "operator": Object {
+        "operator": {
           "isReserved": false,
           "kind": "Minus",
           "literal": undefined,
-          "location": Object {
-            "end": Object {
+          "location": {
+            "end": {
               "column": -9,
               "line": -9,
             },
-            "start": Object {
+            "start": {
               "column": -9,
               "line": -9,
             },
@@ -402,16 +402,16 @@ Array [
           "text": "-",
         },
         "right": Unary {
-          "operator": Object {
+          "operator": {
             "isReserved": false,
             "kind": "Minus",
             "literal": undefined,
-            "location": Object {
-              "end": Object {
+            "location": {
+              "end": {
                 "column": -9,
                 "line": -9,
               },
-              "start": Object {
+              "start": {
                 "column": -9,
                 "line": -9,
               },
@@ -419,16 +419,16 @@ Array [
             "text": "-",
           },
           "right": Unary {
-            "operator": Object {
+            "operator": {
               "isReserved": false,
               "kind": "Minus",
               "literal": undefined,
-              "location": Object {
-                "end": Object {
+              "location": {
+                "end": {
                   "column": -9,
                   "line": -9,
                 },
-                "start": Object {
+                "start": {
                   "column": -9,
                   "line": -9,
                 },
@@ -436,16 +436,16 @@ Array [
               "text": "-",
             },
             "right": Unary {
-              "operator": Object {
+              "operator": {
                 "isReserved": false,
                 "kind": "Minus",
                 "literal": undefined,
-                "location": Object {
-                  "end": Object {
+                "location": {
+                  "end": {
                     "column": -9,
                     "line": -9,
                   },
-                  "start": Object {
+                  "start": {
                     "column": -9,
                     "line": -9,
                   },
@@ -453,12 +453,12 @@ Array [
                 "text": "-",
               },
               "right": Literal {
-                "_location": Object {
-                  "end": Object {
+                "_location": {
+                  "end": {
                     "column": -9,
                     "line": -9,
                   },
-                  "start": Object {
+                  "start": {
                     "column": -9,
                     "line": -9,
                   },
@@ -485,35 +485,35 @@ Array [
 `;
 
 exports[`parser prefix unary expressions parses consecutive unary 'not' 1`] = `
-Array [
+[
   Assignment {
-    "name": Object {
+    "name": {
       "isReserved": false,
       "kind": "Identifier",
       "literal": undefined,
-      "location": Object {
-        "end": Object {
+      "location": {
+        "end": {
           "column": -9,
           "line": -9,
         },
-        "start": Object {
+        "start": {
           "column": -9,
           "line": -9,
         },
       },
       "text": "_",
     },
-    "tokens": Object {
-      "equals": Object {
+    "tokens": {
+      "equals": {
         "isReserved": false,
         "kind": "Equal",
         "literal": undefined,
-        "location": Object {
-          "end": Object {
+        "location": {
+          "end": {
             "column": -9,
             "line": -9,
           },
-          "start": Object {
+          "start": {
             "column": -9,
             "line": -9,
           },
@@ -523,16 +523,16 @@ Array [
     },
     "type": "Assignment",
     "value": Unary {
-      "operator": Object {
+      "operator": {
         "isReserved": true,
         "kind": "Not",
         "literal": undefined,
-        "location": Object {
-          "end": Object {
+        "location": {
+          "end": {
             "column": -9,
             "line": -9,
           },
-          "start": Object {
+          "start": {
             "column": -9,
             "line": -9,
           },
@@ -540,16 +540,16 @@ Array [
         "text": "not",
       },
       "right": Unary {
-        "operator": Object {
+        "operator": {
           "isReserved": true,
           "kind": "Not",
           "literal": undefined,
-          "location": Object {
-            "end": Object {
+          "location": {
+            "end": {
               "column": -9,
               "line": -9,
             },
-            "start": Object {
+            "start": {
               "column": -9,
               "line": -9,
             },
@@ -557,16 +557,16 @@ Array [
           "text": "not",
         },
         "right": Unary {
-          "operator": Object {
+          "operator": {
             "isReserved": true,
             "kind": "Not",
             "literal": undefined,
-            "location": Object {
-              "end": Object {
+            "location": {
+              "end": {
                 "column": -9,
                 "line": -9,
               },
-              "start": Object {
+              "start": {
                 "column": -9,
                 "line": -9,
               },
@@ -574,16 +574,16 @@ Array [
             "text": "not",
           },
           "right": Unary {
-            "operator": Object {
+            "operator": {
               "isReserved": true,
               "kind": "Not",
               "literal": undefined,
-              "location": Object {
-                "end": Object {
+              "location": {
+                "end": {
                   "column": -9,
                   "line": -9,
                 },
-                "start": Object {
+                "start": {
                   "column": -9,
                   "line": -9,
                 },
@@ -591,16 +591,16 @@ Array [
               "text": "not",
             },
             "right": Unary {
-              "operator": Object {
+              "operator": {
                 "isReserved": true,
                 "kind": "Not",
                 "literal": undefined,
-                "location": Object {
-                  "end": Object {
+                "location": {
+                  "end": {
                     "column": -9,
                     "line": -9,
                   },
-                  "start": Object {
+                  "start": {
                     "column": -9,
                     "line": -9,
                   },
@@ -608,12 +608,12 @@ Array [
                 "text": "not",
               },
               "right": Literal {
-                "_location": Object {
-                  "end": Object {
+                "_location": {
+                  "end": {
                     "column": -9,
                     "line": -9,
                   },
-                  "start": Object {
+                  "start": {
                     "column": -9,
                     "line": -9,
                   },
@@ -639,35 +639,35 @@ Array [
 `;
 
 exports[`parser prefix unary expressions parses unary '+' 1`] = `
-Array [
+[
   Assignment {
-    "name": Object {
+    "name": {
       "isReserved": false,
       "kind": "Identifier",
       "literal": undefined,
-      "location": Object {
-        "end": Object {
+      "location": {
+        "end": {
           "column": -9,
           "line": -9,
         },
-        "start": Object {
+        "start": {
           "column": -9,
           "line": -9,
         },
       },
       "text": "_",
     },
-    "tokens": Object {
-      "equals": Object {
+    "tokens": {
+      "equals": {
         "isReserved": false,
         "kind": "Equal",
         "literal": undefined,
-        "location": Object {
-          "end": Object {
+        "location": {
+          "end": {
             "column": -9,
             "line": -9,
           },
-          "start": Object {
+          "start": {
             "column": -9,
             "line": -9,
           },
@@ -677,16 +677,16 @@ Array [
     },
     "type": "Assignment",
     "value": Unary {
-      "operator": Object {
+      "operator": {
         "isReserved": false,
         "kind": "Plus",
         "literal": undefined,
-        "location": Object {
-          "end": Object {
+        "location": {
+          "end": {
             "column": -9,
             "line": -9,
           },
-          "start": Object {
+          "start": {
             "column": -9,
             "line": -9,
           },
@@ -694,12 +694,12 @@ Array [
         "text": "+",
       },
       "right": Literal {
-        "_location": Object {
-          "end": Object {
+        "_location": {
+          "end": {
             "column": -9,
             "line": -9,
           },
-          "start": Object {
+          "start": {
             "column": -9,
             "line": -9,
           },
@@ -718,35 +718,35 @@ Array [
 `;
 
 exports[`parser prefix unary expressions parses unary '-' 1`] = `
-Array [
+[
   Assignment {
-    "name": Object {
+    "name": {
       "isReserved": false,
       "kind": "Identifier",
       "literal": undefined,
-      "location": Object {
-        "end": Object {
+      "location": {
+        "end": {
           "column": -9,
           "line": -9,
         },
-        "start": Object {
+        "start": {
           "column": -9,
           "line": -9,
         },
       },
       "text": "_",
     },
-    "tokens": Object {
-      "equals": Object {
+    "tokens": {
+      "equals": {
         "isReserved": false,
         "kind": "Equal",
         "literal": undefined,
-        "location": Object {
-          "end": Object {
+        "location": {
+          "end": {
             "column": -9,
             "line": -9,
           },
-          "start": Object {
+          "start": {
             "column": -9,
             "line": -9,
           },
@@ -756,16 +756,16 @@ Array [
     },
     "type": "Assignment",
     "value": Unary {
-      "operator": Object {
+      "operator": {
         "isReserved": false,
         "kind": "Minus",
         "literal": undefined,
-        "location": Object {
-          "end": Object {
+        "location": {
+          "end": {
             "column": -9,
             "line": -9,
           },
-          "start": Object {
+          "start": {
             "column": -9,
             "line": -9,
           },
@@ -773,12 +773,12 @@ Array [
         "text": "-",
       },
       "right": Literal {
-        "_location": Object {
-          "end": Object {
+        "_location": {
+          "end": {
             "column": -9,
             "line": -9,
           },
-          "start": Object {
+          "start": {
             "column": -9,
             "line": -9,
           },
@@ -797,35 +797,35 @@ Array [
 `;
 
 exports[`parser prefix unary expressions parses unary 'not' 1`] = `
-Array [
+[
   Assignment {
-    "name": Object {
+    "name": {
       "isReserved": false,
       "kind": "Identifier",
       "literal": undefined,
-      "location": Object {
-        "end": Object {
+      "location": {
+        "end": {
           "column": -9,
           "line": -9,
         },
-        "start": Object {
+        "start": {
           "column": -9,
           "line": -9,
         },
       },
       "text": "_",
     },
-    "tokens": Object {
-      "equals": Object {
+    "tokens": {
+      "equals": {
         "isReserved": false,
         "kind": "Equal",
         "literal": undefined,
-        "location": Object {
-          "end": Object {
+        "location": {
+          "end": {
             "column": -9,
             "line": -9,
           },
-          "start": Object {
+          "start": {
             "column": -9,
             "line": -9,
           },
@@ -835,16 +835,16 @@ Array [
     },
     "type": "Assignment",
     "value": Unary {
-      "operator": Object {
+      "operator": {
         "isReserved": true,
         "kind": "Not",
         "literal": undefined,
-        "location": Object {
-          "end": Object {
+        "location": {
+          "end": {
             "column": -9,
             "line": -9,
           },
-          "start": Object {
+          "start": {
             "column": -9,
             "line": -9,
           },
@@ -852,12 +852,12 @@ Array [
         "text": "not",
       },
       "right": Literal {
-        "_location": Object {
-          "end": Object {
+        "_location": {
+          "end": {
             "column": -9,
             "line": -9,
           },
-          "start": Object {
+          "start": {
             "column": -9,
             "line": -9,
           },

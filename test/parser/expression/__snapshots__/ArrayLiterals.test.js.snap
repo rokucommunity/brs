@@ -1,35 +1,35 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`parser array literals contents can contain expressions 1`] = `
-Array [
+[
   Assignment {
-    "name": Object {
+    "name": {
       "isReserved": false,
       "kind": "Identifier",
       "literal": undefined,
-      "location": Object {
-        "end": Object {
+      "location": {
+        "end": {
           "column": -9,
           "line": -9,
         },
-        "start": Object {
+        "start": {
           "column": -9,
           "line": -9,
         },
       },
       "text": "_",
     },
-    "tokens": Object {
-      "equals": Object {
+    "tokens": {
+      "equals": {
         "isReserved": false,
         "kind": "Equal",
         "literal": undefined,
-        "location": Object {
-          "end": Object {
+        "location": {
+          "end": {
             "column": -9,
             "line": -9,
           },
-          "start": Object {
+          "start": {
             "column": -9,
             "line": -9,
           },
@@ -39,31 +39,31 @@ Array [
     },
     "type": "Assignment",
     "value": ArrayLiteral {
-      "close": Object {
+      "close": {
         "isReserved": false,
         "kind": "RightSquare",
         "literal": undefined,
-        "location": Object {
-          "end": Object {
+        "location": {
+          "end": {
             "column": -9,
             "line": -9,
           },
-          "start": Object {
+          "start": {
             "column": -9,
             "line": -9,
           },
         },
         "text": "]",
       },
-      "elements": Array [
+      "elements": [
         Binary {
           "left": Literal {
-            "_location": Object {
-              "end": Object {
+            "_location": {
+              "end": {
                 "column": -9,
                 "line": -9,
               },
-              "start": Object {
+              "start": {
                 "column": -9,
                 "line": -9,
               },
@@ -76,12 +76,12 @@ Array [
             },
           },
           "right": Literal {
-            "_location": Object {
-              "end": Object {
+            "_location": {
+              "end": {
                 "column": -9,
                 "line": -9,
               },
-              "start": Object {
+              "start": {
                 "column": -9,
                 "line": -9,
               },
@@ -93,16 +93,16 @@ Array [
               "value": 2,
             },
           },
-          "token": Object {
+          "token": {
             "isReserved": false,
             "kind": "Plus",
             "literal": undefined,
-            "location": Object {
-              "end": Object {
+            "location": {
+              "end": {
                 "column": -9,
                 "line": -9,
               },
-              "start": Object {
+              "start": {
                 "column": -9,
                 "line": -9,
               },
@@ -112,16 +112,16 @@ Array [
           "type": "Binary",
         },
         Unary {
-          "operator": Object {
+          "operator": {
             "isReserved": true,
             "kind": "Not",
             "literal": undefined,
-            "location": Object {
-              "end": Object {
+            "location": {
+              "end": {
                 "column": -9,
                 "line": -9,
               },
-              "start": Object {
+              "start": {
                 "column": -9,
                 "line": -9,
               },
@@ -129,12 +129,12 @@ Array [
             "text": "not",
           },
           "right": Literal {
-            "_location": Object {
-              "end": Object {
+            "_location": {
+              "end": {
                 "column": -9,
                 "line": -9,
               },
-              "start": Object {
+              "start": {
                 "column": -9,
                 "line": -9,
               },
@@ -148,16 +148,16 @@ Array [
           "type": "Unary",
         },
       ],
-      "open": Object {
+      "open": {
         "isReserved": false,
         "kind": "LeftSquare",
         "literal": undefined,
-        "location": Object {
-          "end": Object {
+        "location": {
+          "end": {
             "column": -9,
             "line": -9,
           },
-          "start": Object {
+          "start": {
             "column": -9,
             "line": -9,
           },
@@ -171,35 +171,35 @@ Array [
 `;
 
 exports[`parser array literals contents can contain other arrays 1`] = `
-Array [
+[
   Assignment {
-    "name": Object {
+    "name": {
       "isReserved": false,
       "kind": "Identifier",
       "literal": undefined,
-      "location": Object {
-        "end": Object {
+      "location": {
+        "end": {
           "column": -9,
           "line": -9,
         },
-        "start": Object {
+        "start": {
           "column": -9,
           "line": -9,
         },
       },
       "text": "_",
     },
-    "tokens": Object {
-      "equals": Object {
+    "tokens": {
+      "equals": {
         "isReserved": false,
         "kind": "Equal",
         "literal": undefined,
-        "location": Object {
-          "end": Object {
+        "location": {
+          "end": {
             "column": -9,
             "line": -9,
           },
-          "start": Object {
+          "start": {
             "column": -9,
             "line": -9,
           },
@@ -209,48 +209,48 @@ Array [
     },
     "type": "Assignment",
     "value": ArrayLiteral {
-      "close": Object {
+      "close": {
         "isReserved": false,
         "kind": "RightSquare",
         "literal": undefined,
-        "location": Object {
-          "end": Object {
+        "location": {
+          "end": {
             "column": -9,
             "line": -9,
           },
-          "start": Object {
+          "start": {
             "column": -9,
             "line": -9,
           },
         },
         "text": "]",
       },
-      "elements": Array [
+      "elements": [
         ArrayLiteral {
-          "close": Object {
+          "close": {
             "isReserved": false,
             "kind": "RightSquare",
             "literal": undefined,
-            "location": Object {
-              "end": Object {
+            "location": {
+              "end": {
                 "column": -9,
                 "line": -9,
               },
-              "start": Object {
+              "start": {
                 "column": -9,
                 "line": -9,
               },
             },
             "text": "]",
           },
-          "elements": Array [
+          "elements": [
             Literal {
-              "_location": Object {
-                "end": Object {
+              "_location": {
+                "end": {
                   "column": -9,
                   "line": -9,
                 },
-                "start": Object {
+                "start": {
                   "column": -9,
                   "line": -9,
                 },
@@ -263,12 +263,12 @@ Array [
               },
             },
             Literal {
-              "_location": Object {
-                "end": Object {
+              "_location": {
+                "end": {
                   "column": -9,
                   "line": -9,
                 },
-                "start": Object {
+                "start": {
                   "column": -9,
                   "line": -9,
                 },
@@ -281,12 +281,12 @@ Array [
               },
             },
             Literal {
-              "_location": Object {
-                "end": Object {
+              "_location": {
+                "end": {
                   "column": -9,
                   "line": -9,
                 },
-                "start": Object {
+                "start": {
                   "column": -9,
                   "line": -9,
                 },
@@ -299,16 +299,16 @@ Array [
               },
             },
           ],
-          "open": Object {
+          "open": {
             "isReserved": false,
             "kind": "LeftSquare",
             "literal": undefined,
-            "location": Object {
-              "end": Object {
+            "location": {
+              "end": {
                 "column": -9,
                 "line": -9,
               },
-              "start": Object {
+              "start": {
                 "column": -9,
                 "line": -9,
               },
@@ -318,30 +318,30 @@ Array [
           "type": "ArrayLiteral",
         },
         ArrayLiteral {
-          "close": Object {
+          "close": {
             "isReserved": false,
             "kind": "RightSquare",
             "literal": undefined,
-            "location": Object {
-              "end": Object {
+            "location": {
+              "end": {
                 "column": -9,
                 "line": -9,
               },
-              "start": Object {
+              "start": {
                 "column": -9,
                 "line": -9,
               },
             },
             "text": "]",
           },
-          "elements": Array [
+          "elements": [
             Literal {
-              "_location": Object {
-                "end": Object {
+              "_location": {
+                "end": {
                   "column": -9,
                   "line": -9,
                 },
-                "start": Object {
+                "start": {
                   "column": -9,
                   "line": -9,
                 },
@@ -354,12 +354,12 @@ Array [
               },
             },
             Literal {
-              "_location": Object {
-                "end": Object {
+              "_location": {
+                "end": {
                   "column": -9,
                   "line": -9,
                 },
-                "start": Object {
+                "start": {
                   "column": -9,
                   "line": -9,
                 },
@@ -372,12 +372,12 @@ Array [
               },
             },
             Literal {
-              "_location": Object {
-                "end": Object {
+              "_location": {
+                "end": {
                   "column": -9,
                   "line": -9,
                 },
-                "start": Object {
+                "start": {
                   "column": -9,
                   "line": -9,
                 },
@@ -390,16 +390,16 @@ Array [
               },
             },
           ],
-          "open": Object {
+          "open": {
             "isReserved": false,
             "kind": "LeftSquare",
             "literal": undefined,
-            "location": Object {
-              "end": Object {
+            "location": {
+              "end": {
                 "column": -9,
                 "line": -9,
               },
-              "start": Object {
+              "start": {
                 "column": -9,
                 "line": -9,
               },
@@ -409,16 +409,16 @@ Array [
           "type": "ArrayLiteral",
         },
       ],
-      "open": Object {
+      "open": {
         "isReserved": false,
         "kind": "LeftSquare",
         "literal": undefined,
-        "location": Object {
-          "end": Object {
+        "location": {
+          "end": {
             "column": -9,
             "line": -9,
           },
-          "start": Object {
+          "start": {
             "column": -9,
             "line": -9,
           },
@@ -432,35 +432,35 @@ Array [
 `;
 
 exports[`parser array literals contents can contain primitives 1`] = `
-Array [
+[
   Assignment {
-    "name": Object {
+    "name": {
       "isReserved": false,
       "kind": "Identifier",
       "literal": undefined,
-      "location": Object {
-        "end": Object {
+      "location": {
+        "end": {
           "column": -9,
           "line": -9,
         },
-        "start": Object {
+        "start": {
           "column": -9,
           "line": -9,
         },
       },
       "text": "_",
     },
-    "tokens": Object {
-      "equals": Object {
+    "tokens": {
+      "equals": {
         "isReserved": false,
         "kind": "Equal",
         "literal": undefined,
-        "location": Object {
-          "end": Object {
+        "location": {
+          "end": {
             "column": -9,
             "line": -9,
           },
-          "start": Object {
+          "start": {
             "column": -9,
             "line": -9,
           },
@@ -470,30 +470,30 @@ Array [
     },
     "type": "Assignment",
     "value": ArrayLiteral {
-      "close": Object {
+      "close": {
         "isReserved": false,
         "kind": "RightSquare",
         "literal": undefined,
-        "location": Object {
-          "end": Object {
+        "location": {
+          "end": {
             "column": -9,
             "line": -9,
           },
-          "start": Object {
+          "start": {
             "column": -9,
             "line": -9,
           },
         },
         "text": "]",
       },
-      "elements": Array [
+      "elements": [
         Literal {
-          "_location": Object {
-            "end": Object {
+          "_location": {
+            "end": {
               "column": -9,
               "line": -9,
             },
-            "start": Object {
+            "start": {
               "column": -9,
               "line": -9,
             },
@@ -506,12 +506,12 @@ Array [
           },
         },
         Literal {
-          "_location": Object {
-            "end": Object {
+          "_location": {
+            "end": {
               "column": -9,
               "line": -9,
             },
-            "start": Object {
+            "start": {
               "column": -9,
               "line": -9,
             },
@@ -524,12 +524,12 @@ Array [
           },
         },
         Literal {
-          "_location": Object {
-            "end": Object {
+          "_location": {
+            "end": {
               "column": -9,
               "line": -9,
             },
-            "start": Object {
+            "start": {
               "column": -9,
               "line": -9,
             },
@@ -542,16 +542,16 @@ Array [
           },
         },
       ],
-      "open": Object {
+      "open": {
         "isReserved": false,
         "kind": "LeftSquare",
         "literal": undefined,
-        "location": Object {
-          "end": Object {
+        "location": {
+          "end": {
             "column": -9,
             "line": -9,
           },
-          "start": Object {
+          "start": {
             "column": -9,
             "line": -9,
           },
@@ -565,35 +565,35 @@ Array [
 `;
 
 exports[`parser array literals empty arrays on multiple lines 1`] = `
-Array [
+[
   Assignment {
-    "name": Object {
+    "name": {
       "isReserved": false,
       "kind": "Identifier",
       "literal": undefined,
-      "location": Object {
-        "end": Object {
+      "location": {
+        "end": {
           "column": -9,
           "line": -9,
         },
-        "start": Object {
+        "start": {
           "column": -9,
           "line": -9,
         },
       },
       "text": "_",
     },
-    "tokens": Object {
-      "equals": Object {
+    "tokens": {
+      "equals": {
         "isReserved": false,
         "kind": "Equal",
         "literal": undefined,
-        "location": Object {
-          "end": Object {
+        "location": {
+          "end": {
             "column": -9,
             "line": -9,
           },
-          "start": Object {
+          "start": {
             "column": -9,
             "line": -9,
           },
@@ -603,33 +603,33 @@ Array [
     },
     "type": "Assignment",
     "value": ArrayLiteral {
-      "close": Object {
+      "close": {
         "isReserved": false,
         "kind": "RightSquare",
         "literal": undefined,
-        "location": Object {
-          "end": Object {
+        "location": {
+          "end": {
             "column": -9,
             "line": -9,
           },
-          "start": Object {
+          "start": {
             "column": -9,
             "line": -9,
           },
         },
         "text": "]",
       },
-      "elements": Array [],
-      "open": Object {
+      "elements": [],
+      "open": {
         "isReserved": false,
         "kind": "LeftSquare",
         "literal": undefined,
-        "location": Object {
-          "end": Object {
+        "location": {
+          "end": {
             "column": -9,
             "line": -9,
           },
-          "start": Object {
+          "start": {
             "column": -9,
             "line": -9,
           },
@@ -643,35 +643,35 @@ Array [
 `;
 
 exports[`parser array literals empty arrays on one line 1`] = `
-Array [
+[
   Assignment {
-    "name": Object {
+    "name": {
       "isReserved": false,
       "kind": "Identifier",
       "literal": undefined,
-      "location": Object {
-        "end": Object {
+      "location": {
+        "end": {
           "column": -9,
           "line": -9,
         },
-        "start": Object {
+        "start": {
           "column": -9,
           "line": -9,
         },
       },
       "text": "_",
     },
-    "tokens": Object {
-      "equals": Object {
+    "tokens": {
+      "equals": {
         "isReserved": false,
         "kind": "Equal",
         "literal": undefined,
-        "location": Object {
-          "end": Object {
+        "location": {
+          "end": {
             "column": -9,
             "line": -9,
           },
-          "start": Object {
+          "start": {
             "column": -9,
             "line": -9,
           },
@@ -681,33 +681,33 @@ Array [
     },
     "type": "Assignment",
     "value": ArrayLiteral {
-      "close": Object {
+      "close": {
         "isReserved": false,
         "kind": "RightSquare",
         "literal": undefined,
-        "location": Object {
-          "end": Object {
+        "location": {
+          "end": {
             "column": -9,
             "line": -9,
           },
-          "start": Object {
+          "start": {
             "column": -9,
             "line": -9,
           },
         },
         "text": "]",
       },
-      "elements": Array [],
-      "open": Object {
+      "elements": [],
+      "open": {
         "isReserved": false,
         "kind": "LeftSquare",
         "literal": undefined,
-        "location": Object {
-          "end": Object {
+        "location": {
+          "end": {
             "column": -9,
             "line": -9,
           },
-          "start": Object {
+          "start": {
             "column": -9,
             "line": -9,
           },
@@ -721,35 +721,35 @@ Array [
 `;
 
 exports[`parser array literals filled arrays on multiple lines with commas 1`] = `
-Array [
+[
   Assignment {
-    "name": Object {
+    "name": {
       "isReserved": false,
       "kind": "Identifier",
       "literal": undefined,
-      "location": Object {
-        "end": Object {
+      "location": {
+        "end": {
           "column": -9,
           "line": -9,
         },
-        "start": Object {
+        "start": {
           "column": -9,
           "line": -9,
         },
       },
       "text": "_",
     },
-    "tokens": Object {
-      "equals": Object {
+    "tokens": {
+      "equals": {
         "isReserved": false,
         "kind": "Equal",
         "literal": undefined,
-        "location": Object {
-          "end": Object {
+        "location": {
+          "end": {
             "column": -9,
             "line": -9,
           },
-          "start": Object {
+          "start": {
             "column": -9,
             "line": -9,
           },
@@ -759,30 +759,30 @@ Array [
     },
     "type": "Assignment",
     "value": ArrayLiteral {
-      "close": Object {
+      "close": {
         "isReserved": false,
         "kind": "RightSquare",
         "literal": undefined,
-        "location": Object {
-          "end": Object {
+        "location": {
+          "end": {
             "column": -9,
             "line": -9,
           },
-          "start": Object {
+          "start": {
             "column": -9,
             "line": -9,
           },
         },
         "text": "]",
       },
-      "elements": Array [
+      "elements": [
         Literal {
-          "_location": Object {
-            "end": Object {
+          "_location": {
+            "end": {
               "column": -9,
               "line": -9,
             },
-            "start": Object {
+            "start": {
               "column": -9,
               "line": -9,
             },
@@ -795,12 +795,12 @@ Array [
           },
         },
         Literal {
-          "_location": Object {
-            "end": Object {
+          "_location": {
+            "end": {
               "column": -9,
               "line": -9,
             },
-            "start": Object {
+            "start": {
               "column": -9,
               "line": -9,
             },
@@ -813,12 +813,12 @@ Array [
           },
         },
         Literal {
-          "_location": Object {
-            "end": Object {
+          "_location": {
+            "end": {
               "column": -9,
               "line": -9,
             },
-            "start": Object {
+            "start": {
               "column": -9,
               "line": -9,
             },
@@ -831,16 +831,16 @@ Array [
           },
         },
       ],
-      "open": Object {
+      "open": {
         "isReserved": false,
         "kind": "LeftSquare",
         "literal": undefined,
-        "location": Object {
-          "end": Object {
+        "location": {
+          "end": {
             "column": -9,
             "line": -9,
           },
-          "start": Object {
+          "start": {
             "column": -9,
             "line": -9,
           },
@@ -854,35 +854,35 @@ Array [
 `;
 
 exports[`parser array literals filled arrays on multiple lines without commas 1`] = `
-Array [
+[
   Assignment {
-    "name": Object {
+    "name": {
       "isReserved": false,
       "kind": "Identifier",
       "literal": undefined,
-      "location": Object {
-        "end": Object {
+      "location": {
+        "end": {
           "column": -9,
           "line": -9,
         },
-        "start": Object {
+        "start": {
           "column": -9,
           "line": -9,
         },
       },
       "text": "_",
     },
-    "tokens": Object {
-      "equals": Object {
+    "tokens": {
+      "equals": {
         "isReserved": false,
         "kind": "Equal",
         "literal": undefined,
-        "location": Object {
-          "end": Object {
+        "location": {
+          "end": {
             "column": -9,
             "line": -9,
           },
-          "start": Object {
+          "start": {
             "column": -9,
             "line": -9,
           },
@@ -892,30 +892,30 @@ Array [
     },
     "type": "Assignment",
     "value": ArrayLiteral {
-      "close": Object {
+      "close": {
         "isReserved": false,
         "kind": "RightSquare",
         "literal": undefined,
-        "location": Object {
-          "end": Object {
+        "location": {
+          "end": {
             "column": -9,
             "line": -9,
           },
-          "start": Object {
+          "start": {
             "column": -9,
             "line": -9,
           },
         },
         "text": "]",
       },
-      "elements": Array [
+      "elements": [
         Literal {
-          "_location": Object {
-            "end": Object {
+          "_location": {
+            "end": {
               "column": -9,
               "line": -9,
             },
-            "start": Object {
+            "start": {
               "column": -9,
               "line": -9,
             },
@@ -928,12 +928,12 @@ Array [
           },
         },
         Literal {
-          "_location": Object {
-            "end": Object {
+          "_location": {
+            "end": {
               "column": -9,
               "line": -9,
             },
-            "start": Object {
+            "start": {
               "column": -9,
               "line": -9,
             },
@@ -946,12 +946,12 @@ Array [
           },
         },
         Literal {
-          "_location": Object {
-            "end": Object {
+          "_location": {
+            "end": {
               "column": -9,
               "line": -9,
             },
-            "start": Object {
+            "start": {
               "column": -9,
               "line": -9,
             },
@@ -964,16 +964,16 @@ Array [
           },
         },
       ],
-      "open": Object {
+      "open": {
         "isReserved": false,
         "kind": "LeftSquare",
         "literal": undefined,
-        "location": Object {
-          "end": Object {
+        "location": {
+          "end": {
             "column": -9,
             "line": -9,
           },
-          "start": Object {
+          "start": {
             "column": -9,
             "line": -9,
           },
@@ -987,35 +987,35 @@ Array [
 `;
 
 exports[`parser array literals filled arrays on one line 1`] = `
-Array [
+[
   Assignment {
-    "name": Object {
+    "name": {
       "isReserved": false,
       "kind": "Identifier",
       "literal": undefined,
-      "location": Object {
-        "end": Object {
+      "location": {
+        "end": {
           "column": -9,
           "line": -9,
         },
-        "start": Object {
+        "start": {
           "column": -9,
           "line": -9,
         },
       },
       "text": "_",
     },
-    "tokens": Object {
-      "equals": Object {
+    "tokens": {
+      "equals": {
         "isReserved": false,
         "kind": "Equal",
         "literal": undefined,
-        "location": Object {
-          "end": Object {
+        "location": {
+          "end": {
             "column": -9,
             "line": -9,
           },
-          "start": Object {
+          "start": {
             "column": -9,
             "line": -9,
           },
@@ -1025,30 +1025,30 @@ Array [
     },
     "type": "Assignment",
     "value": ArrayLiteral {
-      "close": Object {
+      "close": {
         "isReserved": false,
         "kind": "RightSquare",
         "literal": undefined,
-        "location": Object {
-          "end": Object {
+        "location": {
+          "end": {
             "column": -9,
             "line": -9,
           },
-          "start": Object {
+          "start": {
             "column": -9,
             "line": -9,
           },
         },
         "text": "]",
       },
-      "elements": Array [
+      "elements": [
         Literal {
-          "_location": Object {
-            "end": Object {
+          "_location": {
+            "end": {
               "column": -9,
               "line": -9,
             },
-            "start": Object {
+            "start": {
               "column": -9,
               "line": -9,
             },
@@ -1061,12 +1061,12 @@ Array [
           },
         },
         Literal {
-          "_location": Object {
-            "end": Object {
+          "_location": {
+            "end": {
               "column": -9,
               "line": -9,
             },
-            "start": Object {
+            "start": {
               "column": -9,
               "line": -9,
             },
@@ -1079,12 +1079,12 @@ Array [
           },
         },
         Literal {
-          "_location": Object {
-            "end": Object {
+          "_location": {
+            "end": {
               "column": -9,
               "line": -9,
             },
-            "start": Object {
+            "start": {
               "column": -9,
               "line": -9,
             },
@@ -1097,16 +1097,16 @@ Array [
           },
         },
       ],
-      "open": Object {
+      "open": {
         "isReserved": false,
         "kind": "LeftSquare",
         "literal": undefined,
-        "location": Object {
-          "end": Object {
+        "location": {
+          "end": {
             "column": -9,
             "line": -9,
           },
-          "start": Object {
+          "start": {
             "column": -9,
             "line": -9,
           },
