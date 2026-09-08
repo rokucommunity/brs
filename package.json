@@ -21,7 +21,8 @@
     "lint": "tslint --project .",
     "prettier:write": "prettier --write \"{bin,src,test}/**/*.{js,ts}\"",
     "prettier": "prettier --check \"{bin,src,test}/**/*.{js,ts}\"",
-    "package": "npm run build && npm pack"
+    "package": "npm run build && npm pack",
+    "audit": "npm audit || audit-ci --config ./audit-ci.jsonc"
   },
   "files": [
     "bin/",
@@ -46,8 +47,10 @@
   },
   "overrides": {
     "micromatch": {
-      "picomatch": "^2.3.2"
-    }
+      "picomatch": "^2.3.2",
+      "braces": "^3.0.3"
+    },
+    "form-data": "^4.0.4"
   },
   "devDependencies": {
     "@types/crc": "^3.4.0",
@@ -60,8 +63,9 @@
     "@types/uuid": "^8.3.0",
     "@types/xmldoc": "^1.1.4",
     "@types/yauzl": "^3.4.0",
+    "audit-ci": "^7.1.0",
     "coveralls": "^3.0.0",
-    "doctoc": "^1.4.0",
+    "doctoc": "^2.5.0",
     "jest": "26",
     "jest-junit": "^6.1.0",
     "lint-staged": ">=8",

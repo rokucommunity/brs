@@ -158,3 +158,7 @@ ls: cannot access 'types': No such file or directory
 ## Documentation
 
 For the most part, `brs` attempts to emulate BrightScript as closely as possible. However, as a work in progress, there are certain implementation gaps, please refer to the [BrightScript language reference](https://developer.roku.com/docs/references/brightscript/language/brightscript-language-reference.md) and report an issue for any gaps found. Also, in the spirit of unit testing, there are a few extensions that will help with testing. All of the roca documentation for APIs, extensions, gaps, and more is hosted on the docs site, [hulu.github.io/roca](https://hulu.github.io/roca).
+
+## Accepted security advisories
+
+Dependencies flagged by `npm audit` that we have reviewed and chosen not to upgrade are tracked in [audit-ci.jsonc](https://github.com/RokuCommunity/brs/blob/master/audit-ci.jsonc). Each entry includes the advisory ID, the date it was added, and the reason it does not apply to this project.
