@@ -40,7 +40,7 @@
     "p-settle": "^2.1.0",
     "sanitize-filename": "^1.6.3",
     "strip-ansi": "^6.0.1",
-    "uuid": "^11.1.1",
+    "uuid": "^8.3.0",
     "xmldoc": "^1.1.2",
     "yauzl": "^3.4.0"
   },
@@ -57,6 +57,7 @@
     "@types/memory-fs": "^0.3.2",
     "@types/node": "^22.13.2",
     "@types/p-settle": "^2.0.1",
+    "@types/uuid": "^8.3.0",
     "@types/xmldoc": "^1.1.4",
     "@types/yauzl": "^3.4.0",
     "coveralls": "^3.0.0",
