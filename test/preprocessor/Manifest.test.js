@@ -10,51 +10,51 @@ describe("manifest support", () => {
     });
 
     describe("manifest parser", () => {
-        it("returns an empty map if manifest not found", () => {
+        it("returns an empty map if manifest not found", async () => {
             fs.readFile.mockImplementation((filename, encoding, cb) =>
                 cb(new Error("File not found"), null)
             );
 
-            return expect(getManifest("/no/manifest/here")).resolves.toEqual(new Map());
+            await expect(getManifest("/no/manifest/here")).resolves.toEqual(new Map());
         });
 
-        it("rejects key-value pairs with no '='", () => {
+        it("rejects key-value pairs with no '='", async () => {
             fs.readFile.mockImplementation((filename, encoding, cb) =>
                 cb(/* no error */ null, "no_equal")
             );
 
-            return expect(getManifest("/has/key/but/no/equal")).rejects.toThrowError(
+            await expect(getManifest("/has/key/but/no/equal")).rejects.toThrowError(
                 "No '=' detected"
             );
         });
 
-        it("ignores comments", () => {
+        it("ignores comments", async () => {
             fs.readFile.mockImplementation((filename, encoding, cb) =>
                 cb(/* no error */ null, "# this line is ignored!")
             );
 
-            return expect(getManifest("/has/a/manifest")).resolves.toEqual(new Map());
+            await expect(getManifest("/has/a/manifest")).resolves.toEqual(new Map());
         });
 
-        it("ignores empty keys and values", () => {
+        it("ignores empty keys and values", async () => {
             fs.readFile.mockImplementation((filename, encoding, cb) =>
                 cb(/* no error */ null, ["  =lorem", "ipsum=  "].join("\n"))
             );
 
-            return expect(getManifest("/has/blank/keys/and/values")).resolves.toEqual(new Map());
+            await expect(getManifest("/has/blank/keys/and/values")).resolves.toEqual(new Map());
         });
 
-        it("trims whitespace from keys and values", () => {
+        it("trims whitespace from keys and values", async () => {
             fs.readFile.mockImplementation((filename, encoding, cb) =>
                 cb(/* no error */ null, "    key = value    ")
             );
 
-            return expect(getManifest("/has/extra/whitespace")).resolves.toEqual(
+            await expect(getManifest("/has/extra/whitespace")).resolves.toEqual(
                 new Map([["key", "value"]])
             );
         });
 
-        it("parses key-value pairs", () => {
+        it("parses key-value pairs", async () => {
             fs.readFile.mockImplementation((filename, encoding, cb) =>
                 cb(
                     /* no error */ null,
@@ -62,7 +62,7 @@ describe("manifest support", () => {
                 )
             );
 
-            return expect(getManifest("/has/a/manifest")).resolves.toEqual(
+            await expect(getManifest("/has/a/manifest")).resolves.toEqual(
                 new Map([
                     ["foo", "bar=baz"],
                     ["lorem", true],

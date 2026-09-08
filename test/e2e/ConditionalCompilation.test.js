@@ -30,24 +30,22 @@ describe("end to end conditional compilation", () => {
     });
 
     describe("(with sterr captured)", () => {
-        test("conditional-compilation/compile-error.brs", async (done) => {
+        test("conditional-compilation/compile-error.brs", async () => {
             let stderr = outputStreams.stderrSpy;
 
             try {
-                await execute(
-                    [resourceFile("conditional-compilation", "compile-error.brs")],
-                    outputStreams
-                );
+                await expect(
+                    execute(
+                        [resourceFile("conditional-compilation", "compile-error.brs")],
+                        outputStreams
+                    )
+                ).rejects.toBeDefined();
 
-                stderr.mockRestore();
-                done.fail("execute() should have rejected");
-            } catch (err) {
                 expect(allArgs(stderr).filter((arg) => arg !== "\n")).toEqual([
                     expect.stringContaining("I'm a compile-time error!"),
                 ]);
-
+            } finally {
                 stderr.mockRestore();
-                done();
             }
         });
     });
