@@ -26,3 +26,4 @@ jobs:
       release-type: "npm" # or "vsce"
       ref: ${{ github.event.inputs.tag || github.event.pull_request.merge_commit_sha }}
     secrets: inherit
+
