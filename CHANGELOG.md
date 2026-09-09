@@ -6,6 +6,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+## [0.47.6](https://github.com/rokucommunity/brs/compare/0.47.5...v0.47.6) - 2026-09-09
+### Fixed
+ - Fix npm OIDC publishing issues ([630ca42](https://github.com/rokucommunity/brs/commit/630ca42))
+
+
+
 ## [0.47.5](https://github.com/rokucommunity/brs/compare/0.47.4...v0.47.5) - 2026-09-08
 ### Added
 ### Changed
