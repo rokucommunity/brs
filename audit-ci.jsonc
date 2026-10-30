@@ -10,6 +10,13 @@
                 "active": true,
                 "notes": "`braces` <=3.0.3 (prod via `fast-glob`/`micromatch`; also dev via jest): stack exhaustion on deeply nested brace patterns. No patched version is published, so it cannot be upgraded or overridden. The only patterns reaching it are globs from the caller's own project config; no untrusted party supplies them, and a crash only affects the caller's own local process."
             }
+        },
+        {
+            "GHSA-qr28-fpjm-wq7f": {
+                // Added: 2026-10-30
+                "active": true,
+                "notes": "`decode-uri-component` <=0.5.0 (prod via `nanomatch` > `snapdragon` > `source-map-resolve@0.5.3`): quadratic DoS on malformed percent-encoded input. `source-map-resolve@0.5.3` declares it as a dependency but never requires it (it calls the global `decodeURIComponent`), so the vulnerable code is never loaded. The only patched release (0.5.1) is ESM-only and outside the `^0.2.0` range, so it cannot be upgraded or overridden."
+            }
         }
     ]
 }
