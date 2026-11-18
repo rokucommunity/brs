@@ -17,6 +17,13 @@
                 "active": true,
                 "notes": "`decode-uri-component` <=0.5.0 (prod via `nanomatch` > `snapdragon` > `source-map-resolve@0.5.3`): quadratic DoS on malformed percent-encoded input (also covers the related exponential-DoS advisory GHSA-vcc3-ghjq-m6fr). snapdragon only calls `source-map-resolve` when compiling with the `sourcemap` option, and brs calls `nanomatch.match` (src/stdlib/File.ts) without it, so the decoder is loaded but never invoked. The only patched release (0.5.1) is ESM-only and outside the `^0.2.0` range, so it cannot be upgraded or overridden."
             }
+        },
+        {
+            "GHSA-fc5q-39xc-vjpf": {
+                // Added: 2026-11-18
+                "active": true,
+                "notes": "`picomatch` <=4.0.7 (prod via `fast-glob`/`micromatch`; also dev via jest): ReDoS on single-branch repeated extglob patterns such as `+(*)`. GitHub has withdrawn this advisory but npm still reports it, and no patched version exists to upgrade or override to. The only patterns reaching it are globs from the caller's own project config, not untrusted input. Remove once npm drops the withdrawn advisory."
+            }
         }
     ]
 }
